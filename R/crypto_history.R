@@ -34,16 +34,17 @@
 #' This is the main function of the crypto package. If you want to retrieve
 #' ALL coins then do not pass a argument to crypto_history(), or pass the coin name.
 #'
-#' @importFrom dplyr '%>%' 'mutate' 'arrange' 'left_join' 'group_by' 'ungroup' 'slice'
 #' @importFrom tidyr 'replace_na'
 #' @importFrom crayon 'make_style'
 #' @importFrom grDevices 'rgb'
 #' @importFrom tibble 'tibble' 'as_tibble' 'rowid_to_column'
 #' @importFrom cli 'cat_bullet'
 #' @importFrom lubridate 'mdy'
+#' @importFrom stats 'na.omit'
 #'
 #' @import progress
-#' @import stats
+#' @import purrr
+#' @import dplyr
 #'
 #' @examples
 #' \dontrun{
@@ -55,9 +56,11 @@
 #' all_coins <- crypto_history(start_date = '20180101')
 #'
 #' # Retrieve 2015 history for all 2015 crypto currencies
-#' coin_list_2015 <- crypto_list(start_date_hist="20150101",end_date_hist="20151231",date_gap="months")
-#' coins_2015 <- crypto_history(coins = coin_list_2015, start_date = "20150101", end_date="20151231")
-#' }
+#' coin_list_2015 <- crypto_list(start_date_hist="20150101",
+#' end_date_hist="20150201",date_gap="months")
+#' coins_2015 <- crypto_history(coins = coin_list_2015,
+#' start_date = "20150101", end_date="20151231", limit=20)
+#'
 #' @name crypto_history
 #'
 #' @export
@@ -79,52 +82,69 @@ crypto_history <- function(coins = NULL, limit = NULL, start_date = NULL, end_da
   message("\n")
   # only if no coins are provided
   if (is.null(coins)) coins <- crypto_list(coin=NULL, start_date, end_date, coin_list)
-
-  if (!is.null(limit))
-    coins <- coins[1:limit, ]
-
-  coin_names <- tibble::tibble(symbol = coins$symbol, name = coins$name,slug = coins$slug)
-  to_scrape <- tibble::tibble(attributes = coins$history_url, slug = coins$slug)
-  loop_data <- vector("list", nrow(to_scrape))
-  loop_info <- vector("list", nrow(to_scrape))
-
-  message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",
-    bullet_col = "green"))
-  pb <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
-    total = nrow(to_scrape), clear = FALSE)
-
-  for (i in seq_len(nrow(to_scrape))) {
+  # limit amount of coins downloaded
+  if (!is.null(limit)) coins <- coins[1:limit, ]
+  # define scraper_funtion
+  scrape_web <- function(url,slug){
+    page <- xml2::read_html(url,handle = curl::new_handle("useragent" = "Mozilla/5.0"))
     pb$tick()
-    temp <- scraper(to_scrape$attributes[i], to_scrape$slug[i], sleep)
-    loop_info[[i]] <- temp$info
-    loop_data[[i]] <- temp$data
+    return(page)
   }
+  # define backoff rate
+  rate <- rate_delay(pause=65,max_times = 2)
+    #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
+  # Modify function to run insistently.
+  insistent_scrape <- possibly(insistently(scrape_web, rate, quiet = FALSE),otherwise=NULL)
+  # Progress Bar 1
+  pb <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+                         total = nrow(coins), clear = FALSE)
+  message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",bullet_col = "green"))
+  data <- coins %>% select(history_url,slug) %>% mutate(out = map2(history_url,slug,.f=~insistent_scrape(.x,.y)))
+  # Progress Bar 2
+  pb2 <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+                         total = nrow(data), clear = FALSE)
+  map_scrape <- function(out,slug){
+    pb2$tick()
+    if (is.na(out)) {cat("\nCoin",slug,"could not be downloaded. Please check URL!\n")} else{
+    temp <- rvest::html_nodes(out, css = "table") %>% .[3] %>%
+      rvest::html_table(fill = TRUE) %>%
+      replace(!nzchar(.), NA)
+    if (!length(temp)==0) {ans <- temp %>% .[[1]] %>% tibble::as_tibble() %>%
+        dplyr::mutate(slug = slug) %>% mutate(Date=lubridate::mdy(Date, locale = platform_locale()))} else {
+          cat("\nCoin",slug,"has missing data. Please check URL!\n"); ans <- NULL
+        }
+    }
+  }
+  message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
+  out <- map2(data$out[16:18],data$slug[16:18], .f = ~ map_scrape(.x,.y))
 
-  results <- do.call(rbind, loop_data) %>% tibble::as_tibble()
-  results_info <- do.call(rbind, loop_info) %>% tibble::as_tibble()
+  # Old code
+  results <- do.call(rbind, out) %>% tibble::as_tibble()
 
-  if (length(results) == 0L)
-    stop("No data currently exists for this crypto currency.", call. = FALSE)
+  if (length(results) == 0L) stop("No data downloaded.", call. = FALSE)
 
-  market_data <- results %>% left_join(coin_names, by = "slug")
+  market_data <- results %>% left_join(coins %>% select(symbol,name,slug) %>% unique(), by = "slug")
   colnames(market_data) <- c("date", "open", "high", "low", "close", "volume",
     "market", "slug", "symbol", "name")
 
   history_results <- market_data %>%
     # create fake ranknow
-    dplyr::left_join(market_data %>% dplyr::group_by(symbol) %>% dplyr::arrange(desc(date)) %>% dplyr::slice(1) %>% dplyr::ungroup() %>%
+    dplyr::left_join(market_data %>% select(slug,date,volume) %>% dplyr::group_by(slug) %>%
+                       dplyr::arrange(desc(date)) %>% dplyr::slice(1) %>%
+                       dplyr::mutate_at(dplyr::vars(volume),~gsub(",","",.)) %>%
+                       dplyr::mutate_at(dplyr::vars(volume),~gsub("-","0",.)) %>%
+                       dplyr::mutate_at(dplyr::vars(volume),~as.numeric(.)) %>%
+                       dplyr::ungroup() %>%  dplyr::arrange(desc(volume)) %>%
                        tibble::rowid_to_column("ranknow") %>% dplyr::select(slug,ranknow), by="slug") %>%
     dplyr::select(slug,symbol,name,date,ranknow,open,high,low,close,volume,market) %>%
-    dplyr::mutate_at(vars(open,high,low,close,volume,market),~gsub(",","",.)) %>%
-    dplyr::mutate_at(vars(high,low,close,volume,market),~gsub("-","0",.)) %>%
-    dplyr::mutate_at(vars(open,high,low,close,volume,market),~as.numeric(tidyr::replace_na(.,0))) %>%
+    dplyr::mutate_at(dplyr::vars(open,high,low,close,volume,market),~gsub(",","",.)) %>%
+    dplyr::mutate_at(dplyr::vars(high,low,close,volume,market),~gsub("-","0",.)) %>%
+    dplyr::mutate_at(dplyr::vars(open,high,low,close,volume,market),~as.numeric(tidyr::replace_na(.,0))) %>%
     dplyr::mutate(close_ratio = (close - low)/(high - low) %>% round(4) %>% as.numeric(),
                   spread = (high - low) %>% round(2) %>% as.numeric()) %>%
-    dplyr::mutate_at(vars(close_ratio),~as.numeric(tidyr::replace_na(.,0))) %>%
+    dplyr::mutate_at(dplyr::vars(close_ratio),~as.numeric(tidyr::replace_na(.,0))) %>%
     dplyr::group_by(symbol) %>%
     dplyr::arrange(ranknow,desc(date))
-  # info output
-  coins_info <- coins %>% left_join(results_info,by="slug")
-  out <- history_results; attr(out,"info") <- coins_info
-  return(out)
+
+  return(history_results)
 }
