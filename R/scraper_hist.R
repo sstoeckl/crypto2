@@ -1,27 +1,19 @@
 #' Historical table scraper
 #'
-#' This web scrapes the historic price tables from CoinMarketCap
-#' and provides back a dataframe for the coin provided as an input.
-#' This function is a dependency of getCoins and is used
-#' as part of a loop to retrieve all crypto currencies.
+#' This script scrapes historic crypto currency information from CoinMarketCap
+#' and provides back a dataframe/tibble for the historic table of coins listed.
+#' This function is a dependency of \code{crypto_list()} and is used
+#' as part of a loop to retrieve historically listed crypto currencies.
 #'
 #' @param attributes URL generated from \code{listCoins()}
 #' @param sleep Duration to sleep to resolve rate limiter
 #'
-#' @return Raw OHLC market data in a dataframe:
+#' @return Coin info for specific requested date in a dataframe/tibble:
 #'   \item{slug}{Coin url slug}
 #'   \item{symbol}{Coin symbol}
 #'   \item{name}{Coin name}
-#'   \item{date}{Market date}
-#'   \item{open}{Market open}
-#'   \item{high}{Market high}
-#'   \item{low}{Market low}
-#'   \item{close}{Market close}
-#'   \item{volume}{Volume 24 hours}
-#'   \item{market}{USD Market cap}
 #'
-#' @importFrom dplyr "%>%" "mutate" "select" "filter"
-#' @importFrom tibble "as_tibble"
+#' @importFrom dplyr "%>%" "mutate" "select" "filter" "as_tibble"
 #' @importFrom tidyr "separate"
 #' @importFrom rvest "html_nodes" "html_table"
 #' @importFrom xml2 "read_html"
@@ -52,13 +44,13 @@ scraper_hist <- function(attributes, sleep = NULL) {
 
   slug <- page %>%
     rvest::html_nodes(xpath = "//td/a") %>%
-    html_attr("href") %>% as_tibble() %>% unique() %>% dplyr::filter(!grepl("#markets",value)) %>%
+    rvest::html_attr("href") %>% tibble::enframe(name = NULL) %>% unique() %>% dplyr::filter(!grepl("#markets",value)) %>%
     tidyr::separate(value,sep="/",into=c("waste1","waste2","slug","waste3","waste4")) %>% dplyr::select(slug)
 
 
-  scraper <- table[[1]][,2:3] %>% tibble::as_tibble() %>%
+  scraper <- table[[1]][,2:3] %>% dplyr::as_tibble() %>%
     #tidyr::separate(Name,sep = "\n",into=c("symbol","name")) %>%
-    cbind(slug) #%>%
+    dplyr::bind_cols(slug) #%>%
     #dplyr::select(-Symbol)
   return(scraper)
 }

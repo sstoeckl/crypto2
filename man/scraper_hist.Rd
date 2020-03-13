@@ -12,21 +12,14 @@ scraper_hist(attributes, sleep = NULL)
 \item{sleep}{Duration to sleep to resolve rate limiter}
 }
 \value{
-Raw OHLC market data in a dataframe:
+Coin info for specific requested date in a dataframe/tibble:
   \item{slug}{Coin url slug}
   \item{symbol}{Coin symbol}
   \item{name}{Coin name}
-  \item{date}{Market date}
-  \item{open}{Market open}
-  \item{high}{Market high}
-  \item{low}{Market low}
-  \item{close}{Market close}
-  \item{volume}{Volume 24 hours}
-  \item{market}{USD Market cap}
 }
 \description{
-This web scrapes the historic price tables from CoinMarketCap
-and provides back a dataframe for the coin provided as an input.
-This function is a dependency of getCoins and is used
-as part of a loop to retrieve all crypto currencies.
+This script scrapes historic crypto currency information from CoinMarketCap
+and provides back a dataframe/tibble for the historic table of coins listed.
+This function is a dependency of \code{crypto_list()} and is used
+as part of a loop to retrieve historically listed crypto currencies.
 }

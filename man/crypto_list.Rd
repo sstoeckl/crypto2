@@ -4,39 +4,35 @@
 \alias{crypto_list}
 \title{Retrieves name, symbol, slug and rank for all tokens at specific historic date}
 \usage{
-crypto_list(coin = NULL, start_date = NULL, end_date = NULL,
-  start_date_hist = NULL, end_date_hist = NULL, coin_list = NULL,
-  date_gap = "months")
+crypto_list(
+  coin = NULL,
+  start_date_hist = NULL,
+  end_date_hist = NULL,
+  date_gap = "months"
+)
 }
 \arguments{
 \item{coin}{Name, symbol or slug of crypto currency}
-
-\item{start_date}{Start date to retrieve data from, format yyyymmdd}
-
-\item{end_date}{End date to retrieve data from, format yyyymmdd, if not provided, today will be assumed}
 
 \item{start_date_hist}{Start date to retrieve coin history from, format yyyymmdd}
 
 \item{end_date_hist}{End date to retrieve coin history from, format yyyymmdd, if not provided, today will be assumed}
 
-\item{coin_list}{'api', 'static' or NULL}
-
-\item{date_gap}{'months'}
+\item{date_gap}{'months', date gap when checking for historically existing coins,  between 'start_date_hist' and
+'end_date_hist'}
 }
 \value{
-Crypto currency historic OHLC market data in a dataframe:
+List of (historically existing)cryptocurrencies in a tibble:
   \item{symbol}{Coin symbol (not-unique)}
   \item{name}{Coin name}
   \item{slug}{Coin URL slug (unique)}
   \item{exchange_url}{Exchange market tables urls for scraping}
-  \item{history_url}{Historical market tables urls for scraping}
 
 Required dependency that is used in function call \code{getCoins()}.
 }
 \description{
-List all of the crypto currencies that have existed on CoinMarketCap on specific date.
-This can be used to add "dead" coins to the list of coins retrieved by `crypto_list()`.
-Use this to populate/add to the URL base for scraping historical market
-data. It retrieves name, slug, symbol and rank of crypto currencies from
-CoinMarketCap and creates URLS for \code{scraper()} to use.
+List all of the crypto currencies that exist/have existed on CoinMarketCap between specific dates.
+This list is used as a basis to scrape historical market data using \code{crypto_history()}.
+It retrieves name, slug, symbol and rank of crypto currencies from
+CoinMarketCap and creates URLS for the \code{scraper()} to use.
 }

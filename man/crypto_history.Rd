@@ -4,20 +4,23 @@
 \alias{crypto_history}
 \title{Get historic crypto currency market data}
 \usage{
-crypto_history(coins = NULL, limit = NULL, start_date = NULL,
-  end_date = NULL, coin_list = NULL, sleep = NULL)
+crypto_history(
+  coin_list = NULL,
+  limit = NULL,
+  start_date = NULL,
+  end_date = NULL,
+  sleep = NULL
+)
 }
 \arguments{
-\item{coins}{string if NULL retrieve all currently existing coins (crypto_list()),
+\item{coin_list}{string if NULL retrieve all currently existing coins (crypto_list()),
 or provide list of crypto currencies in the crypto_list() format (e.g. current and dead coins since 2015)}
 
 \item{limit}{integer Return the top n records, default is all tokens}
 
 \item{start_date}{string Start date to retrieve data from, format 'yyyymmdd'}
 
-\item{end_date}{string End date to retrieve data from, format 'yyyymmdd'}
-
-\item{coin_list}{string Valid values are 'api', 'static' or NULL}
+\item{end_date}{string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed}
 
 \item{sleep}{integer Seconds to sleep for between API requests}
 }
@@ -35,12 +38,9 @@ Crypto currency historic OHLC market data in a dataframe and additional informat
   \item{market}{USD Market cap}
   \item{close_ratio}{Close rate, min-maxed with the high and low values that day}
   \item{spread}{Volatility premium, high minus low for that day}
-  \item{start_date}{in info: Begin of historic data}
-  \item{end_date}{in info: End of historic data}
-  \item{message}{in info: Either "Success" when data was available or error message from scraper}
 
 This is the main function of the crypto package. If you want to retrieve
-ALL coins then do not pass a argument to crypto_history(), or pass the coin name.
+ALL active coins then do not pass an argument to crypto_history(), or pass the coin name.
 }
 \description{
 Scrape the crypto currency historic market tables from

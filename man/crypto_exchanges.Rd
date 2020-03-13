@@ -4,8 +4,13 @@
 \alias{crypto_exchanges}
 \title{Get current crypto market exchanges}
 \usage{
-crypto_exchanges(coin = NULL, limit = NULL, start_date = NULL,
-  end_date = NULL, sleep = NULL)
+crypto_exchanges(
+  coin = NULL,
+  limit = NULL,
+  start_date = NULL,
+  end_date = NULL,
+  sleep = NULL
+)
 }
 \arguments{
 \item{coin}{string Name, symbol or slug of crypto currency, default is all tokens}

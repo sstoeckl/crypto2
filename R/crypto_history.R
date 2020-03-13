@@ -6,12 +6,11 @@
 #' analysis on the crypto financial markets or to attempt
 #' to predict future market movements or trends.
 #'
-#' @param coins string if NULL retrieve all currently existing coins (crypto_list()),
+#' @param coin_list string if NULL retrieve all currently existing coins (crypto_list()),
 #' or provide list of crypto currencies in the crypto_list() format (e.g. current and dead coins since 2015)
 #' @param limit integer Return the top n records, default is all tokens
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
-#' @param end_date string End date to retrieve data from, format 'yyyymmdd'
-#' @param coin_list string Valid values are 'api', 'static' or NULL
+#' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
 #' @param sleep integer Seconds to sleep for between API requests
 #
 #' @return Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
@@ -27,12 +26,9 @@
 #'   \item{market}{USD Market cap}
 #'   \item{close_ratio}{Close rate, min-maxed with the high and low values that day}
 #'   \item{spread}{Volatility premium, high minus low for that day}
-#'   \item{start_date}{in info: Begin of historic data}
-#'   \item{end_date}{in info: End of historic data}
-#'   \item{message}{in info: Either "Success" when data was available or error message from scraper}
 #'
 #' This is the main function of the crypto package. If you want to retrieve
-#' ALL coins then do not pass a argument to crypto_history(), or pass the coin name.
+#' ALL active coins then do not pass an argument to crypto_history(), or pass the coin name.
 #'
 #' @importFrom tidyr 'replace_na'
 #' @importFrom crayon 'make_style'
@@ -53,7 +49,7 @@
 #' all_coins <- crypto_history(limit = 1)
 #'
 #' # Retrieving this years market history for ALL crypto currencies
-#' all_coins <- crypto_history(start_date = '20180101')
+#' all_coins <- crypto_history(start_date = '20200101',limit=10)
 #'
 #' # Retrieve 2015 history for all 2015 crypto currencies
 #' coin_list_2015 <- crypto_list(start_date_hist="20150101",
@@ -65,8 +61,7 @@
 #'
 #' @export
 #'
-crypto_history <- function(coins = NULL, limit = NULL, start_date = NULL, end_date = NULL,
-  coin_list = NULL, sleep = NULL) {
+crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL) {
   pink <- crayon::make_style(grDevices::rgb(0.93, 0.19, 0.65))
   options(scipen = 999)
   i <- "i"
@@ -75,15 +70,21 @@ crypto_history <- function(coins = NULL, limit = NULL, start_date = NULL, end_da
   close <- NULL
   ranknow <- NULL
 
-  message(cli::cat_bullet("If this helps you become rich please consider donating",
-    bullet = "heart", bullet_col = pink))
-  message("ERC-20: 0x375923Bf82F0b728d23A5704261a6e16341fd860", appendLF = TRUE)
-  message("XRP: rK59semLsuJZEWftxBFhWuNE6uhznjz2bK", appendLF = TRUE)
-  message("\n")
   # only if no coins are provided
-  if (is.null(coins)) coins <- crypto_list(coin=NULL, start_date, end_date, coin_list)
+  if (is.null(coin_list)) coin_list <- crypto_list(coin=NULL)
   # limit amount of coins downloaded
-  if (!is.null(limit)) coins <- coins[1:limit, ]
+  if (!is.null(limit)) coin_list <- coin_list[1:limit, ]
+  # Create history urls for download
+  historyurl <-
+    paste0(
+      "https://coinmarketcap.com/currencies/",
+      coin_list$slug,
+      "/historical-data/?start=",
+      start_date,
+      "&end=",
+      end_date
+    )
+  coin_list <- coin_list %>% dplyr::bind_cols(.,history_url=historyurl)
   # define scraper_funtion
   scrape_web <- function(url,slug){
     page <- xml2::read_html(url,handle = curl::new_handle("useragent" = "Mozilla/5.0"))
@@ -94,15 +95,15 @@ crypto_history <- function(coins = NULL, limit = NULL, start_date = NULL, end_da
   rate <- rate_delay(pause=65,max_times = 2)
     #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
   # Modify function to run insistently.
-  insistent_scrape <- possibly(insistently(scrape_web, rate, quiet = FALSE),otherwise=NULL)
+  insistent_scrape <- purrr::possibly(purrr::insistently(scrape_web, rate, quiet = FALSE),otherwise=NULL)
   # Progress Bar 1
   pb <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
-                         total = nrow(coins), clear = FALSE)
+                         total = min(limit,nrow(coins)), clear = FALSE)
   message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",bullet_col = "green"))
-  data <- coins %>% select(history_url,slug) %>% mutate(out = map2(history_url,slug,.f=~insistent_scrape(.x,.y)))
+  data <- coin_list %>% dplyr::select(history_url,slug) %>% dplyr::mutate(out = purrr::map2(history_url,slug,.f=~insistent_scrape(.x,.y)))
   # Progress Bar 2
   pb2 <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
-                         total = nrow(data), clear = FALSE)
+                         total = min(limit,nrow(data)), clear = FALSE)
   map_scrape <- function(out,slug){
     pb2$tick()
     if (is.na(out)) {cat("\nCoin",slug,"could not be downloaded. Please check URL!\n")} else{
@@ -116,20 +117,20 @@ crypto_history <- function(coins = NULL, limit = NULL, start_date = NULL, end_da
     }
   }
   message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
-  out <- map2(data$out[16:18],data$slug[16:18], .f = ~ map_scrape(.x,.y))
+  out <- purrr::map2(data$out,data$slug, .f = ~ map_scrape(.x,.y))
 
   # Old code
   results <- do.call(rbind, out) %>% tibble::as_tibble()
 
   if (length(results) == 0L) stop("No data downloaded.", call. = FALSE)
 
-  market_data <- results %>% left_join(coins %>% select(symbol,name,slug) %>% unique(), by = "slug")
+  market_data <- results %>% dplyr::left_join(coins %>% dplyr::select(symbol,name,slug) %>% unique(), by = "slug")
   colnames(market_data) <- c("date", "open", "high", "low", "close", "volume",
     "market", "slug", "symbol", "name")
 
   history_results <- market_data %>%
     # create fake ranknow
-    dplyr::left_join(market_data %>% select(slug,date,volume) %>% dplyr::group_by(slug) %>%
+    dplyr::left_join(market_data %>% dplyr::select(slug,date,volume) %>% dplyr::group_by(slug) %>%
                        dplyr::arrange(desc(date)) %>% dplyr::slice(1) %>%
                        dplyr::mutate_at(dplyr::vars(volume),~gsub(",","",.)) %>%
                        dplyr::mutate_at(dplyr::vars(volume),~gsub("-","0",.)) %>%
