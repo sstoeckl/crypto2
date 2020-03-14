@@ -38,24 +38,10 @@ coin_hist <- crypto_history(coins, limit=10, start_date="20200101")
 
 ```
 
-## Package Issues
-> Please run the below before raising an issue, then include the output from sessionInfo()
-```R
-crypto::repair_dependencies()
-
-print(sessionInfo())
-```
-
-## Built With :heart_eyes_cat: R
-
-- [Kaggle](https://www.kaggle.com/jessevent/all-crypto-currencies) - Get this dataset on kaggle!
-- [CoinSpot](https://coinspot.com.au?affiliate=9V5G4) - Invest $AUD into Crypto today!
-- [CoinMarketCap](https://coinmarketcap.com/) - Providing amazing data @CoinMarketCap
-- [CRAN](https://CRAN.R-project.org/package=crypto) - The CRAN repository for crypto
-
 ### Author/License
 
-- **Jesse Vent** - Package Author - [jessevent](https://github.com/jessevent)
+- **Jesse Vent** - Package Creator - [jessevent](https://github.com/jessevent)
+- **Sebastian Stöckl** - Package Modificator & Maintainer - [sstoeckl](https://github.com/sstoeckl)
 
 This project is licensed under the MIT License - see the
 <license.md> file for details</license.md>
