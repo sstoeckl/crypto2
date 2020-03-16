@@ -77,6 +77,9 @@ crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, en
   # limit amount of coins downloaded
   if (!is.null(limit)) coin_list <- coin_list[1:limit, ]
   # Create history urls for download
+  # check/create dates
+  if (is.null(start_date)) { start_date <- "20130428" }
+  if (is.null(end_date)) { end_date <- gsub("-", "", lubridate::today()) }
   historyurl <-
     paste0(
       "https://coinmarketcap.com/currencies/",

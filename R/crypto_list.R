@@ -91,8 +91,6 @@
         name   = coins$name,
         slug   = coins$slug
       ) %>% unique
-    if (is.null(start_date)) { start_date <- "20130428" }
-    if (is.null(end_date)) { end_date <- gsub("-", "", lubridate::today()) }
     exchangeurl <- paste0("https://coinmarketcap.com/currencies/", coins$slug, "/#markets")
     exchange_url       <- c(exchangeurl)
     coins$symbol       <- as.character(toupper(coins$symbol))
