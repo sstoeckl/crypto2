@@ -1,13 +1,6 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![Last-changedate](https://img.shields.io/badge/last%20change-`r gsub('-', '--', Sys.Date())`-yellowgreen.svg)](/commits/master)
-[![codecov](https://codecov.io/gh/sstoeckl/crypto2/branch/master/graph/badge.svg)](https://codecov.io/gh/sstoeckl/crypto2)
-```{r, echo = FALSE}                                                                                   
-dep <- as.vector(read.dcf('DESCRIPTION')[, 'Depends'])                                                     
-m <- regexpr('R *\\\\(>= \\\\d+.\\\\d+.\\\\d+\\\\)', dep)                                            
-rm <- regmatches(dep, m)                                                                                     
-rvers <- gsub('.*(\\\\d+.\\\\d+.\\\\d+).*', '\\\\1', rm)                                                 
-```                                                                                                           
-[![minimal R version](https://img.shields.io/badge/R%3E%3D-`r rvers`-6666ff.svg)](https://cran.r-project.org/)
+
+
 
 ## Historical Cryptocurrency Prices For active and dead Tokens!
 
