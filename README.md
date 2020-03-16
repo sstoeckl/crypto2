@@ -1,3 +1,4 @@
+[![codecov](https://codecov.io/gh/sstoeckl/crypto2/branch/master/graph/badge.svg)](https://codecov.io/gh/sstoeckl/crypto2)
 
 ## Historical Cryptocurrency Prices For active and dead Tokens!
 
