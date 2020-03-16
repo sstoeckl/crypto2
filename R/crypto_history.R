@@ -64,8 +64,6 @@
 #' @export
 #'
 crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL) {
-  pink <- crayon::make_style(grDevices::rgb(0.93, 0.19, 0.65))
-  options(scipen = 999)
   i <- "i"
   low <- NULL
   high <- NULL
