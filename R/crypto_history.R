@@ -127,7 +127,7 @@ crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, en
 
   if (length(results) == 0L) stop("No data downloaded.", call. = FALSE)
 
-  market_data <- results %>% dplyr::left_join(coins %>% dplyr::select(symbol,name,slug) %>% unique(), by = "slug")
+  market_data <- results %>% dplyr::left_join(coin_list %>% dplyr::select(symbol,name,slug) %>% unique(), by = "slug")
   colnames(market_data) <- c("date", "open", "high", "low", "close", "volume",
     "market", "slug", "symbol", "name")
 
