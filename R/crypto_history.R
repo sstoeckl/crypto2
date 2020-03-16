@@ -103,7 +103,7 @@ crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, en
   insistent_scrape <- purrr::possibly(purrr::insistently(scrape_web, rate, quiet = FALSE),otherwise=NULL)
   # Progress Bar 1
   pb <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
-                         total = min(limit,nrow(coins)), clear = FALSE)
+                         total = min(limit,nrow(coin_list)), clear = FALSE)
   message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",bullet_col = "green"))
   data <- coin_list %>% dplyr::select(history_url,slug) %>% dplyr::mutate(out = purrr::map2(history_url,slug,.f=~insistent_scrape(.x,.y)))
   # Progress Bar 2
@@ -116,7 +116,7 @@ crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, en
       rvest::html_table(fill = TRUE) %>%
       replace(!nzchar(.), NA)
     if (!length(temp)==0) {ans <- temp %>% .[[1]] %>% tibble::as_tibble() %>%
-        dplyr::mutate(slug = slug) %>% mutate(Date=lubridate::mdy(Date, locale = platform_locale()))} else {
+        dplyr::mutate(slug = slug) %>% mutate(Date=lubridate::mdy(Date))} else {
           cat("\nCoin",slug,"has missing data. Please check URL!\n"); ans <- NULL
         }
     }
