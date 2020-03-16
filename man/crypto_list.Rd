@@ -36,3 +36,17 @@ This list is used as a basis to scrape historical market data using \code{crypto
 It retrieves name, slug, symbol and rank of crypto currencies from
 CoinMarketCap and creates URLS for the \code{scraper()} to use.
 }
+\examples{
+\donttest{
+coin <- "kin"
+coins <- crypto_list(coin)
+
+# return all coins
+coin_list <- crypto_list()
+
+# return all coins listed in 2015
+coin_list_2015 <- crypto_list(start_date_hist="20150101",end_date_hist="20151231",date_gap="months")
+
+}
+
+}

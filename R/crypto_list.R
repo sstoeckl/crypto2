@@ -24,7 +24,7 @@
 #' @importFrom dplyr left_join mutate rename
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' coin <- "kin"
 #' coins <- crypto_list(coin)
 #'
@@ -34,7 +34,7 @@
 #' # return all coins listed in 2015
 #' coin_list_2015 <- crypto_list(start_date_hist="20150101",end_date_hist="20151231",date_gap="months")
 #'
-#' # return all current coins and the ones listes
+#' }
 #'
 #' @name crypto_list
 #'

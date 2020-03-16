@@ -1,7 +1,7 @@
 
 ## Historical Cryptocurrency Prices For active and dead Tokens!
 
-This is a modification of the original crypto package bei jesse vent. It allows to additionally retrieve historic (and possibly dead) coins for research puposes
+This is a modification of the original crypto package by [jesse vent](https://github.com/JesseVent/crypto). It allows to additionally retrieve historic (and possibly dead) coins for research puposes
 
 - Retrieves historical crypto currency data `crypto_history()`
 - Retrieves list of all active/dead crypto currencies `crypto_list()`

@@ -43,7 +43,7 @@
 #' @import dplyr
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'
 #' # Retrieving market history for ALL crypto currencies
 #' all_coins <- crypto_history(limit = 1)
@@ -56,6 +56,8 @@
 #' end_date_hist="20150201",date_gap="months")
 #' coins_2015 <- crypto_history(coins = coin_list_2015,
 #' start_date = "20150101", end_date="20151231", limit=20)
+#'
+#' }
 #'
 #' @name crypto_history
 #'
