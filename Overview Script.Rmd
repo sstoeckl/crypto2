@@ -1,0 +1,16 @@
+---
+title: "Crypto_Analysis"
+output: html_notebook
+---
+```{r load packages}
+devtools::install_github("sstoeckl/crypto2", force = TRUE)
+```
+
+
+
+```{r Data Collection downloading the monthly coin list from several years}
+coin_list_2018 <- crpyto_list(start_date_hist = "20180101", end_date_hist = "20181231", date_gap = "months")
+```
+
+
+
