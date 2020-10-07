@@ -1,15 +1,89 @@
 ---
 title: "Crypto_Analysis"
 output: html_notebook
+Author: Köffel Fabian, Amann Matthias
 ---
-```{r load packages}
-devtools::install_github("sstoeckl/crypto2", force = TRUE)
+```{r load package crypto2}
+devtools::install_github("jessevent/crypto", force= TRUE)
+pacman::p_load(gganimate,gifski,png,gapminder)
+pacman::p_load(tidyverse,tidyquant,FFdownload,tsibble, tibbletime, rstudioapi)
 ```
 
+```{r All aktive coins from 2014 - 6th October 2020}
+coin_list <- crypto_list(start_date_hist = "20140101", end_date_hist = "20201006", date_gap = "months")
+```
 
+```{r Getting the historic data of crypto currencies}
+#be aware that without a limiting factor it could be a very tuff download
+coin_hist <- crypto_history(coin_list, start_date="20140101")
+```
 
-```{r Data Collection downloading the monthly coin list from several years}
-coin_list_2018 <- crpyto_list(start_date_hist = "20180101", end_date_hist = "20181231", date_gap = "months")
+```{r All aktive coins over several subperiods}
+#2014
+coin_hist_2014 <- coin_hist %>%
+  select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
+  filter(between(date, as.Date("2014-01-01"), as.Date("2014-12-31"))) %>%
+  group_by(symbol)
+
+#2015
+coin_hist_2015 <- coin_hist %>%
+     select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
+     filter(between(date, as.Date("2015-01-01"), as.Date("2015-12-31"))) %>%
+  group_by(symbol)
+
+#2016
+coin_hist_2016 <- coin_hist %>%
+     select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
+     filter(between(date, as.Date("2016-01-01"), as.Date("2016-12-31"))) %>%
+  group_by(symbol)
+
+#2017
+coin_hist_2017 <- coin_hist %>%
+     select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
+     filter(between(date, as.Date("2017-01-01"), as.Date("2017-12-31"))) %>%
+  group_by(symbol)
+
+#2018
+coin_hist_2018 <- coin_hist %>%
+     select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
+     filter(between(date, as.Date("2018-01-01"), as.Date("2018-12-31"))) %>%
+  group_by(symbol)
+
+#2019
+coin_hist_2019 <- coin_hist %>%
+     select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
+     filter(between(date, as.Date("2019-01-01"), as.Date("2019-12-31"))) %>%
+  group_by(symbol)
+
+#2020 until 6th October
+coin_hist_2020 <- coin_hist %>%
+     select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
+     filter(between(date, as.Date("2020-01-01"), as.Date("2020-10-06"))) %>%
+  group_by(symbol)
+```
+
+```{r ?Transforming data?}
+coin_hist_return <- as.tibble(coin_hist) %>%
+  group_by(coin_hist$symbol) %>%
+  tq_transmute(data = as.data.frame(coin_hist), select = coin_hist$close, mutate_fun = periodReturn, period = 'weekly', col_rename = Return)
+
+```
+
+```{r ?Calculating the periodic returns?}
+coin_hist_return <- coin_hist %>%
+  dplyr::group_by(symbol)
+weeklyReturn(coin_hist, periode = 'weekly', subset = NULL, type = 'arithmetic', leading = TRUE)
+```
+
+```{r Calculating the return of the data}
+coin_hist_return <- coin_hist %>% 
+  dplyr::group_by(symbol) %>% 
+  dplyr::summarise(Mu=mean(close_ratio), Sigma=sd(close_ratio))
+coin_hist_return
+```
+
+```{r Plotting the data}
+ggplot(data = coin_hist_return, mapping = aes(x= Sigma, y= Mu)) + geom_point(alpha = 0.7) + scale_x_log10() + scale_y_log10() + geom_text(aes(label=symbol), hjust=0, vjust=0)
 ```
 
 
