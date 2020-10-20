@@ -15,7 +15,8 @@ coin_list <- crypto_list(start_date_hist = "20140101", end_date_hist = "20201006
 
 ```{r Getting the historic data of crypto currencies}
 #be aware that without a limiting factor it could be a very tuff download
-coin_hist <- crypto_history(coin_list, start_date="20140101")
+coin_hist <- na.omit(crypto_history(coin_list, start_date="20140101", end_date = "20201006"))
+coin_hist
 ```
 
 ```{r All aktive coins over several subperiods}
@@ -63,16 +64,14 @@ coin_hist_2020 <- coin_hist %>%
 ```
 
 ```{r ?Transforming data?}
-coin_hist_return <- as.tibble(coin_hist) %>%
-  group_by(coin_hist$symbol) %>%
-  tq_transmute(data = as.data.frame(coin_hist), select = coin_hist$close, mutate_fun = periodReturn, period = 'weekly', col_rename = Return)
-
+coin_hist_return <- coin_hist %>%
+  tq_transmute(., select = coin_hist$close, mutate_fun = periodReturn, period = 'weekly', col_rename = Return)
 ```
 
 ```{r ?Calculating the periodic returns?}
-coin_hist_return <- coin_hist %>%
-  dplyr::group_by(symbol)
-weeklyReturn(coin_hist, periode = 'weekly', subset = NULL, type = 'arithmetic', leading = TRUE)
+coin_hist_return <- as.data.frame.POSIXct(coin_hist) %>%
+  dplyr::group_by(symbol) %>%
+  weeklyReturn(select=close, periode = 'weekly', type = 'arithmetic', leading = TRUE)
 ```
 
 ```{r Calculating the return of the data}
