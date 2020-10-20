@@ -20,6 +20,12 @@ coin_hist
 ```
 
 ```{r All aktive coins over several subperiods}
+#2013
+coin_hist_2013 <- coin_hist %>%
+  select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
+  filter(between(date, as.Date("2013-01-01"), as.Date("2013-12-31"))) %>%
+  group_by(symbol) # For some reason it downloads the variables, but without any observation
+
 #2014
 coin_hist_2014 <- coin_hist %>%
   select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
