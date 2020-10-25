@@ -18,7 +18,7 @@ So, the total number of crypto currencies is __1579__.
 
 ```{r Getting the historic data of crypto currencies}
 #be aware that without a limiting factor it could be a very long lasting download
-coin_hist <- na.omit(crypto_history(coin_list, limit=60, start_date="20140101", end_date = "20201006", sleep = 1))
+coin_hist <- na.omit(crypto_history(coin_list, limit=95, start_date="20140101", end_date = "20201006", sleep = 1))
 coin_hist
 ```
 
