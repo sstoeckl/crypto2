@@ -6,20 +6,23 @@ Author: Köffel Fabian, Amann Matthias
 ```{r load package crypto2}
 devtools::install_github("jessevent/crypto", force= TRUE)
 pacman::p_load(gganimate,gifski,png,gapminder)
-pacman::p_load(tidyverse,tidyquant,FFdownload,tsibble, tibbletime, rstudioapi)
+pacman::p_load(tidyverse,tidyquant,FFdownload,tsibble, tibbletime, rstudioapi, data.table, crypto2)
+options("scipen"=100, "digits"=4)
 ```
 
 ```{r All aktive coins from 2014 - 6th October 2020}
 coin_list <- crypto_list(start_date_hist = "20140101", end_date_hist = "20201006", date_gap = "months")
 ```
 
+So, the total number of crypto currencies is __1579__. 
+
 ```{r Getting the historic data of crypto currencies}
-#be aware that without a limiting factor it could be a very tuff download
-coin_hist <- na.omit(crypto_history(coin_list, start_date="20140101", end_date = "20201006"))
+#be aware that without a limiting factor it could be a very long lasting download
+coin_hist <- na.omit(crypto_history(coin_list, limit=10, start_date="20140101", end_date = "20201006", sleep = 1))
 coin_hist
 ```
 
-```{r All aktive coins over several subperiods}
+```{r All active coins over several subperiods}
 #2013
 coin_hist_2013 <- coin_hist %>%
   select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
@@ -69,27 +72,27 @@ coin_hist_2020 <- coin_hist %>%
   group_by(symbol)
 ```
 
-```{r ?Transforming data?}
-coin_hist_return <- coin_hist %>%
-  tq_transmute(., select = coin_hist$close, mutate_fun = periodReturn, period = 'weekly', col_rename = Return)
+```{r Calculating the returns for 2019}
+return <- stats::aggregate(x = coin_hist_2019[,3:4], list(coin_hist_2019$name), mean)
+risk <- stats::aggregate(x = coin_hist_2019[,3:4], list(coin_hist_2019$name),sd)
+return$name <- NULL
+risk$name <- NULL
+return_risk <- dplyr::left_join(x = return, y= risk, by= "Group.1")
+names(return_risk)[names(return_risk)=="open.x"] <- "Mu"
+names(return_risk)[names(return_risk)=="open.y"] <- "Sigma"
+names(return_risk)[names(return_risk)=="Group.1"] <- "Name"
+return_risk
 ```
 
-```{r ?Calculating the periodic returns?}
-coin_hist_return <- as.data.frame.POSIXct(coin_hist) %>%
-  dplyr::group_by(symbol) %>%
-  weeklyReturn(select=close, periode = 'weekly', type = 'arithmetic', leading = TRUE)
+```{r Another approach for calculating the mu and sigma}
+plyr::ddply(.data = coin_hist_2019,.(name), summarize, "Return" = mean(coin_hist_2019$close), "Sigma" = sd(coin_hist_2019$close))
 ```
 
-```{r Calculating the return of the data}
-coin_hist_return <- coin_hist %>% 
-  dplyr::group_by(symbol) %>% 
-  dplyr::summarise(Mu=mean(close_ratio), Sigma=sd(close_ratio))
-coin_hist_return
+```{r Plotting the small sample to get a feeling for the data}
+ggplot(return_risk,aes(x=Sigma, y=Mu,label=Name)) + geom_point(alpha =0.6) + scale_x_log10() + scale_y_log10() + geom_text(aes(label=Name),hjust=0, vjust=0)
 ```
 
-```{r Plotting the data}
-ggplot(data = coin_hist_return, mapping = aes(x= Sigma, y= Mu)) + geom_point(alpha = 0.7) + scale_x_log10() + scale_y_log10() + geom_text(aes(label=symbol), hjust=0, vjust=0)
-```
+
 
 
 
