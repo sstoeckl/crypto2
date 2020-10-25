@@ -18,11 +18,17 @@ So, the total number of crypto currencies is __1579__.
 
 ```{r Getting the historic data of crypto currencies}
 #be aware that without a limiting factor it could be a very long lasting download
-coin_hist <- na.omit(crypto_history(coin_list, limit=10, start_date="20140101", end_date = "20201006", sleep = 1))
+coin_hist <- na.omit(crypto_history(coin_list, limit=60, start_date="20140101", end_date = "20201006", sleep = 1))
 coin_hist
 ```
 
 ```{r All active coins over several subperiods}
+#prepared coin history
+prep_coin_hist <- coin_hist %>%
+  select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
+  filter(between(date, as.Date("2013-01-01"), as.Date("2020-10-06"))) %>%
+  group_by(symbol)
+
 #2013
 coin_hist_2013 <- coin_hist %>%
   select(date, symbol, name, open, close, high, low, volume, market, close_ratio, spread) %>%
@@ -72,7 +78,20 @@ coin_hist_2020 <- coin_hist %>%
   group_by(symbol)
 ```
 
-```{r Calculating the returns for 2019}
+```{r Risk / Return calculation}
+return_all <- stats::aggregate(x = prep_coin_hist[,3:4], list(prep_coin_hist$name), mean)
+risk_all <- stats::aggregate(x = prep_coin_hist[,3:4], list(prep_coin_hist$name),sd)
+return_all$name <- NULL
+risk_all$name <- NULL
+return_risk_all <- dplyr::left_join(x = return_all, y= risk_all, by= "Group.1")
+names(return_risk_all)[names(return_risk_all)=="open.x"] <- "Mu"
+names(return_risk_all)[names(return_risk_all)=="open.y"] <- "Sigma"
+names(return_risk_all)[names(return_risk_all)=="Group.1"] <- "Name"
+return_risk_all
+```
+
+
+```{r Calculating the returns and risk for 2019}
 return <- stats::aggregate(x = coin_hist_2019[,3:4], list(coin_hist_2019$name), mean)
 risk <- stats::aggregate(x = coin_hist_2019[,3:4], list(coin_hist_2019$name),sd)
 return$name <- NULL
@@ -83,14 +102,30 @@ names(return_risk)[names(return_risk)=="open.y"] <- "Sigma"
 names(return_risk)[names(return_risk)=="Group.1"] <- "Name"
 return_risk
 ```
-
-```{r Another approach for calculating the mu and sigma}
-plyr::ddply(.data = coin_hist_2019,.(name), summarize, "Return" = mean(coin_hist_2019$close), "Sigma" = sd(coin_hist_2019$close))
+```{r Calculation of 2018}
+return_nd <- stats::aggregate(x = coin_hist_2018[,3:4], list(coin_hist_2018$name), mean)
+risk_nd <- stats::aggregate(x = coin_hist_2018[,3:4], list(coin_hist_2018$name),sd)
+return_nd$name <- NULL
+risk_nd$name <- NULL
+return_risk_nd <- dplyr::left_join(x = return_nd, y= risk_nd, by= "Group.1")
+names(return_risk_nd)[names(return_risk_nd)=="open.x"] <- "Mu"
+names(return_risk_nd)[names(return_risk_nd)=="open.y"] <- "Sigma"
+names(return_risk_nd)[names(return_risk_nd)=="Group.1"] <- "Name"
+return_risk_nd
 ```
+
 
 ```{r Plotting the small sample to get a feeling for the data}
-ggplot(return_risk,aes(x=Sigma, y=Mu,label=Name)) + geom_point(alpha =0.6) + scale_x_log10() + scale_y_log10() + geom_text(aes(label=Name),hjust=0, vjust=0)
+ggplot(return_risk,aes(x=Sigma, y=Mu,label=Name)) + geom_point(alpha =0.6) + scale_x_log10() + scale_y_log10() + geom_text(aes(label=Name),hjust=0, vjust=0) + ggtitle("2019")
+ggplot(return_risk_nd,aes(x=Sigma, y=Mu,label=Name)) + geom_point(alpha =0.6) + scale_x_log10() + scale_y_log10() + geom_text(aes(label=Name),hjust=0, vjust=0) + ggtitle("2018")
+ggplot(return_risk_all, aes(x=Sigma, y=Mu, label = Name)) + geom_point(alpha = 0.6) + scale_x_log10() + scale_y_log10() + geom_text(aes(label = Name), hjust=0, vjust=0) + ggtitle("All")
 ```
+```{r Looking for cluters, so therefore we leave the lables out}
+ggplot(return_risk,aes(x=Sigma, y=Mu)) + geom_point(alpha =0.6) + scale_x_log10() + scale_y_log10()  + ggtitle("2019")
+ggplot(return_risk_nd,aes(x=Sigma, y=Mu)) + geom_point(alpha =0.6) + scale_x_log10() + scale_y_log10() + ggtitle("2018")
+ggplot(return_risk_all, aes(x=Sigma, y=Mu)) + geom_point(alpha = 0.6) + scale_x_log10() + scale_y_log10() + ggtitle("All")
+```
+
 
 
 
