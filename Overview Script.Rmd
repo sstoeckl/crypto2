@@ -6,7 +6,7 @@ Author: Köffel Fabian, Amann Matthias
 ```{r load package crypto2}
 devtools::install_github("jessevent/crypto", force= TRUE)
 pacman::p_load(gganimate,gifski,png,gapminder)
-pacman::p_load(tidyverse,tidyquant,FFdownload,tsibble, tibbletime, rstudioapi, data.table, crypto2)
+pacman::p_load(tidyverse,tidyquant,FFdownload,tsibble, tibbletime, rstudioapi, data.table, crypto2, fpc)
 options("scipen"=100, "digits"=4)
 ```
 
@@ -125,9 +125,140 @@ ggplot(return_risk,aes(x=Sigma, y=Mu)) + geom_point(alpha =0.6) + scale_x_log10(
 ggplot(return_risk_nd,aes(x=Sigma, y=Mu)) + geom_point(alpha =0.6) + scale_x_log10() + scale_y_log10() + ggtitle("2018")
 ggplot(return_risk_all, aes(x=Sigma, y=Mu)) + geom_point(alpha = 0.6) + scale_x_log10() + scale_y_log10() + ggtitle("All")
 ```
+```{r Dealing with Bitcoin}
+out_return_risk_all <- return_risk_all[ which(return_risk_all$Name=='Bitcoin'),]
+out_return_risk_all
+```
 
 
 
+```{r Preparing Data for finding clusters}
+# Prepare Data
+data <- return_risk_all
+data$Name <- as.character(data$Name)
+data$Mu <- as.numeric(data$Mu)
+data$Sigma <- as.numeric(data$Sigma)
 
+plot1 <- data %>% 
+    ggplot(aes(x = "All Coins", y = Mu)) + 
+    geom_jitter(width = .025, height = 0, size = 2, alpha = .5, color = "blue") +
+  labs(x = "", y="Return")
+plot1
 
+plot2 <- data %>% 
+    ggplot(aes(x = "All Coins", y = Sigma)) + 
+    geom_jitter(width = .025, height = 0, size = 2, alpha = .5, color = "red") +
+  labs(x = "", y="Risk")
+plot2
+```
+The charts above show us the distribution for each variable. Each point represents a crypto currency. (XXXX in total)
+As we see their is one crypto currency named as Bitcoin, which dominates all other crypto currencies. Therefore it might be good to exclude Bitcoin from our cluster finding procedure in order to clarify the picture more.
 
+Each of the two variable has different behavior and we could identify groups of crypto currencies on each one individually, but that's no the purpose here.
+
+Both variables will be used in the clustering on a linear scale. Sometimes, when the values are in a big range, for example from -10 up to 4000, it is interesting to use a logarithmic scale because on a log scale we would highlight bigger differences between the values and smaller differences would be considered less important. Since the values in our dataset vary between 0 and 4100, we are going to use a linear scale, which considers differences between values equally important.
+
+__Clustering__
+Reasons why we make use of the K-means algorithm for our research:
+_"k-means clustering is a method of vector quantization, originally from signal processing, that aims to partition n observations into k clusters in which each observation belongs to the cluster with the nearest mean (cluster centers or cluster centroid), serving as a prototype of the cluster. This results in a partitioning of the data space into Voronoi cells. It is popular for cluster analysis in data mining. k-means clustering minimizes within-cluster variances (squared Euclidean distances), but not regular Euclidean distances, which would be the more difficult Weber problem: the mean optimizes squared errors, whereas only the geometric median minimizes Euclidean distances. For instance, better Euclidean solutions can be found using k-medians and k-medoids."_
+
+The clustering algorithm that we are going to use is the K-means algorithm (), which we can find in the package stats. The K-means algorithm accepts two parameters as input:
+
+The data;
+A K value, which is the number of groups that we want to create.
+
+Conceptually, the K-means behaves as follows:
+1. It chooses K centroids randomly;
+2. Matches each point in the data (in our case, each crypto currency) with the closest centroid in an n-dimensional space where n is the number of features used in the clustering (in our example, 2 features -- risk, return). After this step, each point belongs to a group.
+3. Now, it recalculates the centroids as being the mean point (vector) of all other points in the group.
+4. It keeps repeating the steps 2 and 3 until either when the groups are stabilized, that is, when no points are reallocated to another centroid or when it reaches the maximum number of iterations (the default number of iterations of the package stats is thereby ten)
+
+__Choosing a good K__
+The bigger is the ___K___ you choose, the lower will be the variance within the groups in the clustering. If K is equal to the number of obervations, then each point will be a group and the variance will be 0. It is interesting to find a balance between the number of groups and their variance. A variance of a group means how different the members of the group are. The bigger is the dissimilarity in a group.
+
+Now the question, "how do we choose the best value of K in order to find that balance?", arises.
+Determining the number of clusters in a data set, is a frequent problem in data clustering and is a distinct issue from the process of actually solving the clustering problem. Therefore over time the academic world brouhgt up several methods in order to determine a good value for K.
+
+The elobw method;
+X-means clustering;
+Information criterion approach;
+The silhouette method;
+Cross-validation;
+Finding number of clusters in text databases;
+Analyzing the kernel matrix
+(Sources must be added)
+
+So, the academic world offers us several methods in order to identify our number of clusters. However, to answer that question, we are going to run K-means for an arbitrary K. Let's pick three.
+Due to the fact, that the initial centroids are defined randomly, we define a seed for purposes of reproducibility.
+
+```{r Approaching the numbers of clusters}
+set.seed(543)
+# We are removing the column with the names of the crypto currencies, so it would not be used in the clustering
+input <- data[,2:3]
+# The nstart parameter indicates that we want the algorithm to be executed 20 times.
+# This number is not the number of iterations, it is like calling the function 20 times and then
+# the execution with lower variance within the groups will be selected as the final result.
+kmeans(input, centers = 3, nstart = 20)
+```
+The kmeans() function outputs the results of the clustering. We can see the centroid vectors (cluster means), the group in which each obervation was allocated (clustering vector) and a percentage (100 %) that represents the compactness of clustering, that is, how similar are the members within the same group. If all the observations within a group were in the same exact point in the n-dimensional space, then we would achieve 100 % of compactness, which is currently the case of our approach.
+
+The function below plots a chart showing the _"within sum of squares"_ (withinss) by the number of groups (K value) chosen for several executions of the algorithm. The within sum of squares is ametric that shows how dissimilar are the members of a group. The greater is the sum, the greater is the dissimilarity within a group.
+
+```{r within sum of squares}
+# plots a chart showing the sum of squares within a group for each execution of the kmeans algorithm.
+# In each execution the number of the initial groups increases by one up to the maximum number of centers passed as argument.
+wssplot <- function(data, nc=15, seed=543){
+  wss <- (nrow(data)-1)*sum(apply(data,2,var))
+  for (i in 2:nc){
+    set.seed(seed)
+    wss[i] <- sum(kmeans(data, centers = i)$withinss)}
+  plot(1:nc,wss,type="b", xlab="Number of groups", ylab = "Sum of squares within a group")}
+
+wssplot(input, nc=20) #nc = is the parameter, which defines how many clusters should be tested
+```
+By analysing the chart from right to left, we can see that when the number of groups (K) reduces from 2 to 1 there is a big increase in the sum of squares, bigger than any other previous increase. That means that when it passes from 2 to 1 groups there is a reduction in the clustering compactness (by compactness, I mean the similarity within a group). Our goal, however, is not to achieve compactness of 100% - for that, we would just take each observation as a group. The main purpose is to find a fair number of groups that could explain satisfactorily a considerable part of the data.
+
+So, let's choose K=1 and run the K-means again
+
+```{r}
+set.seed(543)
+clustering <- kmeans(input, centers = 1, nstart = 20)
+clustering
+```
+Using 1 group (K=1) we had -0% of well-grouped data. Using X groups (K=X) that value raised to XX.X%, which is a good value for us.
+
+__Clustering Validation__
+We may use the silhouette coefficient (silhouette width) to evaluate the goodness of our clustering.
+
+The silhouette coefficient is calculated as follows:
+1. For each observation _i_, it calculates the average dissimilarity between _i_ and all the other points within the same cluster which _i_ belongs. Let's call this average dissimilarity _"Di"_.
+2. Now we do the same dissimilarity calculation between _i_ and all the other clusters and get the lowest value among them. That, is we find the dissimilarity between _i_ and the cluster that is closet to _i_ right after its own cluster. Let's call that value _"'Ci"_
+3. The silhouette (_Si_) width is the difference between Ci and Di (Ci-Di) divided by the greatest of those two values (max(Di,Gi)).
+Si = (Ci-Di) / max(Di,Gi)
+
+So, the interpretation of the silhouette width is the following:
+Si > 0 means that the observation is well clustered. The closet it is to 1, the best it is clustered.
+Si < 0 means that the observation was placed in the wrong cluster.
+Si = 0 means that the observation is between two clusters.
+
+The silhouette plot below gives us evidence that our clustering using four groups is good because there is no negative silhouette width and most of the values are bigger than 0.5.
+
+```{r}
+library(cluster)
+install.packages(factoextra)
+library(factoextra)
+sil <- silhouette(clustering$cluster, dist(input))
+factoextra::fviz_silhouette(sil)
+```
+
+__Clustering interpretation__
+The following plot shows the final result of our clustering. The actual plot is interactive, but the image below is not. In the interactive plot, you may isolate the groups to better understand each one individually.
+```{r}
+library(GGally)
+library(plotly)
+
+return_risk_all$cluster <- as.factor(clustering$cluster)
+p <- ggparcoord(data = return_risk_all, columns = c(2:3), groupColumn = "cluster",  scale = "std") + labs(x = "CC's", y = "Value in sd", title = "Clustering")
+ggplotly(p)
+```
+The purpose of clustering analysis is to identify patterns in the data. As we can see in the plot above, obervations within the same group tend to have similar characteristics.
