@@ -2,8 +2,8 @@ Package: crypto2
 Type: Package
 Title: Cryptocurrency Market Data
 Description: Retrieves crypto currency current and historical information as well as information on the exchanges they are listed on. For current and historical it will retrieve the daily open, high, low and close values for all crypto currencies. This retrieves the historical market data by web scraping tables provided by 'Cryptocurrency Market Capitalizations' <https://coinmarketcap.com>.
-Version: 1.1.1
-Date: 2019-01-13
+Version: 1.1.1.9000
+Date: 2020-11-04
 Authors@R: c(person("Jesse", "Vent",
                     role = c("aut", "cre"), 
                     email = "cryptopackage@icloud.com"),
@@ -39,4 +39,4 @@ SystemRequirements: libxml2-devel,
   openssl-devel,
   libsecret-devel,
   libsodium-devel
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1

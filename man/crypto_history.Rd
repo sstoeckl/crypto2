@@ -26,18 +26,20 @@ or provide list of crypto currencies in the crypto_list() format (e.g. current a
 }
 \value{
 Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
+  \item{timestamp}{Timestamp of entry in database}
   \item{slug}{Coin url slug}
-  \item{symbol}{Coin symbol}
+  \item{id}{Coin market cap unique id}
   \item{name}{Coin name}
-  \item{date}{Market date}
+  \item{symbol}{Coin symbol}
   \item{open}{Market open}
   \item{high}{Market high}
   \item{low}{Market low}
   \item{close}{Market close}
   \item{volume}{Volume 24 hours}
-  \item{market}{USD Market cap}
-  \item{close_ratio}{Close rate, min-maxed with the high and low values that day}
-  \item{spread}{Volatility premium, high minus low for that day}
+  \item{time_open}{Timestamp of open}
+  \item{time_close}{Timestamp of close}
+  \item{time_high}{Timestamp of high}
+  \item{time_low}{Timestamp of low}
 
 This is the main function of the crypto package. If you want to retrieve
 ALL active coins then do not pass an argument to crypto_history(), or pass the coin name.
@@ -50,7 +52,7 @@ analysis on the crypto financial markets or to attempt
 to predict future market movements or trends.
 }
 \examples{
-\donttest{
+\dontrun{
 
 # Retrieving market history for ALL crypto currencies
 all_coins <- crypto_history(limit = 1)
@@ -61,7 +63,7 @@ all_coins <- crypto_history(start_date = '20200101',limit=10)
 # Retrieve 2015 history for all 2015 crypto currencies
 coin_list_2015 <- crypto_list(start_date_hist="20150101",
 end_date_hist="20150201",date_gap="months")
-coins_2015 <- crypto_history(coins = coin_list_2015,
+coins_2015 <- crypto_history(coin_list = coin_list_2015,
 start_date = "20150101", end_date="20151231", limit=20)
 
 }

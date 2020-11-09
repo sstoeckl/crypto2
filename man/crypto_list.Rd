@@ -2,50 +2,42 @@
 % Please edit documentation in R/crypto_list.R
 \name{crypto_list}
 \alias{crypto_list}
-\title{Retrieves name, symbol, slug and rank for all tokens at specific historic date}
+\title{Retrieves name, cmc id, symbol, slug, rank, an activity flas as well as activity dates on cmc for all coins}
 \usage{
-crypto_list(
-  coin = NULL,
-  start_date_hist = NULL,
-  end_date_hist = NULL,
-  date_gap = "months"
-)
+crypto_list(api_key, only_active = TRUE)
 }
 \arguments{
-\item{coin}{Name, symbol or slug of crypto currency}
+\item{api_key}{API-key (only needs the free basic plan) but impossible without}
 
-\item{start_date_hist}{Start date to retrieve coin history from, format yyyymmdd}
-
-\item{end_date_hist}{End date to retrieve coin history from, format yyyymmdd, if not provided, today will be assumed}
-
-\item{date_gap}{'months', date gap when checking for historically existing coins,  between 'start_date_hist' and
-'end_date_hist'}
+\item{only_active}{Shall the code only retrieve active coins (TRUE=default) or include inactive coins (FALSE)}
 }
 \value{
-List of (historically existing)cryptocurrencies in a tibble:
+List of (active and historically existing) cryptocurrencies in a tibble:
+  \item{id}{CMC id (unique identifier)}
   \item{symbol}{Coin symbol (not-unique)}
   \item{name}{Coin name}
   \item{slug}{Coin URL slug (unique)}
-  \item{exchange_url}{Exchange market tables urls for scraping}
+  \item{rank}{Current rank on CMC (if still active)}
+  \item{first_historical_data}{First time listed on CMC}
+  \item{last_historical_data}{Last time listed on CMC, NA if still listed}
 
 Required dependency that is used in function call \code{getCoins()}.
 }
 \description{
-List all of the crypto currencies that exist/have existed on CoinMarketCap between specific dates.
-This list is used as a basis to scrape historical market data using \code{crypto_history()}.
-It retrieves name, slug, symbol and rank of crypto currencies from
-CoinMarketCap and creates URLS for the \code{scraper()} to use.
+This code uses the api but is based on the free plan and therefore all data should be easily available.
+It retrieves data for all historic and all active coins!! But it requires an existing (and free) API key.
+This function replaces the old function \code{crypto_list()} (still available as \code{crypto_list_old()}
+which does not work anymore due to the "load more" button that I could ot figure out)
 }
 \examples{
-\donttest{
-coin <- "kin"
-coins <- crypto_list(coin)
-
+\dontrun{
 # return all coins
-coin_list <- crypto_list()
+coin_list <- crypto_list(api_key=..., only_active=FALSE)
 
 # return all coins listed in 2015
-coin_list_2015 <- crypto_list(start_date_hist="20150101",end_date_hist="20151231",date_gap="months")
+coin_list_2015 <- coin_list \%>\%
+dplyr::filter(first_historical_data<="2015-12-31",
+last_historical_data>="2015-01-01")
 
 }
 

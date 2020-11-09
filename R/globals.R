@@ -1,2 +1,3 @@
-utils::globalVariables(c("Date","Name","Symbol","close_ratio","coins","hist_date","history_url","market",
+utils::globalVariables(c("id","name","symbol","slug","rank","is_active","first_historical_data","last_historical_data",
+                         "close_ratio","coins","hist_date","history_url","market","Date","Name","Symbol",
                          "name","name_main","platform_locale","slug","slug_main","symbol","value","volume","."))

@@ -19,6 +19,8 @@
 #' @importFrom xml2 "read_html"
 #' @importFrom curl "new_handle"
 #'
+#' @name scraper_hist
+#'
 scraper_hist <- function(attributes, sleep = NULL) {
   .            <- "."
   history_url  <- as.character(attributes)
