@@ -1,0 +1,26 @@
+---
+title: "Bachelor-Thesis"
+author: "Fabian Köffel"
+date: "10 11 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+devtools::install_github("sstoeckl/crypto2")
+library(dplyr)
+```
+
+```{r Getting the dead coins}
+api_key_code <- ("cb533fc4-e3c3-4644-822e-56179b178447")
+coins <- crypto2::crypto_list(api_key = api_key_code,only_active = FALSE)
+active_coins <- as.data.frame(is.na(coins$rank))
+dead_coins <- dplyr::filter(coins, is_active==0)
+dead_coins_rank <- dplyr::filter(coins,is.na(rank))
+active_coins <- dplyr::filter(coins, last_historical_data =="2020-11-10")
+dead_coins_date <- dplyr::filter(coins, last_historical_data < "2020-11-10")
+check_coins <- dplyr::filter(coins,last_historical_data =="2020-10-23")
+View(dead_coins)
+```
+
+
