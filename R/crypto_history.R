@@ -93,7 +93,7 @@ crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, en
     return(page)
   }
   # define backoff rate
-  rate <- rate_delay(pause=65,max_times = 2)
+  rate <- purrr::rate_delay(pause=65,max_times = 2)
     #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
   # Modify function to run insistently.
   insistent_scrape <- purrr::possibly(purrr::insistently(scrape_web, rate, quiet = FALSE),otherwise=NULL)

@@ -1,11 +1,10 @@
 #' Retrieves name, cmc id, symbol, slug, rank, an activity flas as well as activity dates on cmc for all coins
 #'
 #' This code uses the api but is based on the free plan and therefore all data should be easily available.
-#' It retrieves data for all historic and all active coins!! But it requires an existing (and free) API key.
+#' It retrieves data for all historic and all active coins and does currently not require an API key.
 #' This function replaces the old function \code{crypto_list()} (still available as \code{crypto_list_old()}
-#' which does not work anymore due to the "load more" button that I could ot figure out)
+#' which does not work anymore due to the "load more" button that I could not figure out)
 #'
-#' @param api_key API-key (only needs the free basic plan) but impossible without
 #' @param only_active Shall the code only retrieve active coins (TRUE=default) or include inactive coins (FALSE)
 #'
 #' @return List of (active and historically existing) cryptocurrencies in a tibble:
@@ -25,7 +24,7 @@
 #' @examples
 #' \dontrun{
 #' # return all coins
-#' coin_list <- crypto_list(api_key=..., only_active=FALSE)
+#' coin_list <- crypto_list(only_active=FALSE)
 #'
 #' # return all coins listed in 2015
 #' coin_list_2015 <- coin_list %>%
@@ -38,14 +37,14 @@
 #'
 #' @export
 #'
-crypto_list <- function(api_key, only_active=TRUE) {
+crypto_list <- function(only_active=TRUE) {
   # get current coins
-  active_url <- paste0("https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?CMC_PRO_API_KEY=",api_key)
+  active_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/map")
   active_coins <- jsonlite::fromJSON(active_url)
   coins <- active_coins$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(7:8,as.Date))
 
   if (!only_active){
-    inactive_url <- paste0("https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=inactive&CMC_PRO_API_KEY=",api_key)
+    inactive_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=inactive")
     inactive_coins <- jsonlite::fromJSON(inactive_url)
     coins <- dplyr::bind_rows(coins,
                        inactive_coins$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(7:8,as.Date))) %>% dplyr::arrange(id)

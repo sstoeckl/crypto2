@@ -9,6 +9,7 @@ This is a modification of the original crypto package by [jesse vent](https://gi
 
 - Retrieves historical crypto currency data `crypto_history()`
 - Retrieves list of all active/dead crypto currencies `crypto_list()`
+- Retrieves all available meta information for a list of coin slugs `crypto_info()`
 
 ### Prerequisites
 

@@ -4,11 +4,9 @@
 \alias{crypto_list}
 \title{Retrieves name, cmc id, symbol, slug, rank, an activity flas as well as activity dates on cmc for all coins}
 \usage{
-crypto_list(api_key, only_active = TRUE)
+crypto_list(only_active = TRUE)
 }
 \arguments{
-\item{api_key}{API-key (only needs the free basic plan) but impossible without}
-
 \item{only_active}{Shall the code only retrieve active coins (TRUE=default) or include inactive coins (FALSE)}
 }
 \value{
@@ -25,14 +23,14 @@ Required dependency that is used in function call \code{getCoins()}.
 }
 \description{
 This code uses the api but is based on the free plan and therefore all data should be easily available.
-It retrieves data for all historic and all active coins!! But it requires an existing (and free) API key.
+It retrieves data for all historic and all active coins and does currently not require an API key.
 This function replaces the old function \code{crypto_list()} (still available as \code{crypto_list_old()}
-which does not work anymore due to the "load more" button that I could ot figure out)
+which does not work anymore due to the "load more" button that I could not figure out)
 }
 \examples{
 \dontrun{
 # return all coins
-coin_list <- crypto_list(api_key=..., only_active=FALSE)
+coin_list <- crypto_list(only_active=FALSE)
 
 # return all coins listed in 2015
 coin_list_2015 <- coin_list \%>\%
