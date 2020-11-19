@@ -67,7 +67,7 @@
 #'
 crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL) {
   # only if no coins are provided use the old cryptolist feature that provides all the actively traded coins plus...
-  if (is.null(coin_list)) coin_list <- crypto_list_old()
+  if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
   if (!is.null(limit)) coin_list <- coin_list[1:limit, ]
   # Create UNIX timestamps for download
