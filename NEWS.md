@@ -1,3 +1,7 @@
+# crypto2 1.1.2.9001
+
+* Corrected small error about empty list in coin_info
+
 # crypto2 1.1.2.9000
 
 * Added a `NEWS.md` file to track changes to the package.

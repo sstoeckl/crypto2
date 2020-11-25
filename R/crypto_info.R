@@ -80,7 +80,7 @@ crypto_info <- function(slugs) {
       # add
       out_list$status <- c(out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S")) %>% pull(timestamp))
       if(!is.null(out$data[[1]]$tags)) {out_list$tags <- pull(tibble(tag_grous=out$data[[1]]$`tag-groups`,tags=out$data[[1]]$`tags`) %>% tidyr::nest(tags=everything()))} else {out_list$tags <- NA}
-      if(!is.null(out$data[[1]]$urls)) {out_list$urls <- pull(out$data[[1]]$urls %>% unlist() %>% enframe(value = "url") %>% tidyr::nest(urls=everything()))} else {out_list$urls <- NA}
+      if(!(length(flatten(out$data[[1]]$urls))==0)) {out_list$urls <- pull(out$data[[1]]$urls %>% unlist() %>% enframe(value = "url") %>% tidyr::nest(urls=everything()))} else {out_list$urls <- NA}
       if(!is.null(out$data[[1]]$platform)) {out_list$platform <- pull(out$data[[1]]$platform %>% as_tibble() %>% tidyr::nest(platform=everything()))} else {out_list$platform <- NA}
     }
     return(out_list)
