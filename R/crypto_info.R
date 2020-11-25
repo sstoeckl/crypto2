@@ -85,11 +85,13 @@ crypto_info <- function(slugs) {
     }
     return(out_list)
   }
+  # Modify function to run insistently.
+  insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
   # Progress Bar 2
   pb2 <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
                                     total = nrow(slugs), clear = FALSE)
   message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
-  out_all <- purrr::map(data$out, .f = ~ map_scrape(.x))
+  out_all <- purrr::map(data$out, .f = ~ insistent_map(.x))
 
   # Old code
   results <- do.call(rbind, out_all)
