@@ -118,8 +118,10 @@ crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, en
         mutate(id=out$data$id,name=out$data$name,symbol=out$data$symbol,slug=slug) %>% select(timestamp,slug,id,name,symbol,everything())
     }
   }
+  # Modify function to run insistently.
+  insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
   message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
-  out <- purrr::map2(data$out,data$slug, .f = ~ map_scrape(.x,.y))
+  out <- purrr::map2(data$out,data$slug, .f = ~ insistent_map(.x,.y))
 
   # Old code
   results <- do.call(rbind, out) %>% tibble::as_tibble()

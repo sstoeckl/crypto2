@@ -80,16 +80,18 @@ crypto_info <- function(slugs) {
       # add
       out_list$status <- c(out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S")) %>% pull(timestamp))
       if(!is.null(out$data[[1]]$tags)) {out_list$tags <- pull(tibble(tags=out$data[[1]]$`tags`) %>% tidyr::nest(tags=everything()))} else {out_list$tags <- NA}
-      if(!is.null(out$data[[1]]$urls)) {out_list$urls <- pull(out$data[[1]]$urls %>% unlist() %>% enframe(value = "url") %>% tidyr::nest(urls=everything()))} else {out_list$urls <- NA}
+      if(!(length(flatten(out$data[[1]]$urls))==0)) {out_list$urls <- pull(out$data[[1]]$urls %>% unlist() %>% enframe(value = "url") %>% tidyr::nest(urls=everything()))} else {out_list$urls <- NA}
       if(!is.null(out$data[[1]]$platform)) {out_list$platform <- pull(out$data[[1]]$platform %>% as_tibble() %>% tidyr::nest(platform=everything()))} else {out_list$platform <- NA}
     }
     return(out_list)
   }
+  # Modify function to run insistently.
+  insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
   # Progress Bar 2
   pb2 <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
                                     total = nrow(slugs), clear = FALSE)
   message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
-  out_all <- purrr::map(data$out, .f = ~ map_scrape(.x))
+  out_all <- purrr::map(data$out, .f = ~ insistent_map(.x))
 
   # Old code
   results <- do.call(rbind, out_all)
