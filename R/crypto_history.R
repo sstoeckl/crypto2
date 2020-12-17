@@ -6,8 +6,10 @@
 #' analysis on the crypto financial markets or to attempt
 #' to predict future market movements or trends.
 #'
-#' @param coin_list string if NULL retrieve all currently existing coins (crypto_list()),
-#' or provide list of crypto currencies in the crypto_list() format (e.g. current and dead coins since 2015)
+#' @param coin_list string if NULL retrieve all currently existing coins (`crypto_list()`),
+#' or provide list of crypto currencies in the crypto_list() format (e.g. current and/or dead coins since 2015)
+#' @param convert (default: USD) to one or more of available fiat or precious metals prices (`fiat_list()`). If more
+#' than one are selected please separate by comma (e.g. "USD,BTC")
 #' @param limit integer Return the top n records, default is all tokens
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
@@ -30,7 +32,7 @@
 #'   \item{time_low}{Timestamp of low}
 #'
 #' This is the main function of the crypto package. If you want to retrieve
-#' ALL active coins then do not pass an argument to crypto_history(), or pass the coin name.
+#' ALL active coins then do not pass an argument to `crypto_history()`, or pass the coin name.
 #'
 #' @importFrom tidyr 'replace_na'
 #' @importFrom crayon 'make_style'
@@ -65,7 +67,7 @@
 #'
 #' @export
 #'
-crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL) {
+crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL) {
   # only if no coins are provided use the old cryptolist feature that provides all the actively traded coins plus...
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -78,7 +80,9 @@ crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, en
   # create web-api urls
   historyurl <-
     paste0(
-      "https://web-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/historical?convert=USD&slug=",
+      "https://web-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/historical?convert=",
+      convert,
+      "&slug=",
       coin_list$slug,
       "&time_end=",
       UNIXend,
@@ -112,11 +116,19 @@ crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, en
       } else if (length(out$data$quotes)==0){
       cat("\nCoin",slug,"does not have data available! Cont to next coin.\n")
     } else {
+      oldw <- getOption("warn")
+      options(warn = -1)
+
       status <- out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S"))
-      outdata <- out$data$quotes$quote$USD %>% tibble::as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S")) %>%
-        dplyr::bind_cols(.,out$data$quotes %>% select(-quote) %>% tibble::as_tibble() %>% mutate(across(1:4,~as.POSIXlt(.,format="%Y-%m-%dT%H:%M:%S")))) %>%
-        mutate(id=out$data$id,name=out$data$name,symbol=out$data$symbol,slug=slug) %>% select(timestamp,slug,id,name,symbol,everything())
+      outall <- lapply(out$data$quotes$quote,function(x) x %>% tibble::as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S"))) %>%
+        bind_rows(.id = "ref_cur") %>%
+        dplyr::bind_cols(.,out$data$quotes %>% select(-quote) %>% nest(data=everything())  %>% rep(length(out$data$quotes$quote)) %>% bind_rows() %>%
+                           mutate(across(1:4,~as.POSIXlt(.,format="%Y-%m-%dT%H:%M:%S")))) %>%
+        mutate(id=out$data$id,name=out$data$name,symbol=out$data$symbol,slug=slug) %>% select(timestamp,slug,id,name,symbol,ref_cur,everything())
+
+      options(warn = oldw)
     }
+    return(outall)
   }
   # Modify function to run insistently.
   insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
@@ -125,12 +137,6 @@ crypto_history <- function(coin_list = NULL, limit = NULL, start_date = NULL, en
 
   # Old code
   results <- do.call(rbind, out) %>% tibble::as_tibble()
-
-  if (length(results) == 0L) stop("No data downloaded.", call. = FALSE)
-
-  market_data <- results %>% dplyr::left_join(coin_list %>% dplyr::select(symbol,name,slug) %>% unique(), by = "slug")
-  colnames(market_data) <- c("date", "open", "high", "low", "close", "volume",
-    "market", "slug", "symbol", "name")
 
   return(results)
 }

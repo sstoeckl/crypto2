@@ -6,6 +6,7 @@
 \usage{
 crypto_history(
   coin_list = NULL,
+  convert = "USD",
   limit = NULL,
   start_date = NULL,
   end_date = NULL,
@@ -13,8 +14,11 @@ crypto_history(
 )
 }
 \arguments{
-\item{coin_list}{string if NULL retrieve all currently existing coins (crypto_list()),
-or provide list of crypto currencies in the crypto_list() format (e.g. current and dead coins since 2015)}
+\item{coin_list}{string if NULL retrieve all currently existing coins (`crypto_list()`),
+or provide list of crypto currencies in the crypto_list() format (e.g. current and/or dead coins since 2015)}
+
+\item{convert}{(default: USD) to one or more of available fiat or precious metals prices (`fiat_list()`). If more
+than one are selected please separate by comma (e.g. "USD,BTC")}
 
 \item{limit}{integer Return the top n records, default is all tokens}
 
@@ -42,7 +46,7 @@ Crypto currency historic OHLC market data in a dataframe and additional informat
   \item{time_low}{Timestamp of low}
 
 This is the main function of the crypto package. If you want to retrieve
-ALL active coins then do not pass an argument to crypto_history(), or pass the coin name.
+ALL active coins then do not pass an argument to `crypto_history()`, or pass the coin name.
 }
 \description{
 Scrape the crypto currency historic market tables from

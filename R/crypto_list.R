@@ -1,7 +1,6 @@
 #' Retrieves name, cmc id, symbol, slug, rank, an activity flas as well as activity dates on cmc for all coins
 #'
-#' This code uses the api but is based on the free plan and therefore all data should be easily available.
-#' It retrieves data for all historic and all active coins and does currently not require an API key.
+#' This code uses the web api. It retrieves data for all historic and all active coins and does not require an API key.
 #' This function replaces the old function \code{crypto_list()} (still available as \code{crypto_list_old()}
 #' which does not work anymore due to the "load more" button that I could not figure out)
 #'
