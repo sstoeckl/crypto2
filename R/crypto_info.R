@@ -56,7 +56,7 @@ crypto_info <- function(slugs) {
   }
   if (is.vector(slugs)) slugs <- tibble::enframe(slugs,name = NULL, value = "slug")
   # define backoff rate
-  rate <- purrr::rate_delay(pause=65,max_times = 2)
+  rate <- purrr::rate_delay(pause=5,max_times = 2)
   #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
   # Modify function to run insistently.
   insistent_scrape <- purrr::possibly(purrr::insistently(scrape_web, rate, quiet = FALSE),otherwise=NULL)
@@ -64,7 +64,7 @@ crypto_info <- function(slugs) {
   pb <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
                          total = nrow(slugs), clear = FALSE)
   message(cli::cat_bullet("Scraping crypto info", bullet = "pointer",bullet_col = "green"))
-  data <- slugs %>% dplyr::mutate(out = purrr::map(slug,.f=~scrape_web(.x)))
+  data <- slugs %>% dplyr::mutate(out = purrr::map(slug,.f=~insistent_scrape(.x)))
 
   map_scrape <- function(out){
     pb2$tick()
