@@ -76,7 +76,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   if (is.null(start_date)) { start_date <- "20130428" }
   UNIXstart <- as.numeric(as.POSIXct(start_date, format="%Y%m%d"))
   if (is.null(end_date)) { end_date <- gsub("-", "", lubridate::today()) }
-  UNIXend <- as.numeric(as.POSIXct(end_date, format="%Y%m%d", tz = "UTC"))
+  UNIXend <- format(as.numeric(as.POSIXct(end_date, format="%Y%m%d", tz = "UTC")),)
   # create web-api urls
   historyurl <-
     paste0(
@@ -85,9 +85,9 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
       "&slug=",
       coin_list$slug,
       "&time_end=",
-      UNIXend,
+      format(UNIXend, scientific = FALSE),
       "&time_start=",
-     UNIXstart
+     format(UNIXstart, scientific = FALSE)
     )
   coin_list_plus <- coin_list %>% dplyr::bind_cols(.,history_url=historyurl)
   # define scraper_funtion
