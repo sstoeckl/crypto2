@@ -16,12 +16,8 @@ knitr::opts_chunk$set(
 
  <!-- badges: start -->
   [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-  <!-- badges: end -->
- <!-- badges: start -->
   [![Build Status](https://travis-ci.org/sstoeckl/crypto2.svg?branch=master)](https://travis-ci.org/sstoeckl/crypto2)
-  <!-- badges: end -->
-  <!-- badges: start -->
- [![CRAN status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
+  [![CRAN status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
  <!-- badges: end -->
 
 # Historical Cryptocurrency Prices for Active and Delisted Tokens!
