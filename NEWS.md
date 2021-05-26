@@ -1,3 +1,7 @@
+# crypto2 1.2.0
+
+Add Exchange functions, delete unnecessary functions, update readme, prepare for submission to cran
+
 # crypto2 1.1.3.9000
 
 * Corrected small error in crypto_info where non-existing slugs led to break of the code (because for some reason I stopped using "Insistent")

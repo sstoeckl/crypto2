@@ -1,4 +1,4 @@
-#' Retrieves list of fiat currencies available to convert cryptocurrencies to
+#' Retrieves list of all CMC supported fiat currencies available to convert cryptocurrencies
 #'
 #' This code uses the web api. It retrieves data for all available fiat currencies and does not require an API key.
 #'
@@ -11,7 +11,6 @@
 #'   \item{sign}{Fiat currency sign}
 #'   \item{code}{Precious metals code}
 #'
-#' Required dependency that is used in function call \code{getCoins()}.
 #' @importFrom tibble as_tibble
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr bind_rows mutate rename arrange

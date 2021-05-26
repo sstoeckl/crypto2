@@ -14,10 +14,10 @@ crypto_history(
 )
 }
 \arguments{
-\item{coin_list}{string if NULL retrieve all currently existing coins (`crypto_list()`),
-or provide list of crypto currencies in the crypto_list() format (e.g. current and/or dead coins since 2015)}
+\item{coin_list}{string if NULL retrieve all currently existing coins (\code{crypto_list()}),
+or provide list of crypto currencies in the \code{crypto_list()} format (e.g. current and/or dead coins since 2015)}
 
-\item{convert}{(default: USD) to one or more of available fiat or precious metals prices (`fiat_list()`). If more
+\item{convert}{(default: USD) to one or more of available fiat or precious metals prices (\code{fiat_list()}). If more
 than one are selected please separate by comma (e.g. "USD,BTC")}
 
 \item{limit}{integer Return the top n records, default is all tokens}
@@ -30,28 +30,29 @@ than one are selected please separate by comma (e.g. "USD,BTC")}
 }
 \value{
 Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
-  \item{timestamp}{Timestamp of entry in database}
-  \item{slug}{Coin url slug}
-  \item{id}{Coin market cap unique id}
-  \item{name}{Coin name}
-  \item{symbol}{Coin symbol}
-  \item{open}{Market open}
-  \item{high}{Market high}
-  \item{low}{Market low}
-  \item{close}{Market close}
-  \item{volume}{Volume 24 hours}
-  \item{time_open}{Timestamp of open}
-  \item{time_close}{Timestamp of close}
-  \item{time_high}{Timestamp of high}
-  \item{time_low}{Timestamp of low}
+\item{timestamp}{Timestamp of entry in database}
+\item{slug}{Coin url slug}
+\item{id}{Coin market cap unique id}
+\item{name}{Coin name}
+\item{symbol}{Coin symbol}
+\item{ref_cur}{Reference currency}
+\item{open}{Market open}
+\item{high}{Market high}
+\item{low}{Market low}
+\item{close}{Market close}
+\item{volume}{Volume 24 hours}
+\item{time_open}{Timestamp of open}
+\item{time_close}{Timestamp of close}
+\item{time_high}{Timestamp of high}
+\item{time_low}{Timestamp of low}
 
 This is the main function of the crypto package. If you want to retrieve
-ALL active coins then do not pass an argument to `crypto_history()`, or pass the coin name.
+ALL active coins then do not pass an argument to \code{crypto_history()}, or pass the coin name.
 }
 \description{
 Scrape the crypto currency historic market tables from
-CoinMarketCap <https://coinmarketcap.com> and display
-the results in a date frame. This can be used to conduct
+CoinMarketCap \url{https://coinmarketcap.com} and display
+the results in a dataframe/tibble. This can be used to conduct
 analysis on the crypto financial markets or to attempt
 to predict future market movements or trends.
 }
@@ -61,12 +62,13 @@ to predict future market movements or trends.
 # Retrieving market history for ALL crypto currencies
 all_coins <- crypto_history(limit = 1)
 
-# Retrieving this years market history for ALL crypto currencies
+# Retrieving market history since 2020 for ALL crypto currencies
 all_coins <- crypto_history(start_date = '20200101',limit=10)
 
 # Retrieve 2015 history for all 2015 crypto currencies
-coin_list_2015 <- crypto_list(start_date_hist="20150101",
-end_date_hist="20150201",date_gap="months")
+coin_list_2015 <- crypto_list(only_active=TRUE) \%>\%
+              dplyr::filter(first_historical_data<="2015-12-31",
+              last_historical_data>="2015-01-01")
 coins_2015 <- crypto_history(coin_list = coin_list_2015,
 start_date = "20150101", end_date="20151231", limit=20)
 

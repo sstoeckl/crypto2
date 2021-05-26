@@ -1,0 +1,86 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+
+
+ <!-- badges: start -->
+  [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+  <!-- badges: end -->
+ <!-- badges: start -->
+  [![Build Status](https://travis-ci.org/sstoeckl/crypto2.svg?branch=master)](https://travis-ci.org/sstoeckl/crypto2)
+  <!-- badges: end -->
+  <!-- badges: start -->
+ [![CRAN status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
+ <!-- badges: end -->
+
+# Historical Cryptocurrency Prices for Active and Delisted Tokens!
+
+This is a modification of the original `crypto` package by [jesse vent](https://github.com/JesseVent/crypto). It is entirely set up to use means from the `tidyverse` and provides `tibble`s with all data available via the web-api of [coinmarketcap.com](https://www.coinmarketcap.com/). **It does not require an API key but in turn only provides information that is also available through the website of [coinmarketcap.com](https://www.coinmarketcap.com/).**
+
+It allows the user to retrieve
+
+- `crypto_list()` a list of all coins that are listed as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyMap)
+- `crypto_info()` a list of all information available for all available coins according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyInfo)
+- `crypto_history()` the **most powerful** function of this package that allows to download the entire available history for all coins covered by CMC according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyOhlcvHistorical)
+- `fiat_list()` a mapping of all fiat currencies (plus precious metals) available via the [CMC WEB API](https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap)
+- `exchange_list()` a list of all exchanges available as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMap)
+- `exchange_info()` a list of all information available for all given exchanges according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeInfo)
+
+## Installation
+
+You can install `crypto2` from CRAN with 
+```{r cran-installation, eval = FALSE}
+install.packages("crypto2")
+```
+or directly from github with:
+```{r gh-installation, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("sstoeckl/crypto2")
+```
+
+## Package Contribution
+
+The package provides API free and efficient access to all information from <https://coinmarketcap.com> that is also available through their website. It uses a variety of modification and web_Scraping tools from the `tidyverse` (especially `purrr`).
+
+As this provides access not only to **active** coins but also to those that have now been **delisted**, including historical pricing information, this package provides a valid basis for any **Asset Pricing Studies** based on crypto currencies that require **survivorship-bias-free** information. In addition to that, the package maintainer is currently working on also providing **delisting returns** (similarly to CRSP for stocks) to also eliminate the **delisting bias**.
+
+## Package Usage
+
+```{r example}
+library(crypto2)
+library(dplyr)
+
+# List all active coins
+coins <- crypto_list(only_active=TRUE)
+
+# retrieve historical data for all (the first 3) of them
+coin_hist <- crypto_history(coins, limit=3, start_date="20200101")
+
+# and give the first two lines of information per coin
+coin_hist %>% group_by(slug) %>% slice(1:2)
+```
+
+
+### Author/License
+
+- **Sebastian Stöckl** - Package Creator, Modificator & Maintainer - [sstoeckl](https://github.com/sstoeckl)
+
+This project is licensed under the MIT License - see the
+<license.md> file for details</license.md>
+
+### Acknowledgments
+
+- Thanks to the team at <https://coinmarketcap.com> for the great work they do
+- Thanks to Jesse Vent for providing the original (nut fully research compatible) `crypto`-package
+

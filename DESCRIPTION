@@ -1,42 +1,22 @@
 Package: crypto2
-Type: Package
-Title: Cryptocurrency Market Data
-Description: Retrieves crypto currency current and historical information as well as information on the exchanges they are listed on. For current and historical it will retrieve the daily open, high, low and close values for all crypto currencies. This retrieves the historical market data by web scraping tables provided by 'Cryptocurrency Market Capitalizations' <https://coinmarketcap.com>.
-Version: 1.1.5.9000
-Date: 2021-05-03
+Title: Download crypto currency data from coinmarketcap without API
+Version: 1.2.0
+Date: 2021-05-26
 Authors@R: c(person("Jesse", "Vent",
                     role = c("aut", "cre"), 
                     email = "cryptopackage@icloud.com"),
-                    person("Sebastian", "Stoeckl", 
-                    email = "sebastian.stoeckl@uni.li", 
-                    role = c("aut"), comment = c(ORCID = "0000-0002-4196-6093"))
-             )
+            person(given = "Sebastian",
+              family = "Stoeckl",
+              role = c("aut"),
+              email = "sebastian.stoeckl@uni.li",
+              comment = c(ORCID = "0000-0002-4196-6093")))
 Maintainer: Sebastian Stöckl <sebastian.stoeckl@uni.li>
 URL: https://github.com/sstoeckl/crypto2
-BugReports: https://github.com/sstoeckl/crypto2/issues
-Depends: R (>= 3.4.0), rvest, xml2
+Description: Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from <https://coinmarketcap.com> via their web-api.
 License: MIT + file LICENSE
+Depends: R (>= 4.0.0)
+Imports: dplyr, tibble, tidyr, purrr, progress, stats, lubridate, jsonlite, cli
 Encoding: UTF-8
 LazyData: true
-Imports: dplyr,
-  tibble,
-  jsonlite,
-  lubridate,
-  xts,
-  curl,
-  utils,
-  cli,
-  crayon,
-  progress,
-  stats,
-  tidyr,
-  httr,
-  rstudioapi,
-  purrr
-Suggests: R6
-SystemRequirements: libxml2-devel, 
-  libcurl-devel,
-  openssl-devel,
-  libsecret-devel,
-  libsodium-devel
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1

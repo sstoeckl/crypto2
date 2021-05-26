@@ -2,12 +2,12 @@
 #'
 #' Scrape the crypto currency historic market tables from
 #' CoinMarketCap <https://coinmarketcap.com> and display
-#' the results in a date frame. This can be used to conduct
+#' the results in a dataframe/tibble. This can be used to conduct
 #' analysis on the crypto financial markets or to attempt
 #' to predict future market movements or trends.
 #'
 #' @param coin_list string if NULL retrieve all currently existing coins (`crypto_list()`),
-#' or provide list of crypto currencies in the crypto_list() format (e.g. current and/or dead coins since 2015)
+#' or provide list of crypto currencies in the `crypto_list()` format (e.g. current and/or dead coins since 2015)
 #' @param convert (default: USD) to one or more of available fiat or precious metals prices (`fiat_list()`). If more
 #' than one are selected please separate by comma (e.g. "USD,BTC")
 #' @param limit integer Return the top n records, default is all tokens
@@ -21,6 +21,7 @@
 #'   \item{id}{Coin market cap unique id}
 #'   \item{name}{Coin name}
 #'   \item{symbol}{Coin symbol}
+#'   \item{ref_cur}{Reference currency}
 #'   \item{open}{Market open}
 #'   \item{high}{Market high}
 #'   \item{low}{Market low}
@@ -35,8 +36,6 @@
 #' ALL active coins then do not pass an argument to `crypto_history()`, or pass the coin name.
 #'
 #' @importFrom tidyr 'replace_na'
-#' @importFrom crayon 'make_style'
-#' @importFrom grDevices 'rgb'
 #' @importFrom tibble 'tibble' 'as_tibble' 'rowid_to_column'
 #' @importFrom cli 'cat_bullet'
 #' @importFrom lubridate 'mdy'
@@ -52,12 +51,13 @@
 #' # Retrieving market history for ALL crypto currencies
 #' all_coins <- crypto_history(limit = 1)
 #'
-#' # Retrieving this years market history for ALL crypto currencies
+#' # Retrieving market history since 2020 for ALL crypto currencies
 #' all_coins <- crypto_history(start_date = '20200101',limit=10)
 #'
 #' # Retrieve 2015 history for all 2015 crypto currencies
-#' coin_list_2015 <- crypto_list(start_date_hist="20150101",
-#' end_date_hist="20150201",date_gap="months")
+#' coin_list_2015 <- crypto_list(only_active=TRUE) %>%
+#'               dplyr::filter(first_historical_data<="2015-12-31",
+#'               last_historical_data>="2015-01-01")
 #' coins_2015 <- crypto_history(coin_list = coin_list_2015,
 #' start_date = "20150101", end_date="20151231", limit=20)
 #'

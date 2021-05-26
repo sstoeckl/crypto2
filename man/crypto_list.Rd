@@ -3,54 +3,53 @@
 \name{crypto_list}
 \alias{crypto_list}
 \alias{fiat_list}
-\title{Retrieves name, cmc id, symbol, slug, rank, an activity flas as well as activity dates on cmc for all coins}
+\title{Retrieves name, cmc id, symbol, slug, rank, an activity flag as well as activity dates on cmc for all coins}
 \usage{
-crypto_list(only_active = TRUE)
+crypto_list(only_active = TRUE, add_untracked = FALSE)
 
 fiat_list(include_metals = FALSE)
 }
 \arguments{
 \item{only_active}{Shall the code only retrieve active coins (TRUE=default) or include inactive coins (FALSE)}
 
+\item{add_untracked}{Shall the code additionally retrieve untracked coins (FALSE=default)}
+
 \item{include_metals}{(default FALSE) Shall the code also retrieve available precious metals?}
 }
 \value{
 List of (active and historically existing) cryptocurrencies in a tibble:
-  \item{id}{CMC id (unique identifier)}
-  \item{symbol}{Coin symbol (not-unique)}
-  \item{name}{Coin name}
-  \item{slug}{Coin URL slug (unique)}
-  \item{rank}{Current rank on CMC (if still active)}
-  \item{first_historical_data}{First time listed on CMC}
-  \item{last_historical_data}{Last time listed on CMC, NA if still listed}
-
-Required dependency that is used in function call \code{getCoins()}.
+\item{id}{CMC id (unique identifier)}
+\item{name}{Coin name}
+\item{symbol}{Coin symbol (not-unique)}
+\item{slug}{Coin URL slug (unique)}
+\item{rank}{Current rank on CMC (if still active)}
+\item{is_active}{Flag showing whether coin is active (1), inactive(0) or untracked (-1)}
+\item{first_historical_data}{First time listed on CMC}
+\item{last_historical_data}{Last time listed on CMC, \emph{today's date} if still listed}
 
 List of (active and historically existing) cryptocurrencies in a tibble:
-  \item{id}{CMC id (unique identifier)}
-  \item{symbol}{Coin symbol (not-unique)}
-  \item{name}{Coin name}
-  \item{sign}{Fiat currency sign}
-  \item{code}{Precious metals code}
-
-Required dependency that is used in function call \code{getCoins()}.
+\item{id}{CMC id (unique identifier)}
+\item{symbol}{Coin symbol (not-unique)}
+\item{name}{Coin name}
+\item{sign}{Fiat currency sign}
+\item{code}{Precious metals code}
 }
 \description{
 This code uses the web api. It retrieves data for all historic and all active coins and does not require an API key.
-This function replaces the old function \code{crypto_list()} (still available as \code{crypto_list_old()}
-which does not work anymore due to the "load more" button that I could not figure out)
 
 This code uses the web api. It retrieves data for all available fiat currencies and does not require an API key.
 }
 \examples{
 \dontrun{
 # return all coins
-coin_list <- crypto_list(only_active=FALSE)
+active_list <- crypto_list(only_active=TRUE)
+all_but_untracked_list <- crypto_list(only_active=FALSE)
+full_list <- crypto_list(only_active=FALSE,add_untracked=TRUE)
 
-# return all coins listed in 2015
-coin_list_2015 <- coin_list \%>\%
+# return all coins active in 2015
+coin_list_2015 <- active_list \%>\%
 dplyr::filter(first_historical_data<="2015-12-31",
-last_historical_data>="2015-01-01")
+              last_historical_data>="2015-01-01")
 
 }
 

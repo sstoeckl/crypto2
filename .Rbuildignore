@@ -15,3 +15,4 @@ cran-comments.md
 cmc_apikey
 sandbox_cmc_apikey
 .travis.yml
+^cran-comments\.md$

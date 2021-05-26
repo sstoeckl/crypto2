@@ -11,37 +11,35 @@ crypto_info(slugs)
 }
 \value{
 List of (active and historically existing) cryptocurrencies in a tibble:
-  \item{id}{CMC id (unique identifier)}
-  \item{symbol}{Coin symbol (not-unique)}
-  \item{name}{Coin name}
-  \item{slug}{Coin URL slug (unique)}
-  \item{category}{}
-  \item{description}{}
-  \item{logo}{CMC url of CC logo}
-  \item{subreddit}{Name of subreddit community}
-  \item{notice}{Notices}
-  \item{date_added}{Date CC was added to the CMC database}
-  \item{twitter_username}{Username of CCs twitter account}
-  \item{is_hidden}{TBD}
-  \item{date_launched}{Date CC was launched}
-  \item{self_reported_circulating_supply}{Self reported circulating supply}
-  \item{self reported tags}{Self_reported_tags}
-  \item{status}{timestamp and other status messages}
-  \item{tags}{Tibble of tags and tag categories}
-  \item{url}{Tibble of various web adresses (website/twitter/reddit/github/tech documentation etc)}
-  \item{Platform}{Which platform the CC uses}
-
-Required dependency that is used in function call \code{getCoins()}.
+\item{id}{CMC id (unique identifier)}
+\item{name}{Coin name}
+\item{symbol}{Coin symbol (not-unique)}
+\item{slug}{Coin URL slug (unique)}
+\item{category}{Coin category: "token" or "coin"}
+\item{description}{Coin description according to CMC}
+\item{logo}{CMC url of CC logo}
+\item{subreddit}{Name of subreddit community}
+\item{notice}{Markdown formatted notices from CMC}
+\item{date_added}{Date CC was added to the CMC database}
+\item{twitter_username}{Username of CCs twitter account}
+\item{is_hidden}{TBD}
+\item{date_launched}{Date CC was launched}
+\item{self_reported_circulating_supply}{Self reported circulating supply}
+\item{self reported tags}{Self_reported_tags}
+\item{status}{timestamp and other status messages}
+\item{tags}{Tibble of tags and tag categories}
+\item{url}{Tibble of various ressource urls. Gives website, technical_doc (whitepaper),
+source_code, message_board, chat, announcement, reddit, twitter, (block) explorer ursl.}
+\item{Platform}{Metadata about the parent coin if available. Gives id, name, symbol,
+slug, and token adress according to CMC}
 }
 \description{
-This code uses the web api. It retrieves data for all historic and all active coins! It does not require an API key.
-This function replaces the old function \code{crypto_list()} (still available as \code{crypto_list_old()}
-which does not work anymore due to the "load more" button that I could ot figure out)
+This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an API key.
 }
 \examples{
 \dontrun{
 # return info for bitcoin
-coin_info <- crypto_info(slugs=c("bitcoin","tether"))
+coin_info <- crypto_info(slugs=c("bitcoin","tether","novacoin"))
 }
 
 }
