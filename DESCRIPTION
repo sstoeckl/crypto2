@@ -2,14 +2,14 @@ Package: crypto2
 Title: Download crypto currency data from coinmarketcap without API
 Version: 1.2.0
 Date: 2021-05-26
-Authors@R: c(person("Jesse", "Vent",
-                    role = c("aut", "cre"), 
-                    email = "cryptopackage@icloud.com"),
-            person(given = "Sebastian",
+Authors@R: c(person(given = "Sebastian",
               family = "Stoeckl",
               role = c("aut"),
               email = "sebastian.stoeckl@uni.li",
-              comment = c(ORCID = "0000-0002-4196-6093")))
+              comment = c(ORCID = "0000-0002-4196-6093")),
+              person("Jesse", "Vent",
+                    role = c("aut", "cre"), 
+                    email = "cryptopackage@icloud.com"))
 Maintainer: Sebastian Stöckl <sebastian.stoeckl@uni.li>
 URL: https://github.com/sstoeckl/crypto2
 Description: Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from <https://coinmarketcap.com> via their web-api.
