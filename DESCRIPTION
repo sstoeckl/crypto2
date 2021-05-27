@@ -3,7 +3,7 @@ Title: Download Crypto Currency Data from Coinmarketcap without API
 Version: 1.2.0
 Date: 2021-05-26
 Authors@R: c(person("Sebastian", "Stoeckl", email = "sebastian.stoeckl@uni.li", role = c("aut","cre"), comment = c(ORCID = "0000-0002-4196-6093", "Package commissioner and maintainer.")))
-Maintainer: Sebastian Stöckl <sebastian.stoeckl@uni.li>
+Maintainer: Sebastian Stoeckl <sebastian.stoeckl@uni.li>
 URL: https://github.com/sstoeckl/crypto2
 Description: Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from <https://coinmarketcap.com> via their web-api.
 License: MIT + file LICENSE

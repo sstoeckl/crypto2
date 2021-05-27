@@ -4,6 +4,7 @@
 ^.*\.Rhistory$
 ^.*\.tar.gz$
 ^\.Rproj\.user$
+^README.Rmd
 crypto-markets.csv
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
