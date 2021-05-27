@@ -10,6 +10,5 @@ License: MIT + file LICENSE
 Depends: R (>= 4.0.0)
 Imports: dplyr, tibble, tidyr, purrr, progress, stats, lubridate, jsonlite, cli
 Encoding: UTF-8
-LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
