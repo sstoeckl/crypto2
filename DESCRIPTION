@@ -1,5 +1,5 @@
 Package: crypto2
-Title: Download Crypto Currency Data from Coinmarketcap without API
+Title: Download Crypto Currency Data from CoinMarketCap without API
 Version: 1.2.0
 Date: 2021-05-26
 Authors@R: c(person("Sebastian", "Stoeckl", email = "sebastian.stoeckl@uni.li", role = c("aut","cre"), comment = c(ORCID = "0000-0002-4196-6093", "Package commissioner and maintainer.")))

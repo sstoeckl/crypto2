@@ -2,7 +2,7 @@
 % Please edit documentation in R/crypto_info.R
 \name{exchange_info}
 \alias{exchange_info}
-\title{Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on cmc for given exchange slug}
+\title{Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given exchange slug}
 \usage{
 exchange_info(slugs)
 }
@@ -24,10 +24,10 @@ List of (active and historically existing) cryptocurrencies in a tibble:
 \item{maker_fee}{Exchanges maker fee}
 \item{taker_fee}{Exchanges maker fee}
 \item{spot_volume_usd}{Current volume in USD according to CMC}
-\item{spot_volume_last_updated}{Lates update of spot volume}
+\item{spot_volume_last_updated}{Latest update of spot volume}
 \item{status}{timestamp and other status messages}
 \item{tags}{Tibble of tags and tag categories}
-\item{url}{Tibble of various ressource urls. Gives website, blog, fee, twitter.}
+\item{url}{Tibble of various resource urls. Gives website, blog, fee, twitter.}
 \item{countries}{Tibble of countries the exchange is active in}
 \item{fiat}{Tibble of fiat currencies the exchange trades in}
 }

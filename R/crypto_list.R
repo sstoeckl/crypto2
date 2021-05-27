@@ -1,4 +1,4 @@
-#' Retrieves name, cmc id, symbol, slug, rank, an activity flag as well as activity dates on cmc for all coins
+#' Retrieves name, CMC id, symbol, slug, rank, an activity flag as well as activity dates on CMC for all coins
 #'
 #' This code uses the web api. It retrieves data for all historic and all active coins and does not require an API key.
 #'
@@ -57,7 +57,7 @@ crypto_list <- function(only_active=TRUE,add_untracked=FALSE) {
   }
   return(coins %>% dplyr::select(id:last_historical_data) %>% dplyr::distinct() %>% dplyr::arrange(id))
 }
-#' Retrieves name, cmc id, symbol, slug, rank, an activity flag as well as activity dates on cmc for all coins
+#' Retrieves name, CMC id, symbol, slug, rank, an activity flag as well as activity dates on CMC for all coins
 #'
 #' This code uses the web api. It retrieves data for all historic and all active coins and does not require an API key.
 #'

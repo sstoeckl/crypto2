@@ -2,7 +2,7 @@
 % Please edit documentation in R/crypto_info.R
 \name{crypto_info}
 \alias{crypto_info}
-\title{Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on cmc for given id or slug}
+\title{Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given id or slug}
 \usage{
 crypto_info(slugs)
 }
@@ -28,10 +28,10 @@ List of (active and historically existing) cryptocurrencies in a tibble:
 \item{self reported tags}{Self_reported_tags}
 \item{status}{timestamp and other status messages}
 \item{tags}{Tibble of tags and tag categories}
-\item{url}{Tibble of various ressource urls. Gives website, technical_doc (whitepaper),
-source_code, message_board, chat, announcement, reddit, twitter, (block) explorer ursl.}
+\item{url}{Tibble of various resource urls. Gives website, technical_doc (whitepaper),
+source_code, message_board, chat, announcement, reddit, twitter, (block) explorer urls}
 \item{Platform}{Metadata about the parent coin if available. Gives id, name, symbol,
-slug, and token adress according to CMC}
+slug, and token address according to CMC}
 }
 \description{
 This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an API key.

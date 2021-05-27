@@ -118,7 +118,7 @@ coin_hist %>% group_by(slug) %>% slice(1:2)
 
 ### Author/License
 
--   **Sebastian Stöckl** - Package Creator, Modificator & Maintainer -
+-   **Sebastian Stöckl** - Package Creator, Modifier & Maintainer -
     [sstoeckl](https://github.com/sstoeckl)
 
 This project is licensed under the MIT License - see the

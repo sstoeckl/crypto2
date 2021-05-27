@@ -1,4 +1,4 @@
-#' Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on cmc for given id or slug
+#' Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given id or slug
 #'
 #' This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an API key.
 #'
@@ -22,10 +22,10 @@
 #'   \item{self reported tags}{Self_reported_tags}
 #'   \item{status}{timestamp and other status messages}
 #'   \item{tags}{Tibble of tags and tag categories}
-#'   \item{url}{Tibble of various ressource urls. Gives website, technical_doc (whitepaper),
-#'   source_code, message_board, chat, announcement, reddit, twitter, (block) explorer ursl.}
+#'   \item{url}{Tibble of various resource urls. Gives website, technical_doc (whitepaper),
+#'   source_code, message_board, chat, announcement, reddit, twitter, (block) explorer urls}
 #'   \item{Platform}{Metadata about the parent coin if available. Gives id, name, symbol,
-#'   slug, and token adress according to CMC}
+#'   slug, and token address according to CMC}
 #'
 #' @importFrom cli cat_bullet
 #' @importFrom tibble as_tibble enframe
@@ -100,7 +100,7 @@ crypto_info <- function(slugs) {
 
   return(results)
 }
-#' Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on cmc for given exchange slug
+#' Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given exchange slug
 #'
 #' This code uses the web api. It retrieves data for all active, delisted and untracked exchanges! It does not require an API key.
 #'
@@ -120,10 +120,10 @@ crypto_info <- function(slugs) {
 #'   \item{maker_fee}{Exchanges maker fee}
 #'   \item{taker_fee}{Exchanges maker fee}
 #'   \item{spot_volume_usd}{Current volume in USD according to CMC}
-#'   \item{spot_volume_last_updated}{Lates update of spot volume}
+#'   \item{spot_volume_last_updated}{Latest update of spot volume}
 #'   \item{status}{timestamp and other status messages}
 #'   \item{tags}{Tibble of tags and tag categories}
-#'   \item{url}{Tibble of various ressource urls. Gives website, blog, fee, twitter.}
+#'   \item{url}{Tibble of various resource urls. Gives website, blog, fee, twitter.}
 #'   \item{countries}{Tibble of countries the exchange is active in}
 #'   \item{fiat}{Tibble of fiat currencies the exchange trades in}
 #'

@@ -3,7 +3,7 @@
 \name{crypto_list}
 \alias{crypto_list}
 \alias{fiat_list}
-\title{Retrieves name, cmc id, symbol, slug, rank, an activity flag as well as activity dates on cmc for all coins}
+\title{Retrieves name, CMC id, symbol, slug, rank, an activity flag as well as activity dates on CMC for all coins}
 \usage{
 crypto_list(only_active = TRUE, add_untracked = FALSE)
 
