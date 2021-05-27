@@ -17,10 +17,10 @@ This is a modification of the original `crypto` package by [jesse
 vent](https://github.com/JesseVent/crypto). It is entirely set up to use
 means from the `tidyverse` and provides `tibble`s with all data
 available via the web-api of
-[coinmarketcap.com](https://www.coinmarketcap.com/). **It does not
-require an API key but in turn only provides information that is also
-available through the website of
-[coinmarketcap.com](https://www.coinmarketcap.com/).**
+[coinmarketcap.com](https://coinmarketcap.com/). **It does not require
+an API key but in turn only provides information that is also available
+through the website of
+[coinmarketcap.com](https://coinmarketcap.com/).**
 
 It allows the user to retrieve
 
