@@ -1,3 +1,7 @@
+# crypto2 1.3.0
+
+Rewrite of crypto_info and exchange_info to take similar input as crypto_history. Also extensively updated readme.
+
 # crypto2 1.2.1
 
 Adapt spelling and '' for CRAN and explain why I have taken Jesse Vent off the package authors (except function names everything else is new)
