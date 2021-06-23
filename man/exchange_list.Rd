@@ -21,7 +21,7 @@ List of (active and historically existing) cryptocurrencies in a tibble:
 \item{last_historical_data}{Last time listed on CMC, \emph{today's date} if still listed}
 }
 \description{
-This code uses the web api. It retrieves data for all historic and all active coins and does not require an API key.
+This code uses the web api. It retrieves data for all historic and all active coins and does not require an 'API' key.
 }
 \examples{
 \dontrun{

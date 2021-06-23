@@ -1,14 +1,17 @@
 Package: crypto2
-Title: Download Crypto Currency Data from CoinMarketCap without API
-Version: 1.2.0
+Title: Download Crypto Currency Data from 'CoinMarketCap' without 'API'
+Version: 1.3.0
 Date: 2021-05-26
-Authors@R: c(person("Sebastian", "Stoeckl", email = "sebastian.stoeckl@uni.li", role = c("aut","cre"), comment = c(ORCID = "0000-0002-4196-6093", "Package commissioner and maintainer.")))
+Authors@R: c(person("Sebastian", "Stoeckl", email = "sebastian.stoeckl@uni.li", role = c("aut","cre"), comment = c(ORCID = "0000-0002-4196-6093", "Package commissioner and maintainer.")),person("Jesse", "Vent", email = "cryptopackage@icloud.com", role = c("ctb"), comment = c("Creator of the crypto package that provided the idea and basis for this package.")))
 Maintainer: Sebastian Stoeckl <sebastian.stoeckl@uni.li>
 URL: https://github.com/sstoeckl/crypto2
-Description: Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from <https://coinmarketcap.com> via their web-api.
+Description: Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from <https://coinmarketcap.com> via their 'web-api'.
 License: MIT + file LICENSE
 Depends: R (>= 4.0.0)
 Imports: dplyr, tibble, tidyr, purrr, progress, stats, lubridate, jsonlite, cli
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Suggests: 
+    spelling
+Language: en-US

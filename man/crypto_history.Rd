@@ -51,7 +51,7 @@ ALL active coins then do not pass an argument to \code{crypto_history()}, or pas
 }
 \description{
 Scrape the crypto currency historic market tables from
-CoinMarketCap \url{https://coinmarketcap.com} and display
+'CoinMarketCap' \url{https://coinmarketcap.com} and display
 the results in a dataframe/tibble. This can be used to conduct
 analysis on the crypto financial markets or to attempt
 to predict future market movements or trends.

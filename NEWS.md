@@ -1,3 +1,7 @@
+# crypto2 1.2.1
+
+Adapt spelling and '' for CRAN and explain why I have taken Jesse Vent off the package authors (except function names everything else is new)
+
 # crypto2 1.2.0
 
 Add Exchange functions, delete unnecessary functions, update readme, prepare for submission to cran

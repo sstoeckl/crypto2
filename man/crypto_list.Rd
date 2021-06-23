@@ -35,7 +35,7 @@ List of (active and historically existing) cryptocurrencies in a tibble:
 \item{code}{Precious metals code}
 }
 \description{
-This code uses the web api. It retrieves data for all historic and all active coins and does not require an API key.
+This code uses the web api. It retrieves data for all historic and all active coins and does not require an 'API' key.
 
 This code uses the web api. It retrieves data for all available fiat currencies and does not require an API key.
 }

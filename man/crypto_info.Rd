@@ -4,10 +4,13 @@
 \alias{crypto_info}
 \title{Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given id or slug}
 \usage{
-crypto_info(slugs)
+crypto_info(coin_list = NULL, limit = NULL)
 }
 \arguments{
-\item{slugs}{A vector of slugs that you want to retrieve data for}
+\item{coin_list}{string if NULL retrieve all currently existing coins (\code{crypto_list()}),
+or provide list of crypto currencies in the \code{crypto_list()} format (e.g. current and/or dead coins since 2015)}
+
+\item{limit}{integer Return the top n records, default is all tokens}
 }
 \value{
 List of (active and historically existing) cryptocurrencies in a tibble:
@@ -34,12 +37,12 @@ source_code, message_board, chat, announcement, reddit, twitter, (block) explore
 slug, and token address according to CMC}
 }
 \description{
-This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an API key.
+This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an 'API' key.
 }
 \examples{
 \dontrun{
 # return info for bitcoin
-coin_info <- crypto_info(slugs=c("bitcoin","tether","novacoin"))
+coin_info <- crypto_info(limit=3)
 }
 
 }

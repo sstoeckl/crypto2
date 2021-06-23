@@ -1,8 +1,10 @@
 #' Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given id or slug
 #'
-#' This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an API key.
+#' This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an 'API' key.
 #'
-#' @param slugs A vector of slugs that you want to retrieve data for
+#' @param coin_list string if NULL retrieve all currently existing coins (`crypto_list()`),
+#' or provide list of crypto currencies in the `crypto_list()` format (e.g. current and/or dead coins since 2015)
+#' @param limit integer Return the top n records, default is all tokens
 #'
 #' @return List of (active and historically existing) cryptocurrencies in a tibble:
 #'   \item{id}{CMC id (unique identifier)}
@@ -39,14 +41,20 @@
 #' @examples
 #' \dontrun{
 #' # return info for bitcoin
-#' coin_info <- crypto_info(slugs=c("bitcoin","tether","novacoin"))
+#' coin_info <- crypto_info(limit=3)
 #' }
 #'
 #' @name crypto_info
 #'
 #' @export
 #'
-crypto_info <- function(slugs) {
+crypto_info <- function(coin_list = NULL, limit = NULL) {
+  # only if no coins are provided use crypto_list() to provide all actively traded coins
+  if (is.null(coin_list)) coin_list <- crypto_list()
+  # limit amount of coins downloaded
+  if (!is.null(limit)) coin_list <- coin_list[1:limit, ]
+  # extract slugs
+  slugs <- coin_list %>% distinct(slug)
   # get current coins
   scrape_web <- function(slug){
     web_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/info?slug=")
@@ -93,7 +101,7 @@ crypto_info <- function(slugs) {
   message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
   out_all <- purrr::map(data$out, .f = ~ insistent_map(.x))
 
-  # Old code
+  # results
   results <- do.call(rbind, out_all)
 
   if (length(results) == 0L) stop("No data downloaded.", call. = FALSE)
@@ -102,7 +110,7 @@ crypto_info <- function(slugs) {
 }
 #' Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given exchange slug
 #'
-#' This code uses the web api. It retrieves data for all active, delisted and untracked exchanges! It does not require an API key.
+#' This code uses the web api. It retrieves data for all active, delisted and untracked exchanges! It does not require an 'API' key.
 #'
 #' @param slugs A vector of (exchange) slugs that you want to retrieve data for
 #'

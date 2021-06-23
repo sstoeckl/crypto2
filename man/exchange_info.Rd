@@ -32,7 +32,7 @@ List of (active and historically existing) cryptocurrencies in a tibble:
 \item{fiat}{Tibble of fiat currencies the exchange trades in}
 }
 \description{
-This code uses the web api. It retrieves data for all active, delisted and untracked exchanges! It does not require an API key.
+This code uses the web api. It retrieves data for all active, delisted and untracked exchanges! It does not require an 'API' key.
 }
 \examples{
 \dontrun{

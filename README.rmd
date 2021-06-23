@@ -59,6 +59,9 @@ library(dplyr)
 # List all active coins
 coins <- crypto_list(only_active=TRUE)
 
+# retrieve information for all (the first 3) of those coins
+coin_info <- crypto_info(coins$slugs[1:3])
+
 # retrieve historical data for all (the first 3) of them
 coin_hist <- crypto_history(coins, limit=3, start_date="20200101")
 
@@ -77,5 +80,5 @@ This project is licensed under the MIT License - see the
 ### Acknowledgments
 
 - Thanks to the team at <https://coinmarketcap.com> for the great work they do
-- Thanks to Jesse Vent for providing the original (nut fully research compatible) `crypto`-package
+- Thanks to Jesse Vent for providing the original (nut fully research compatible) `crypto`-package.
 
