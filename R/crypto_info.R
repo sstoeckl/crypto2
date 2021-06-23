@@ -1,9 +1,9 @@
-#' Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given id or slug
+#' Retrieves info (urls, logo, description, tags, platform, date_added, notice, status) on CMC for given id or slug
 #'
 #' This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an 'API' key.
 #'
-#' @param coin_list string if NULL retrieve all currently existing coins (`crypto_list()`),
-#' or provide list of crypto currencies in the `crypto_list()` format (e.g. current and/or dead coins since 2015)
+#' @param coin_list string if NULL retrieve all currently active coins (`crypto_list()`),
+#' or provide list of cryptocurrencies in the `crypto_list()` format (e.g. current and/or dead coins since 2015)
 #' @param limit integer Return the top n records, default is all tokens
 #'
 #' @return List of (active and historically existing) cryptocurrencies in a tibble:
@@ -112,9 +112,11 @@ crypto_info <- function(coin_list = NULL, limit = NULL) {
 #'
 #' This code uses the web api. It retrieves data for all active, delisted and untracked exchanges! It does not require an 'API' key.
 #'
-#' @param slugs A vector of (exchange) slugs that you want to retrieve data for
+#' @param exchange_list string if NULL retrieve all currently active exchanges (`exchange_list()`),
+#' or provide list of exchanges in the `exchange_list()` format (e.g. current and/or delisted)
+#' @param limit integer Return the top n records, default is all exchanges
 #'
-#' @return List of (active and historically existing) cryptocurrencies in a tibble:
+#' @return List of (active and historically existing) exchanges in a tibble:
 #'   \item{id}{CMC exchange id (unique identifier)}
 #'   \item{name}{Exchange name}
 #'   \item{slug}{Exchange URL slug (unique)}
@@ -146,16 +148,22 @@ crypto_info <- function(coin_list = NULL, limit = NULL) {
 #'
 #' @examples
 #' \dontrun{
-#' # return info for bitcoin
-#' exchange_info <- exchange_info(slugs=c("binance","kraken","bter"))
+#' # return info for the first three exchanges
+#' exchange_info <- exchange_info(limit=3)
 #' }
 #'
 #' @name exchange_info
 #'
 #' @export
 #'
-exchange_info <- function(slugs) {
-  # get current coins
+exchange_info <- function(exchange_list = NULL, limit = NULL) {
+  # only if no coins are provided use crypto_list() to provide all actively traded coins
+  if (is.null(exchange_list)) exchange_list <- exchange_list()
+  # limit amount of exchanges downloaded
+  if (!is.null(limit)) exchange_list <- exchange_list[1:limit, ]
+  # extract slugs
+  slugs <- exchange_list %>% distinct(slug)
+  # get current exchanges
   scrape_web <- function(slug){
     web_url <- paste0("https://web-api.coinmarketcap.com/v1/exchange/info?slug=")
     page <- jsonlite::fromJSON(paste0(web_url,slug))

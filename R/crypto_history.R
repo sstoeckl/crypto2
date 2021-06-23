@@ -116,13 +116,13 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
       } else if (length(out$data$quotes)==0){
       cat("\nCoin",slug,"does not have data available! Cont to next coin.\n")
     } else {
+      status <- out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S"))
       suppressWarnings(
-      status <- out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S")),
-      outall <- lapply(out$data$quotes$quote,function(x) x %>% tibble::as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S"))) %>%
-        bind_rows(.id = "ref_cur") %>%
-        dplyr::bind_cols(.,out$data$quotes %>% select(-quote) %>% nest(data=everything())  %>% rep(length(out$data$quotes$quote)) %>% bind_rows() %>%
-                           mutate(across(1:4,~as.POSIXlt(.,format="%Y-%m-%dT%H:%M:%S")))) %>%
-        mutate(id=out$data$id,name=out$data$name,symbol=out$data$symbol,slug=slug) %>% select(timestamp,slug,id,name,symbol,ref_cur,everything())
+        outall <- lapply(out$data$quotes$quote,function(x) x %>% tibble::as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S"))) %>%
+          bind_rows(.id = "ref_cur") %>%
+          dplyr::bind_cols(.,out$data$quotes %>% select(-quote) %>% nest(data=everything())  %>% rep(length(out$data$quotes$quote)) %>% bind_rows() %>%
+                             mutate(across(1:4,~as.POSIXlt(.,format="%Y-%m-%dT%H:%M:%S")))) %>%
+          mutate(id=out$data$id,name=out$data$name,symbol=out$data$symbol,slug=slug) %>% select(timestamp,slug,id,name,symbol,ref_cur,everything())
       )
     }
     return(outall)
@@ -130,10 +130,10 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   # Modify function to run insistently.
   insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
   message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
-  out <- purrr::map2(data$out,data$slug, .f = ~ insistent_map(.x,.y))
+  out_info <- purrr::map2(data$out,data$slug, .f = ~ insistent_map(.x,.y))
 
   # results
-  results <- do.call(rbind, out) %>% tibble::as_tibble()
+  results <- do.call(rbind, out_info) %>% tibble::as_tibble()
 
   return(results)
 }

@@ -4,13 +4,16 @@
 \alias{exchange_info}
 \title{Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given exchange slug}
 \usage{
-exchange_info(slugs)
+exchange_info(exchange_list = NULL, limit = NULL)
 }
 \arguments{
-\item{slugs}{A vector of (exchange) slugs that you want to retrieve data for}
+\item{exchange_list}{string if NULL retrieve all currently active exchanges (\code{exchange_list()}),
+or provide list of exchanges in the \code{exchange_list()} format (e.g. current and/or delisted)}
+
+\item{limit}{integer Return the top n records, default is all exchanges}
 }
 \value{
-List of (active and historically existing) cryptocurrencies in a tibble:
+List of (active and historically existing) exchanges in a tibble:
 \item{id}{CMC exchange id (unique identifier)}
 \item{name}{Exchange name}
 \item{slug}{Exchange URL slug (unique)}
@@ -36,8 +39,8 @@ This code uses the web api. It retrieves data for all active, delisted and untra
 }
 \examples{
 \dontrun{
-# return info for bitcoin
-exchange_info <- exchange_info(slugs=c("binance","kraken","bter"))
+# return info for the first three exchanges
+exchange_info <- exchange_info(limit=3)
 }
 
 }

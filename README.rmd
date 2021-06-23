@@ -52,23 +52,101 @@ As this provides access not only to **active** coins but also to those that have
 
 ## Package Usage
 
+First we load the `crypto2`-package and download the set of active coins from <https://coinmarketcap.com> (additionally one could load delisted coins with `only_Active=FALSE` as well as untracked coins with `add_untracked=TRUE`).
+
 ```{r example}
 library(crypto2)
 library(dplyr)
 
 # List all active coins
 coins <- crypto_list(only_active=TRUE)
+```
 
+Next we download information on the first three coins from that list.
+
+```{r example-info}
 # retrieve information for all (the first 3) of those coins
-coin_info <- crypto_info(coins$slugs[1:3])
-
-# retrieve historical data for all (the first 3) of them
-coin_hist <- crypto_history(coins, limit=3, start_date="20200101")
+coin_info <- crypto_info(coins,limit=3)
 
 # and give the first two lines of information per coin
+coin_info
+```
+
+In a next step we show the logos of the three coins as provided by <https://coinmarketcap.com>.
+
+```{r logos, echo=FALSE, fig.show='hold', fig.align='center', out.width = '5%',out.height='5%'}
+coin_info$logo %>% knitr::include_graphics(.)
+```
+
+In addition we show tags provided by <https://coinmarketcap.com>.
+
+```{r tags}
+coin_info %>% select(slug,tags) %>% tidyr::unnest(tags) %>% group_by(slug) %>% slice(1,n())
+```
+
+Additionally: Here are some urls pertaining to these coins as provided by <https://coinmarketcap.com>.
+
+```{r urls}
+coin_info %>% select(slug,urls) %>% tidyr::unnest(urls) %>% filter(name %in% c("reddit","twitter"))
+```
+
+In a next step we download time series data for these coins.
+
+```{r history}
+# retrieve historical data for all (the first 3) of them
+coin_hist <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210105")
+
+# and give the first two times of information per coin
 coin_hist %>% group_by(slug) %>% slice(1:2)
 ```
 
+Alternatively, we could determine the price of these coins in other currencies. A list of such currencies is available as `fiat_list()`
+
+```{r fiat}
+fiats <- fiat_list()
+fiats
+```
+
+So we download the time series again depicting prices in terms of Bitcoin and Euro (note that multiple currencies can be given to `convert`, separated by ',').
+
+```{r history2}
+# retrieve historical data for all (the first 3) of them
+coin_hist2 <- crypto_history(coins, convert="BTC,EUR", limit=3, start_date="20210101", end_date="20210105")
+
+# and give the first two times of information per coin
+coin_hist2 %>% group_by(slug,ref_cur) %>% slice(1:2)
+```
+
+Last and least, one can get information on exchanges. For this download a list of active/inactive/untracked exchanges using `exchange_list()`:
+
+```{r exchanges}
+exchanges <- exchange_list(only_active=TRUE)
+exchanges
+```
+
+and then download information on 'binance' and 'kraken':
+
+```{r exchange-info}
+ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')))
+ex_info
+```
+
+Then we can access information on the fee structure,
+
+```{r fee}
+ex_info %>% select(contains("fee"))
+```
+
+the amount of cryptocurrencies being traded (in USD)
+
+```{r usd-vol}
+ex_info %>% select(contains("spot"))
+```
+or the fiat currencies allowed:
+
+```{r ex-fiat}
+ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
+```
 
 ### Author/License
 
@@ -79,6 +157,6 @@ This project is licensed under the MIT License - see the
 
 ### Acknowledgments
 
-- Thanks to the team at <https://coinmarketcap.com> for the great work they do
-- Thanks to Jesse Vent for providing the original (nut fully research compatible) `crypto`-package.
+- Thanks to the team at <https://coinmarketcap.com> for the great work they do.
+- Thanks to Jesse Vent for providing the (not fully research compatible) [`crypto`](https://github.com/JesseVent/crypto)-package that inspired this package.
 

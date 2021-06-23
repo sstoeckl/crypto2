@@ -2,13 +2,13 @@
 % Please edit documentation in R/crypto_info.R
 \name{crypto_info}
 \alias{crypto_info}
-\title{Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given id or slug}
+\title{Retrieves info (urls, logo, description, tags, platform, date_added, notice, status) on CMC for given id or slug}
 \usage{
 crypto_info(coin_list = NULL, limit = NULL)
 }
 \arguments{
-\item{coin_list}{string if NULL retrieve all currently existing coins (\code{crypto_list()}),
-or provide list of crypto currencies in the \code{crypto_list()} format (e.g. current and/or dead coins since 2015)}
+\item{coin_list}{string if NULL retrieve all currently active coins (\code{crypto_list()}),
+or provide list of cryptocurrencies in the \code{crypto_list()} format (e.g. current and/or dead coins since 2015)}
 
 \item{limit}{integer Return the top n records, default is all tokens}
 }
