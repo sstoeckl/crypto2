@@ -1,3 +1,5 @@
+# crypto2 (development version)
+
 # crypto2 1.3.0
 
 Rewrite of crypto_info and exchange_info to take similar input as crypto_history. Also extensively updated readme.
