@@ -207,7 +207,7 @@ fiats
 
 So we download the time series again depicting prices in terms of
 Bitcoin and Euro (note that multiple currencies can be given to
-`convert`, separated by ‘,’).
+`convert`, separated by “,”).
 
 ``` r
 # retrieve historical data for all (the first 3) of them
@@ -261,7 +261,7 @@ exchanges
 #> # ... with 369 more rows
 ```
 
-and then download information on ‘binance’ and ‘kraken’:
+and then download information on “binance” and “kraken”:
 
 ``` r
 ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')))
@@ -298,8 +298,8 @@ ex_info %>% select(contains("spot"))
 #> # A tibble: 2 x 2
 #>   spot_volume_usd spot_volume_last_updated
 #>             <dbl> <dttm>                  
-#> 1     2597761429. 2021-06-23 11:25:15     
-#> 2    39188526501. 2021-06-23 11:25:15
+#> 1     2584452727. 2021-06-23 11:35:15     
+#> 2    39019591303. 2021-06-23 11:35:15
 ```
 
 or the fiat currencies allowed:
@@ -325,7 +325,7 @@ ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
 ### Author/License
 
 -   **Sebastian Stöckl** - Package Creator, Modifier & Maintainer -
-    [sstoeckl](https://github.com/sstoeckl)
+    [sstoeckl on github](https://github.com/sstoeckl)
 
 This project is licensed under the MIT License - see the
 &lt;license.md&gt; file for details&lt;/license.md&gt;

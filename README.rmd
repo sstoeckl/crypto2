@@ -107,7 +107,7 @@ fiats <- fiat_list()
 fiats
 ```
 
-So we download the time series again depicting prices in terms of Bitcoin and Euro (note that multiple currencies can be given to `convert`, separated by ',').
+So we download the time series again depicting prices in terms of Bitcoin and Euro (note that multiple currencies can be given to `convert`, separated by ",").
 
 ```{r history2}
 # retrieve historical data for all (the first 3) of them
@@ -124,7 +124,7 @@ exchanges <- exchange_list(only_active=TRUE)
 exchanges
 ```
 
-and then download information on 'binance' and 'kraken':
+and then download information on "binance" and "kraken":
 
 ```{r exchange-info}
 ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')))
@@ -150,7 +150,7 @@ ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
 
 ### Author/License
 
-- **Sebastian Stöckl** - Package Creator, Modifier & Maintainer - [sstoeckl](https://github.com/sstoeckl)
+- **Sebastian Stöckl** - Package Creator, Modifier & Maintainer - [sstoeckl on github](https://github.com/sstoeckl)
 
 This project is licensed under the MIT License - see the
 <license.md> file for details</license.md>
