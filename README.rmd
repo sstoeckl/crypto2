@@ -51,9 +51,9 @@ devtools::install_github("sstoeckl/crypto2")
 
 ## Package Contribution
 
-The package provides API free and efficient access to all information from <https://coinmarketcap.com> that is also available through their website. It uses a variety of modification and web_Scraping tools from the `tidyverse` (especially `purrr`).
+The package provides API free and efficient access to all information from <https://coinmarketcap.com> that is also available through their website. It uses a variety of modification and web-scraping tools from the `tidyverse` (especially `purrr`).
 
-As this provides access not only to **active** coins but also to those that have now been **delisted**, including historical pricing information, this package provides a valid basis for any **Asset Pricing Studies** based on crypto currencies that require **survivorship-bias-free** information. In addition to that, the package maintainer is currently working on also providing **delisting returns** (similarly to CRSP for stocks) to also eliminate the **delisting bias**.
+As this provides access not only to **active** coins but also to those that have now been **delisted** and also those that are categorized as **untracked**, including historical pricing information, this package provides a valid basis for any **Asset Pricing Studies** based on crypto currencies that require **survivorship-bias-free** information. In addition to that, the package maintainer is currently working on also providing **delisting returns** (similarly to CRSP for stocks) to also eliminate the **delisting bias**.
 
 ## Package Usage
 

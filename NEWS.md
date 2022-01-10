@@ -1,5 +1,9 @@
 # crypto2 (development version)
 
+# crypto2 1.4.0
+
+Due to a change in the web-api of CMC we can only make one call to the api per minute (else, it will just deliver the same output as for the first call of the 60 seconds). To reduce the overhang, I have redesigned the interfaces to retrieve as many ids from one api call as possible (limited by the 2000 character limitation of the URL). We can set `requestLimit` to increase/decrease the number of simultaneous ids that are retrieved from CMC.
+
 # crypto2 1.3.0
 
 Rewrite of crypto_info and exchange_info to take similar input as crypto_history. Also extensively updated readme.

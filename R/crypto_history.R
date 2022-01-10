@@ -14,6 +14,7 @@
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
 #' @param sleep integer Seconds to sleep for between API requests
+#' @param requestLimit limiting the length of request URLs when bundling the api calls
 #
 #' @return Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
 #'   \item{timestamp}{Timestamp of entry in database}
@@ -40,6 +41,7 @@
 #' @importFrom cli 'cat_bullet'
 #' @importFrom lubridate 'mdy'
 #' @importFrom stats 'na.omit'
+#' @importFrom plyr laply
 #'
 #' @import progress
 #' @import purrr
@@ -67,7 +69,7 @@
 #'
 #' @export
 #'
-crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL) {
+crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL, requestLimit = 300) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -77,63 +79,70 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   UNIXstart <- format(as.numeric(as.POSIXct(start_date, format="%Y%m%d")),scientific = FALSE)
   if (is.null(end_date)) { end_date <- gsub("-", "", lubridate::today()) }
   UNIXend <- format(as.numeric(as.POSIXct(end_date, format="%Y%m%d", tz = "UTC")),scientific = FALSE)
-  # create web-api urls
-  historyurl <-
-    paste0(
-      "https://web-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/historical?convert=",
-      convert,
-      "&slug=",
-      coin_list$slug,
-      "&time_end=",
-      UNIXend,
-      "&time_start=",
-     UNIXstart
-    )
-  coin_list_plus <- coin_list %>% dplyr::bind_cols(.,history_url=historyurl)
+  # extract slugs & ids
+  slugs <- coin_list %>% distinct(slug)
+  ids <- coin_list %>% distinct(id)
+  # Create slug_vec with requestLimit elements concatenated together
+  n <- ceiling(nrow(ids)/requestLimit)
+  id_vec <- plyr::laply(split(ids$id, sort(ids$id%%n)),function(x) paste0(x,collapse=","))
   # define scraper_funtion
-  scrape_web <- function(url,slug){
-    page <- jsonlite::fromJSON(url)
+  scrape_web <- function(historyurl){
+    page <- jsonlite::fromJSON(historyurl)
     pb$tick()
-    return(page)
+    return(page$data)
   }
+  if (is.vector(id_vec)) id_vec <- tibble::enframe(id_vec,name = NULL, value = "id")
+  # add history URLs
+  id_vec <- id_vec %>% mutate(historyurl=paste0(
+    "https://web-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/historical?convert=",
+    convert,
+    "&time_end=",
+    UNIXend,
+    "&time_start=",
+    UNIXstart,
+    "&id=",
+   id
+  ))
   # define backoff rate
-  rate <- purrr::rate_delay(pause=65,max_times = 2)
-    #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
+  rate <- purrr::rate_delay(pause = 60,max_times = 2)
+  rate2 <- purrr::rate_delay(60)
+  #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
   # Modify function to run insistently.
-  insistent_scrape <- purrr::possibly(purrr::insistently(scrape_web, rate, quiet = FALSE),otherwise=NULL)
+  insistent_scrape <- purrr::possibly(purrr::insistently(purrr::slowly(scrape_web, rate2), rate, quiet = FALSE),otherwise=NULL)
   # Progress Bar 1
   pb <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
-                         total = min(limit,nrow(coin_list_plus)), clear = FALSE)
+                         total = nrow(id_vec), clear = FALSE)
   message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",bullet_col = "green"))
-  data <- coin_list_plus %>% dplyr::select(history_url,slug) %>% dplyr::mutate(out = purrr::map2(history_url,slug,.f=~insistent_scrape(.x,.y)))
-  # Progress Bar 2
-  pb2 <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
-                         total = min(limit,nrow(data)), clear = FALSE)
-  map_scrape <- function(out,slug){
+  data <- id_vec %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x)))
+  data2 <- data$out %>% unlist(.,recursive=FALSE)
+  data2 <- data$out %>% unlist(.,recursive=FALSE)
+  # 2. Here comes the second part: Clean and create dataset
+  map_scrape <- function(lout){
     pb2$tick()
-    if (!(out$status$error_code==0)) {
-      cat("\nCoin",slug,"could not be downloaded. Error message: ",out$status$error_message,"!\n")
-      } else if (length(out$data$quotes)==0){
-      cat("\nCoin",slug,"does not have data available! Cont to next coin.\n")
+    if (length(lout$quotes)==0){
+      cat("\nCoin",lout$name,"does not have data available! Cont to next coin.\n")
     } else {
-      status <- out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S"))
       suppressWarnings(
-        outall <- lapply(out$data$quotes$quote,function(x) x %>% tibble::as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S"))) %>%
+        outall <- lapply(lout$quotes$quote,function(x) x %>% tibble::as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S"))) %>%
           bind_rows(.id = "ref_cur") %>%
-          dplyr::bind_cols(.,out$data$quotes %>% select(-quote) %>% nest(data=everything())  %>% rep(length(out$data$quotes$quote)) %>% bind_rows() %>%
+          dplyr::bind_cols(.,lout$quotes %>% select(-quote) %>% nest(data=everything())  %>% rep(length(lout$quotes$quote)) %>% bind_rows() %>%
                              mutate(across(1:4,~as.POSIXlt(.,format="%Y-%m-%dT%H:%M:%S")))) %>%
-          mutate(id=out$data$id,name=out$data$name,symbol=out$data$symbol,slug=slug) %>% select(timestamp,slug,id,name,symbol,ref_cur,everything())
+          mutate(id=lout$id,name=lout$name,symbol=lout$symbol) %>% select(timestamp,id,name,symbol,ref_cur,everything())
       )
     }
     return(outall)
   }
   # Modify function to run insistently.
   insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
+  # 2. Here comes the second part: Clean and create dataset
+  # Progress Bar 2
+  pb2 <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+                          total = length(data2), clear = FALSE)
   message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
-  out_info <- purrr::map2(data$out,data$slug, .f = ~ insistent_map(.x,.y))
+  out_info <- purrr::map(data2,.f = ~ insistent_map(.x))
 
   # results
-  results <- do.call(rbind, out_info) %>% tibble::as_tibble()
+  results <- do.call(rbind, out_info) %>% tibble::as_tibble() %>% left_join(coin_list %>% select(id, slug), by ="id") %>% relocate(slug, .after = id)
 
   return(results)
 }

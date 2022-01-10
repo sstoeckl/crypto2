@@ -10,7 +10,8 @@ crypto_history(
   limit = NULL,
   start_date = NULL,
   end_date = NULL,
-  sleep = NULL
+  sleep = NULL,
+  requestLimit = 300
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ than one are selected please separate by comma (e.g. "USD,BTC")}
 \item{end_date}{string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed}
 
 \item{sleep}{integer Seconds to sleep for between API requests}
+
+\item{requestLimit}{limiting the length of request URLs when bundling the api calls}
 }
 \value{
 Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":

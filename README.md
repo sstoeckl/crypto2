@@ -90,14 +90,13 @@ coins with `only_Active=FALSE` as well as untracked coins with
 library(crypto2)
 library(dplyr)
 #> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
+#> Attache Paket: 'dplyr'
+#> Die folgenden Objekte sind maskiert von 'package:stats':
 #> 
 #>     filter, lag
-#> The following objects are masked from 'package:base':
+#> Die folgenden Objekte sind maskiert von 'package:base':
 #> 
 #>     intersect, setdiff, setequal, union
-
 # List all active coins
 coins <- crypto_list(only_active=TRUE)
 ```
@@ -111,16 +110,15 @@ coin_info <- crypto_info(coins,limit=3)
 #> 
 #> > Processing historical crypto data
 #> 
-
 # and give the first two lines of information per coin
 coin_info
 #> # A tibble: 3 x 19
-#>      id name   symbol category description      slug  logo      subreddit notice
-#>   <int> <chr>  <chr>  <chr>    <chr>            <chr> <chr>     <chr>     <chr> 
-#> 1     1 Bitco… BTC    coin     "## **What Is B… bitc… https://… bitcoin   ""    
-#> 2     2 Litec… LTC    coin     "## What Is Lit… lite… https://… litecoin  ""    
-#> 3     3 Namec… NMC    coin     "Namecoin (NMC)… name… https://… namecoin  ""    
-#> # … with 10 more variables: date_added <chr>, twitter_username <chr>,
+#>      id name     symbol category description     slug   logo    subreddit notice
+#>   <int> <chr>    <chr>  <chr>    <chr>           <chr>  <chr>   <chr>     <chr> 
+#> 1     1 Bitcoin  BTC    coin     "## **What Is ~ bitco~ https:~ bitcoin   ""    
+#> 2     2 Litecoin LTC    coin     "## What Is Li~ litec~ https:~ litecoin  ""    
+#> 3     3 Namecoin NMC    coin     "Namecoin (NMC~ namec~ https:~ namecoin  ""    
+#> # ... with 10 more variables: date_added <chr>, twitter_username <chr>,
 #> #   is_hidden <int>, date_launched <lgl>,
 #> #   self_reported_circulating_supply <lgl>, self_reported_tags <lgl>,
 #> #   status <dttm>, tags <list>, urls <list>, platform <lgl>
@@ -142,7 +140,7 @@ coin_info %>% select(slug,tags) %>% tidyr::unnest(tags) %>% group_by(slug) %>% s
 #> 1 bitcoin  mineable             
 #> 2 bitcoin  paradigm-xzy-screener
 #> 3 litecoin mineable             
-#> 4 litecoin binance-chain        
+#> 4 litecoin binance-smart-chain  
 #> 5 namecoin mineable             
 #> 6 namecoin platform
 ```
@@ -171,20 +169,19 @@ coin_hist <- crypto_history(coins, limit=3, start_date="20210101", end_date="202
 #> 
 #> > Processing historical crypto data
 #> 
-
 # and give the first two times of information per coin
 coin_hist %>% group_by(slug) %>% slice(1:2)
 #> # A tibble: 6 x 16
 #> # Groups:   slug [3]
-#>   timestamp           slug      id name   symbol ref_cur    open    high     low
-#>   <dttm>              <chr>  <int> <chr>  <chr>  <chr>     <dbl>   <dbl>   <dbl>
-#> 1 2021-01-02 23:59:59 bitco…     1 Bitco… BTC    USD     2.94e+4 3.32e+4 2.91e+4
-#> 2 2021-01-03 23:59:59 bitco…     1 Bitco… BTC    USD     3.21e+4 3.46e+4 3.21e+4
-#> 3 2021-01-02 23:59:59 litec…     2 Litec… LTC    USD     1.26e+2 1.40e+2 1.24e+2
-#> 4 2021-01-03 23:59:59 litec…     2 Litec… LTC    USD     1.37e+2 1.64e+2 1.36e+2
-#> 5 2021-01-02 23:59:59 namec…     3 Namec… NMC    USD     4.51e-1 5.10e-1 4.15e-1
-#> 6 2021-01-03 23:59:59 namec…     3 Namec… NMC    USD     4.26e-1 5.14e-1 4.25e-1
-#> # … with 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
+#>   timestamp           slug        id name  symbol ref_cur    open    high     low
+#>   <dttm>              <chr>    <int> <chr> <chr>  <chr>     <dbl>   <dbl>   <dbl>
+#> 1 2021-01-01 23:59:59 bitcoin      1 Bitc~ BTC    USD     2.90e+4 2.96e+4 2.88e+4
+#> 2 2021-01-02 23:59:59 bitcoin      1 Bitc~ BTC    USD     2.94e+4 3.32e+4 2.91e+4
+#> 3 2021-01-01 23:59:59 litecoin     2 Lite~ LTC    USD     1.25e+2 1.33e+2 1.23e+2
+#> 4 2021-01-02 23:59:59 litecoin     2 Lite~ LTC    USD     1.26e+2 1.40e+2 1.24e+2
+#> 5 2021-01-01 23:59:59 namecoin     3 Name~ NMC    USD     4.39e-1 4.63e-1 4.32e-1
+#> 6 2021-01-02 23:59:59 namecoin     3 Name~ NMC    USD     4.51e-1 5.10e-1 4.15e-1
+#> # ... with 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
 #> #   time_open <dttm>, time_close <dttm>, time_high <dttm>, time_low <dttm>
 ```
 
@@ -204,10 +201,10 @@ fiats
 #>  5  2785 Swiss Franc          Fr    CHF   
 #>  6  2786 Chilean Peso         $     CLP   
 #>  7  2787 Chinese Yuan         ¥     CNY   
-#>  8  2788 Czech Koruna         Kč    CZK   
+#>  8  2788 Czech Koruna         Kc    CZK   
 #>  9  2789 Danish Krone         kr    DKK   
 #> 10  2790 Euro                 €     EUR   
-#> # … with 83 more rows
+#> # ... with 83 more rows
 ```
 
 So we download the time series again depicting prices in terms of
@@ -221,26 +218,25 @@ coin_hist2 <- crypto_history(coins, convert="BTC,EUR", limit=3, start_date="2021
 #> 
 #> > Processing historical crypto data
 #> 
-
 # and give the first two times of information per coin
 coin_hist2 %>% group_by(slug,ref_cur) %>% slice(1:2)
 #> # A tibble: 12 x 16
 #> # Groups:   slug, ref_cur [6]
-#>    timestamp           slug      id name  symbol ref_cur    open    high     low
-#>    <dttm>              <chr>  <int> <chr> <chr>  <chr>     <dbl>   <dbl>   <dbl>
-#>  1 2021-01-02 23:59:43 bitco…     1 Bitc… BTC    BTC     1   e+0 1.00e+0 9.99e-1
-#>  2 2021-01-03 23:59:41 bitco…     1 Bitc… BTC    BTC     1   e+0 1.00e+0 1.00e+0
-#>  3 2021-01-02 23:59:06 bitco…     1 Bitc… BTC    EUR     2.42e+4 2.73e+4 2.40e+4
-#>  4 2021-01-03 23:59:06 bitco…     1 Bitc… BTC    EUR     2.65e+4 2.85e+4 2.64e+4
-#>  5 2021-01-02 23:59:43 litec…     2 Lite… LTC    BTC     4.30e-3 4.24e-3 4.23e-3
-#>  6 2021-01-03 23:59:41 litec…     2 Lite… LTC    BTC     4.26e-3 4.93e-3 4.18e-3
-#>  7 2021-01-02 23:59:06 litec…     2 Lite… LTC    EUR     1.04e+2 1.16e+2 1.02e+2
-#>  8 2021-01-03 23:59:06 litec…     2 Lite… LTC    EUR     1.13e+2 1.34e+2 1.12e+2
-#>  9 2021-01-02 23:59:43 namec…     3 Name… NMC    BTC     1.54e-5 1.57e-5 1.31e-5
-#> 10 2021-01-03 23:59:41 namec…     3 Name… NMC    BTC     1.32e-5 1.52e-5 1.32e-5
-#> 11 2021-01-02 23:59:06 namec…     3 Name… NMC    EUR     3.71e-1 4.21e-1 3.41e-1
-#> 12 2021-01-03 23:59:06 namec…     3 Name… NMC    EUR     3.51e-1 4.24e-1 3.50e-1
-#> # … with 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
+#>    timestamp           slug        id name  symbol ref_cur    open    high     low
+#>    <dttm>              <chr>    <int> <chr> <chr>  <chr>     <dbl>   <dbl>   <dbl>
+#>  1 2021-01-01 23:59:43 bitcoin      1 Bitc~ BTC    BTC     1   e+0 1.00e+0 9.98e-1
+#>  2 2021-01-02 23:59:43 bitcoin      1 Bitc~ BTC    BTC     1   e+0 1.00e+0 9.99e-1
+#>  3 2021-01-01 23:59:06 bitcoin      1 Bitc~ BTC    EUR     2.37e+4 2.43e+4 2.36e+4
+#>  4 2021-01-02 23:59:06 bitcoin      1 Bitc~ BTC    EUR     2.42e+4 2.73e+4 2.40e+4
+#>  5 2021-01-01 23:59:43 litecoin     2 Lite~ LTC    BTC     4.30e-3 4.56e-3 4.27e-3
+#>  6 2021-01-02 23:59:43 litecoin     2 Lite~ LTC    BTC     4.30e-3 4.24e-3 4.23e-3
+#>  7 2021-01-01 23:59:06 litecoin     2 Lite~ LTC    EUR     1.02e+2 1.09e+2 1.01e+2
+#>  8 2021-01-02 23:59:06 litecoin     2 Lite~ LTC    EUR     1.04e+2 1.16e+2 1.02e+2
+#>  9 2021-01-01 23:59:43 namecoin     3 Name~ NMC    BTC     1.51e-5 1.58e-5 1.50e-5
+#> 10 2021-01-02 23:59:43 namecoin     3 Name~ NMC    BTC     1.54e-5 1.57e-5 1.31e-5
+#> 11 2021-01-01 23:59:06 namecoin     3 Name~ NMC    EUR     3.60e-1 3.80e-1 3.54e-1
+#> 12 2021-01-02 23:59:06 namecoin     3 Name~ NMC    EUR     3.71e-1 4.21e-1 3.41e-1
+#> # ... with 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
 #> #   time_open <dttm>, time_close <dttm>, time_high <dttm>, time_low <dttm>
 ```
 
@@ -250,20 +246,20 @@ a list of active/inactive/untracked exchanges using `exchange_list()`:
 ``` r
 exchanges <- exchange_list(only_active=TRUE)
 exchanges
-#> # A tibble: 381 x 6
-#>       id name       slug       is_active first_historical_da… last_historical_d…
-#>    <int> <chr>      <chr>          <int> <date>               <date>            
-#>  1    16 Poloniex   poloniex           1 2018-04-26           2021-06-24        
-#>  2    22 Bittrex    bittrex            1 2018-04-26           2021-06-24        
-#>  3    24 Kraken     kraken             1 2018-04-26           2021-06-24        
-#>  4    32 Bleutrade  bleutrade          1 2018-04-26           2021-06-24        
-#>  5    34 Bittylici… bittylici…         1 2018-04-26           2021-06-24        
-#>  6    36 CEX.IO     cex-io             1 2018-04-26           2021-06-24        
-#>  7    37 Bitfinex   bitfinex           1 2018-04-26           2021-06-24        
-#>  8    42 HitBTC     hitbtc             1 2018-04-26           2021-06-24        
-#>  9    50 EXMO       exmo               1 2018-04-26           2021-06-24        
-#> 10    61 Okcoin     okcoin             1 2018-04-26           2021-06-24        
-#> # … with 371 more rows
+#> # A tibble: 411 x 6
+#>       id name         slug         is_active first_historical_~ last_historical~
+#>    <int> <chr>        <chr>            <int> <date>             <date>          
+#>  1    16 Poloniex     poloniex             1 2018-04-26         2021-09-20      
+#>  2    22 Bittrex      bittrex              1 2018-04-26         2021-09-20      
+#>  3    24 Kraken       kraken               1 2018-04-26         2021-09-20      
+#>  4    32 Bleutrade    bleutrade            1 2018-04-26         2021-09-20      
+#>  5    34 Bittylicious bittylicious         1 2018-04-26         2021-09-20      
+#>  6    36 CEX.IO       cex-io               1 2018-04-26         2021-09-20      
+#>  7    37 Bitfinex     bitfinex             1 2018-04-26         2021-09-20      
+#>  8    42 HitBTC       hitbtc               1 2018-04-26         2021-09-20      
+#>  9    50 EXMO         exmo                 1 2018-04-26         2021-09-20      
+#> 10    61 Okcoin       okcoin               1 2018-04-26         2021-09-20      
+#> # ... with 401 more rows
 ```
 
 and then download information on “binance” and “kraken”:
@@ -276,11 +272,11 @@ ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')))
 #> 
 ex_info
 #> # A tibble: 2 x 19
-#>      id name   slug   description notice   logo    type  date_launched is_hidden
-#>   <int> <chr>  <chr>  <lgl>       <chr>    <chr>   <chr> <chr>             <int>
-#> 1    24 Kraken kraken NA          ""       https:… ""    2011-07-28T0…         0
-#> 2   270 Binan… binan… NA          "Binanc… https:… ""    2017-07-14T0…         0
-#> # … with 10 more variables: is_redistributable <lgl>, maker_fee <dbl>,
+#>      id name    slug    description notice   logo  type  date_launched is_hidden
+#>   <int> <chr>   <chr>   <lgl>       <chr>    <chr> <chr> <chr>             <int>
+#> 1    24 Kraken  kraken  NA          ""       http~ ""    2011-07-28T0~         0
+#> 2   270 Binance binance NA          "Binanc~ http~ ""    2017-07-14T0~         0
+#> # ... with 10 more variables: is_redistributable <lgl>, maker_fee <dbl>,
 #> #   taker_fee <dbl>, spot_volume_usd <dbl>, spot_volume_last_updated <dttm>,
 #> #   status <dttm>, tags <lgl>, urls <list>, countries <lgl>, fiats <list>
 ```
@@ -303,8 +299,8 @@ ex_info %>% select(contains("spot"))
 #> # A tibble: 2 x 2
 #>   spot_volume_usd spot_volume_last_updated
 #>             <dbl> <dttm>                  
-#> 1      988755413. 2021-06-24 21:40:15     
-#> 2    18258047855. 2021-06-24 21:40:15
+#> 1     1847576911. 2021-09-20 21:10:15     
+#> 2    33799726810. 2021-09-20 21:10:15
 ```
 
 or the fiat currencies allowed:
@@ -324,7 +320,7 @@ ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
 #>  8 binance AED  
 #>  9 binance ARS  
 #> 10 binance AUD  
-#> # … with 43 more rows
+#> # ... with 43 more rows
 ```
 
 ### Author/License
