@@ -37,7 +37,7 @@
 #'
 #' @export
 #'
-crypto_list <- function(only_active=TRUE,add_untracked=FALSE) {
+crypto_list <- function(only_active=TRUE, add_untracked=FALSE) {
   # get current coins
   active_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/map")
   active_coins <- jsonlite::fromJSON(active_url)
@@ -89,7 +89,7 @@ crypto_list <- function(only_active=TRUE,add_untracked=FALSE) {
 #'
 #' @export
 #'
-exchange_list <- function(only_active=TRUE,add_untracked=FALSE) {
+exchange_list <- function(only_active=TRUE, add_untracked=FALSE) {
   # get current coins
   active_url <- paste0("https://web-api.coinmarketcap.com/v1/exchange/map")
   active_exchanges <- jsonlite::fromJSON(active_url)
@@ -106,6 +106,16 @@ exchange_list <- function(only_active=TRUE,add_untracked=FALSE) {
     untracked_exchanges <- jsonlite::fromJSON(untracked_url)
     exchanges <- dplyr::bind_rows(exchanges,
                               untracked_exchanges$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(5:6,as.Date),is_active=-1)) %>% dplyr::arrange(id)
+  }
+  # wait 60s before finishing (or you might end up with the web-api 60s bug)
+  if (finalWait){
+    pb <- progress_bar$new(
+      format = "Final wait [:bar] :percent eta: :eta",
+      total = 60, clear = FALSE, width= 60)
+    for (i in 1:60) {
+      pb$tick()
+      Sys.sleep(1)
+    }
   }
   return(exchanges %>% dplyr::select(id:last_historical_data) %>% dplyr::distinct() %>% dplyr::arrange(id))
 }

@@ -37,6 +37,10 @@ It allows the user to retrieve
 - `exchange_list()` a list of all exchanges available as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMap)
 - `exchange_info()` a list of all information available for all given exchanges according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeInfo)
 
+# Update
+
+Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new "feature" introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again.
+
 ## Installation
 
 You can install `crypto2` from CRAN with 

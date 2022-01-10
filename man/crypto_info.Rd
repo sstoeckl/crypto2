@@ -4,7 +4,12 @@
 \alias{crypto_info}
 \title{Retrieves info (urls, logo, description, tags, platform, date_added, notice, status) on CMC for given id or slug}
 \usage{
-crypto_info(coin_list = NULL, limit = NULL, requestLimit = 300)
+crypto_info(
+  coin_list = NULL,
+  limit = NULL,
+  requestLimit = 300,
+  finalWait = TRUE
+)
 }
 \arguments{
 \item{coin_list}{string if NULL retrieve all currently active coins (\code{crypto_list()}),
@@ -13,6 +18,8 @@ or provide list of cryptocurrencies in the \code{crypto_list()} format (e.g. cur
 \item{limit}{integer Return the top n records, default is all tokens}
 
 \item{requestLimit}{limiting the length of request URLs when bundling the api calls}
+
+\item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 }
 \value{
 List of (active and historically existing) cryptocurrencies in a tibble:

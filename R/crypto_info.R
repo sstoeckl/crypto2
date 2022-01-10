@@ -6,6 +6,7 @@
 #' or provide list of cryptocurrencies in the `crypto_list()` format (e.g. current and/or dead coins since 2015)
 #' @param limit integer Return the top n records, default is all tokens
 #' @param requestLimit limiting the length of request URLs when bundling the api calls
+#' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #'
 #' @return List of (active and historically existing) cryptocurrencies in a tibble:
 #'   \item{id}{CMC id (unique identifier)}
@@ -50,7 +51,7 @@
 #'
 #' @export
 #'
-crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300) {
+crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, finalWait = TRUE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -112,9 +113,20 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300) {
 
   # results
   results <- do.call(rbind, out_all)
+  message(cli::cat_bullet("Sleep for 60s before finishing to not have next function call end up with this data!", bullet = "pointer",bullet_col = "red"))
 
   if (length(results) == 0L) stop("No coin info data downloaded.", call. = FALSE)
 
+  # wait 60s before finishing (or you might end up with the web-api 60s bug)
+  if (finalWait){
+    pb <- progress_bar$new(
+      format = "Final wait [:bar] :percent eta: :eta",
+      total = 60, clear = FALSE, width= 60)
+    for (i in 1:60) {
+      pb$tick()
+      Sys.sleep(1)
+    }
+  }
   return(results)
 }
 #' Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given exchange slug
@@ -125,6 +137,7 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300) {
 #' or provide list of exchanges in the `exchange_list()` format (e.g. current and/or delisted)
 #' @param limit integer Return the top n records, default is all exchanges
 #' @param requestLimit limiting the length of request URLs when bundling the api calls
+#' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #'
 #' @return List of (active and historically existing) exchanges in a tibble:
 #'   \item{id}{CMC exchange id (unique identifier)}
@@ -167,7 +180,7 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300) {
 #'
 #' @export
 #'
-exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 300) {
+exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 300, finalWait = TRUE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(exchange_list)) exchange_list <- exchange_list()
   # limit amount of exchanges downloaded
@@ -232,6 +245,17 @@ exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 300
   results <- do.call(rbind, out_all)
 
   if (length(results) == 0L) stop("No exchange info data downloaded.", call. = FALSE)
+
+  # wait 60s before finishing (or you might end up with the web-api 60s bug)
+  if (finalWait){
+    pb <- progress_bar$new(
+      format = "Final wait [:bar] :percent eta: :eta",
+      total = 60, clear = FALSE, width= 60)
+    for (i in 1:60) {
+      pb$tick()
+      Sys.sleep(1)
+    }
+  }
 
   return(results)
 }

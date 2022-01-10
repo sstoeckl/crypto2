@@ -15,6 +15,7 @@
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
 #' @param sleep integer Seconds to sleep for between API requests
 #' @param requestLimit limiting the length of request URLs when bundling the api calls
+#' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #
 #' @return Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
 #'   \item{timestamp}{Timestamp of entry in database}
@@ -51,7 +52,8 @@
 #' \dontrun{
 #'
 #' # Retrieving market history for ALL crypto currencies
-#' all_coins <- crypto_history(limit = 1)
+#' all_coins <- crypto_history(limit = 2)
+#' one_coin <- crypto_history(limit = 1)
 #'
 #' # Retrieving market history since 2020 for ALL crypto currencies
 #' all_coins <- crypto_history(start_date = '20200101',limit=10)
@@ -69,7 +71,7 @@
 #'
 #' @export
 #'
-crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL, requestLimit = 300) {
+crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL, requestLimit = 300, finalWait = TRUE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -114,8 +116,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
                          total = nrow(id_vec), clear = FALSE)
   message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",bullet_col = "green"))
   data <- id_vec %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x)))
-  data2 <- data$out %>% unlist(.,recursive=FALSE)
-  data2 <- data$out %>% unlist(.,recursive=FALSE)
+  if (limit==1) {data2 <- data$out} else {data2 <- data$out %>% unlist(.,recursive=FALSE)}
   # 2. Here comes the second part: Clean and create dataset
   map_scrape <- function(lout){
     pb2$tick()
@@ -134,7 +135,6 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   }
   # Modify function to run insistently.
   insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
-  # 2. Here comes the second part: Clean and create dataset
   # Progress Bar 2
   pb2 <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
                           total = length(data2), clear = FALSE)
@@ -143,6 +143,16 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
 
   # results
   results <- do.call(rbind, out_info) %>% tibble::as_tibble() %>% left_join(coin_list %>% select(id, slug), by ="id") %>% relocate(slug, .after = id)
+  # wait 60s before finishing (or you might end up with the web-api 60s bug)
+  if (finalWait){
+    pb <- progress_bar$new(
+    format = "Final wait [:bar] :percent eta: :eta",
+    total = 60, clear = FALSE, width= 60)
+    for (i in 1:60) {
+      pb$tick()
+      Sys.sleep(1)
+    }
+  }
 
   return(results)
 }

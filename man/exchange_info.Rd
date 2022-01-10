@@ -4,7 +4,12 @@
 \alias{exchange_info}
 \title{Retrieves info (urls,logo,description,tags,platform,date_added,notice,status) on CMC for given exchange slug}
 \usage{
-exchange_info(exchange_list = NULL, limit = NULL, requestLimit = 300)
+exchange_info(
+  exchange_list = NULL,
+  limit = NULL,
+  requestLimit = 300,
+  finalWait = TRUE
+)
 }
 \arguments{
 \item{exchange_list}{string if NULL retrieve all currently active exchanges (\code{exchange_list()}),
@@ -13,6 +18,8 @@ or provide list of exchanges in the \code{exchange_list()} format (e.g. current 
 \item{limit}{integer Return the top n records, default is all exchanges}
 
 \item{requestLimit}{limiting the length of request URLs when bundling the api calls}
+
+\item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 }
 \value{
 List of (active and historically existing) exchanges in a tibble:

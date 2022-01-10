@@ -11,7 +11,8 @@ crypto_history(
   start_date = NULL,
   end_date = NULL,
   sleep = NULL,
-  requestLimit = 300
+  requestLimit = 300,
+  finalWait = TRUE
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ than one are selected please separate by comma (e.g. "USD,BTC")}
 \item{sleep}{integer Seconds to sleep for between API requests}
 
 \item{requestLimit}{limiting the length of request URLs when bundling the api calls}
+
+\item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 }
 \value{
 Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
@@ -63,7 +66,8 @@ to predict future market movements or trends.
 \dontrun{
 
 # Retrieving market history for ALL crypto currencies
-all_coins <- crypto_history(limit = 1)
+all_coins <- crypto_history(limit = 2)
+one_coin <- crypto_history(limit = 1)
 
 # Retrieving market history since 2020 for ALL crypto currencies
 all_coins <- crypto_history(start_date = '20200101',limit=10)
