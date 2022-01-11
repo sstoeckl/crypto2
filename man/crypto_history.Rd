@@ -11,7 +11,6 @@ crypto_history(
   start_date = NULL,
   end_date = NULL,
   sleep = NULL,
-  requestLimit = 300,
   finalWait = TRUE
 )
 }
@@ -29,8 +28,6 @@ than one are selected please separate by comma (e.g. "USD,BTC")}
 \item{end_date}{string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed}
 
 \item{sleep}{integer Seconds to sleep for between API requests}
-
-\item{requestLimit}{limiting the length of request URLs when bundling the api calls}
 
 \item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 }

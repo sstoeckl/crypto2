@@ -14,7 +14,6 @@
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
 #' @param sleep integer Seconds to sleep for between API requests
-#' @param requestLimit limiting the length of request URLs when bundling the api calls
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #
 #' @return Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
@@ -71,7 +70,7 @@
 #'
 #' @export
 #'
-crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL, requestLimit = 300, finalWait = TRUE) {
+crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL, finalWait = TRUE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -84,9 +83,10 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   # extract slugs & ids
   slugs <- coin_list %>% distinct(slug)
   ids <- coin_list %>% distinct(id)
-  # Create slug_vec with requestLimit elements concatenated together
-  n <- ceiling(nrow(ids)/requestLimit)
-  id_vec <- plyr::laply(split(ids$id, sort(ids$id%%n)),function(x) paste0(x,collapse=","))
+  # Create slug_vec with number of elemnts determined by max length of retrieved datapoints (10000)
+  dl <- length(seq(as.Date(start_date, format="%Y%m%d"),as.Date(end_date, format="%Y%m%d"),"day"))
+  n <- ceiling(nrow(ids)/floor(10000/dl))
+  id_vec <- plyr::laply(split(ids$id, sort(seq_len(nrow(ids))%%n)),function(x) paste0(x,collapse=","))
   # define scraper_funtion
   scrape_web <- function(historyurl){
     page <- jsonlite::fromJSON(historyurl)
