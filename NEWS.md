@@ -1,5 +1,13 @@
 # crypto2 (development version)
 
+# crypto 1.4.2
+
+Repaired the history retrieval due to te fact that one api call can only retrieve 1000 data points. Therefore we have to call more often on the api when retrieving the entire history.
+
+# crypto 1.4.1
+
+Added and corrected a waiter function to wait an additional 60 seconds after the end of the history command before another command could be executed (to not accidentally retrieve the same outdated data). Fixed the waiter.
+
 # crypto2 1.4.0
 
 Due to a change in the web-api of CMC we can only make one call to the api per minute (else, it will just deliver the same output as for the first call of the 60 seconds). To reduce the overhang, I have redesigned the interfaces to retrieve as many ids from one api call as possible (limited by the 2000 character limitation of the URL). We can set `requestLimit` to increase/decrease the number of simultaneous ids that are retrieved from CMC.
