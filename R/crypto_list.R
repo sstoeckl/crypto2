@@ -107,15 +107,5 @@ exchange_list <- function(only_active=TRUE, add_untracked=FALSE) {
     exchanges <- dplyr::bind_rows(exchanges,
                               untracked_exchanges$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(5:6,as.Date),is_active=-1)) %>% dplyr::arrange(id)
   }
-  # wait 60s before finishing (or you might end up with the web-api 60s bug)
-  if (finalWait){
-    pb <- progress_bar$new(
-      format = "Final wait [:bar] :percent eta: :eta",
-      total = 60, clear = FALSE, width= 60)
-    for (i in 1:60) {
-      pb$tick()
-      Sys.sleep(1)
-    }
-  }
   return(exchanges %>% dplyr::select(id:last_historical_data) %>% dplyr::distinct() %>% dplyr::arrange(id))
 }
