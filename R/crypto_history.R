@@ -13,7 +13,8 @@
 #' @param limit integer Return the top n records, default is all tokens
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
-#' @param interval string Interval with which to sample data, default 'daily'. Must be one of `"hourly" "daily" "weekly" "monthly" "yearly" "1h" "2h" "3h" "4h" "6h" "12h" "1d" "2d" "3d" "7d" "14d" "15d" "30d" "60d" "90d" "365d"`
+#' @param interval string Interval with which to sample data, default 'daily'. Must be one of `"hourly" "daily" "weekly"
+#' "monthly" "yearly" "1d" "2d" "3d" "7d" "14d" "15d" "30d" "60d" "90d" "365d"`
 #' @param sleep integer Seconds to sleep for between API requests
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #
@@ -63,7 +64,7 @@
 #'               dplyr::filter(first_historical_data<="2015-12-31",
 #'               last_historical_data>="2015-01-01")
 #' coins_2015 <- crypto_history(coin_list = coin_list_2015,
-#' start_date = "20150101", end_date="20151231", limit=20)
+#' start_date = "20150101", end_date="20151231", limit=20, interval="monthly")
 #'
 #' }
 #'
@@ -81,11 +82,12 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   UNIXstart <- format(as.numeric(as.POSIXct(start_date, format="%Y%m%d")),scientific = FALSE)
   if (is.null(end_date)) { end_date <- gsub("-", "", lubridate::today()) }
   UNIXend <- format(as.numeric(as.POSIXct(end_date, format="%Y%m%d", tz = "UTC")),scientific = FALSE)
-  if (is.null(interval)) { 
-    interval <- 'daily' 
+  if (is.null(interval)) {
+    interval <- 'daily'
   } else if (
-    !(interval %in% c("hourly", "daily", "weekly", "monthly", "yearly", 
-                      "1h", "2h", "3h", "4h", "6h", "12h", "1d", "2d", 
+    !(interval %in% c("hourly", "daily", "weekly", "monthly", "yearly",
+                      #"1h", "2h", "3h", "4h", "6h", "12h",
+                      "1d", "2d",
                       "3d", "7d", "14d", "15d", "30d", "60d", "90d", "365d"))){
     warning('interval was not valid, using "daily". see documentation for allowed values.')
     interval <- 'daily'

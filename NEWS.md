@@ -1,5 +1,9 @@
 # crypto2 (development version)
 
+# crypto 1.4.3 (development)
+
+change limit==1 bug, add interval parameter (offered by pull-request)
+
 # crypto 1.4.2
 
 Repaired the history retrieval due to te fact that one api call can only retrieve 1000 data points. Therefore we have to call more often on the api when retrieving the entire history.

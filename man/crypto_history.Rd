@@ -10,6 +10,7 @@ crypto_history(
   limit = NULL,
   start_date = NULL,
   end_date = NULL,
+  interval = NULL,
   sleep = NULL,
   finalWait = TRUE
 )
@@ -26,6 +27,8 @@ than one are selected please separate by comma (e.g. "USD,BTC")}
 \item{start_date}{string Start date to retrieve data from, format 'yyyymmdd'}
 
 \item{end_date}{string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed}
+
+\item{interval}{string Interval with which to sample data, default 'daily'. Must be one of \verb{"hourly" "daily" "weekly" "monthly" "yearly" "1d" "2d" "3d" "7d" "14d" "15d" "30d" "60d" "90d" "365d"}}
 
 \item{sleep}{integer Seconds to sleep for between API requests}
 
@@ -74,7 +77,7 @@ coin_list_2015 <- crypto_list(only_active=TRUE) \%>\%
               dplyr::filter(first_historical_data<="2015-12-31",
               last_historical_data>="2015-01-01")
 coins_2015 <- crypto_history(coin_list = coin_list_2015,
-start_date = "20150101", end_date="20151231", limit=20)
+start_date = "20150101", end_date="20151231", limit=20, interval="monthly")
 
 }
 
