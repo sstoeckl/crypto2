@@ -13,6 +13,7 @@
 #' @param limit integer Return the top n records, default is all tokens
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
+#' @param interval string Interval with which to sample data, default 'daily'. Must be one of `"hourly" "daily" "weekly" "monthly" "yearly" "1h" "2h" "3h" "4h" "6h" "12h" "1d" "2d" "3d" "7d" "14d" "15d" "30d" "60d" "90d" "365d"`
 #' @param sleep integer Seconds to sleep for between API requests
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #
@@ -70,7 +71,7 @@
 #'
 #' @export
 #'
-crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, sleep = NULL, finalWait = TRUE) {
+crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, interval = NULL, sleep = NULL, finalWait = TRUE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -80,6 +81,15 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   UNIXstart <- format(as.numeric(as.POSIXct(start_date, format="%Y%m%d")),scientific = FALSE)
   if (is.null(end_date)) { end_date <- gsub("-", "", lubridate::today()) }
   UNIXend <- format(as.numeric(as.POSIXct(end_date, format="%Y%m%d", tz = "UTC")),scientific = FALSE)
+  if (is.null(interval)) { 
+    interval <- 'daily' 
+  } else if (
+    !(interval %in% c("hourly", "daily", "weekly", "monthly", "yearly", 
+                      "1h", "2h", "3h", "4h", "6h", "12h", "1d", "2d", 
+                      "3d", "7d", "14d", "15d", "30d", "60d", "90d", "365d"))){
+    warning('interval was not valid, using "daily". see documentation for allowed values.')
+    interval <- 'daily'
+  }
   # extract slugs & ids
   slugs <- coin_list %>% distinct(slug)
   ids <- coin_list %>% distinct(id)
@@ -102,6 +112,8 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     UNIXend,
     "&time_start=",
     UNIXstart,
+    "&interval=",
+    interval,
     "&id=",
    id
   ))
