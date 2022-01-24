@@ -116,7 +116,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
                          total = nrow(id_vec), clear = FALSE)
   message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",bullet_col = "green"))
   data <- id_vec %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x)))
-  if (limit==1) {data2 <- data$out} else {data2 <- data$out %>% unlist(.,recursive=FALSE)}
+  if (nrow(coin_list)==1) {data2 <- data$out} else {data2 <- data$out %>% unlist(.,recursive=FALSE)}
   # 2. Here comes the second part: Clean and create dataset
   map_scrape <- function(lout){
     pb2$tick()
