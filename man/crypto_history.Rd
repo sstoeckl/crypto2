@@ -77,7 +77,7 @@ coin_list_2015 <- crypto_list(only_active=TRUE) \%>\%
               dplyr::filter(first_historical_data<="2015-12-31",
               last_historical_data>="2015-01-01")
 coins_2015 <- crypto_history(coin_list = coin_list_2015,
-start_date = "20150101", end_date="20151231", limit=20, interval="monthly")
+start_date = "20150101", end_date="20151231", limit=20, interval="90d")
 
 }
 

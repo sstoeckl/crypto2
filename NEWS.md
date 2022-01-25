@@ -2,7 +2,7 @@
 
 # crypto 1.4.3 (development)
 
-change limit==1 bug, add interval parameter (offered by pull-request)
+change limit==1 bug, add interval parameter (offered by pull-request), also change the amount of id splits to allow for max url length 2000
 
 # crypto 1.4.2
 

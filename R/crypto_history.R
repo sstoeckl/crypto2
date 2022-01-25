@@ -102,7 +102,8 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   if(interval=="2d"){dl<-dl/2}else if(interval=="3d"){dl<-dl/3}else if(interval=="7d"|interval=="weekly"){dl<-dl/7} else
     if(interval=="14d"){dl<-dl/14}else if(interval=="15d"){dl<-dl/15}else if(interval=="30d"|interval=="monthly"){dl<-dl/30} else
     if(interval=="60d"){dl<-dl/60}else if(interval=="90d"){dl<-dl/90}else if(interval=="365d"|interval=="yearly"){dl<-dl/365}
-  n <- ceiling(nrow(ids)/floor(10000/dl))
+  # determine number of splits based on either max 10000 datapoints or max-length of url
+  n <- max(ceiling(nrow(ids)/floor(10000/dl)),ceiling(nrow(ids)/(2000-142)*6))
   id_vec <- plyr::laply(split(ids$id, sort(seq_len(nrow(ids))%%n)),function(x) paste0(x,collapse=","))
   # define scraper_function
   scrape_web <- function(historyurl){
