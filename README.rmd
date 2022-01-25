@@ -39,7 +39,7 @@ It allows the user to retrieve
 
 # Update
 
-Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new "feature" introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again.
+Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new "feature" introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again. Additionally, since version v1.4.3 the package allows for a data `interval` larger than daily (e.g. '2d' or '7d'/'weekly')
 
 ## Installation
 
@@ -107,6 +107,16 @@ coin_hist <- crypto_history(coins, limit=3, start_date="20210101", end_date="202
 
 # and give the first two times of information per coin
 coin_hist %>% group_by(slug) %>% slice(1:2)
+```
+
+Similarly, we could download the same data on a monthly basis.
+
+```{r historym}
+# retrieve historical data for all (the first 3) of them
+coin_hist_m <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210501", interval ="monthly")
+
+# and give the first two times of information per coin
+coin_hist_m %>% group_by(slug) %>% slice(1:2)
 ```
 
 Alternatively, we could determine the price of these coins in other currencies. A list of such currencies is available as `fiat_list()`

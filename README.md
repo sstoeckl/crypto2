@@ -55,7 +55,8 @@ Since version 1.4.0 the package has been reworked to retrieve as many
 assets as possible with one api call, as there is a new “feature”
 introduced by CMC to send back the initially requested data for each api
 call within 60 seconds. So one needs to wait 60s before calling the api
-again.
+again. Additionally, since version v1.4.3 the package allows for a data
+`interval` larger than daily (e.g. ‘2d’ or ‘7d’/‘weekly’)
 
 ## Installation
 
@@ -120,6 +121,8 @@ coin_info <- crypto_info(coins,limit=3)
 #> 
 #> Scraping  https://web-api.coinmarketcap.com/v1/cryptocurrency/info?id=1,2,3  with  65  characters!
 #> > Processing crypto info
+#> 
+#> > Sleep for 60s before finishing to not have next function call end up with this data!
 #> 
 
 # and give the first two lines of information per coin
@@ -198,6 +201,32 @@ coin_hist %>% group_by(slug) %>% slice(1:2)
 #> #   time_open <dttm>, time_close <dttm>, time_high <dttm>, time_low <dttm>
 ```
 
+Similarly, we could download the same data on a monthly basis.
+
+``` r
+# retrieve historical data for all (the first 3) of them
+coin_hist_m <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210501", interval ="monthly")
+#> > Scraping historical crypto data
+#> 
+#> > Processing historical crypto data
+#> 
+
+# and give the first two times of information per coin
+coin_hist_m %>% group_by(slug) %>% slice(1:2)
+#> # A tibble: 6 x 16
+#> # Groups:   slug [3]
+#>   timestamp              id slug   name   symbol ref_cur    open    high     low
+#>   <dttm>              <int> <chr>  <chr>  <chr>  <chr>     <dbl>   <dbl>   <dbl>
+#> 1 2021-01-01 23:59:59     1 bitco~ Bitco~ BTC    USD     2.90e+4 2.96e+4 2.88e+4
+#> 2 2021-02-01 23:59:59     1 bitco~ Bitco~ BTC    USD     3.31e+4 3.46e+4 3.24e+4
+#> 3 2021-01-01 23:59:59     2 litec~ Litec~ LTC    USD     1.25e+2 1.33e+2 1.23e+2
+#> 4 2021-02-01 23:59:59     2 litec~ Litec~ LTC    USD     1.30e+2 1.36e+2 1.26e+2
+#> 5 2021-01-01 23:59:59     3 namec~ Namec~ NMC    USD     4.39e-1 4.63e-1 4.32e-1
+#> 6 2021-02-01 23:59:59     3 namec~ Namec~ NMC    USD     7.82e-1 8.05e-1 7.48e-1
+#> # ... with 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
+#> #   time_open <dttm>, time_close <dttm>, time_high <dttm>, time_low <dttm>
+```
+
 Alternatively, we could determine the price of these coins in other
 currencies. A list of such currencies is available as `fiat_list()`
 
@@ -260,20 +289,20 @@ a list of active/inactive/untracked exchanges using `exchange_list()`:
 ``` r
 exchanges <- exchange_list(only_active=TRUE)
 exchanges
-#> # A tibble: 454 x 6
+#> # A tibble: 457 x 6
 #>       id name         slug         is_active first_historical_~ last_historical~
 #>    <int> <chr>        <chr>            <int> <date>             <date>          
-#>  1    16 Poloniex     poloniex             1 2018-04-26         2022-01-10      
-#>  2    22 Bittrex      bittrex              1 2018-04-26         2022-01-10      
-#>  3    24 Kraken       kraken               1 2018-04-26         2022-01-10      
+#>  1    16 Poloniex     poloniex             1 2018-04-26         2022-01-25      
+#>  2    22 Bittrex      bittrex              1 2018-04-26         2022-01-25      
+#>  3    24 Kraken       kraken               1 2018-04-26         2022-01-25      
 #>  4    32 Bleutrade    bleutrade            1 2018-04-26         2021-10-04      
-#>  5    34 Bittylicious bittylicious         1 2018-04-26         2022-01-10      
-#>  6    36 CEX.IO       cex-io               1 2018-04-26         2022-01-10      
-#>  7    37 Bitfinex     bitfinex             1 2018-04-26         2022-01-10      
-#>  8    42 HitBTC       hitbtc               1 2018-04-26         2022-01-10      
-#>  9    50 EXMO         exmo                 1 2018-04-26         2022-01-10      
-#> 10    61 Okcoin       okcoin               1 2018-04-26         2022-01-10      
-#> # ... with 444 more rows
+#>  5    34 Bittylicious bittylicious         1 2018-04-26         2022-01-25      
+#>  6    36 CEX.IO       cex-io               1 2018-04-26         2022-01-25      
+#>  7    37 Bitfinex     bitfinex             1 2018-04-26         2022-01-25      
+#>  8    42 HitBTC       hitbtc               1 2018-04-26         2022-01-25      
+#>  9    50 EXMO         exmo                 1 2018-04-26         2022-01-25      
+#> 10    61 Okcoin       okcoin               1 2018-04-26         2022-01-25      
+#> # ... with 447 more rows
 ```
 
 and then download information on “binance” and “kraken”:
@@ -286,14 +315,14 @@ ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')))
 #> > Processing exchange info
 #> 
 ex_info
-#> # A tibble: 2 x 18
+#> # A tibble: 2 x 19
 #>      id name    slug    description notice   logo  type  date_launched is_hidden
 #> * <int> <chr>   <chr>   <lgl>       <chr>    <chr> <chr> <chr>             <int>
 #> 1    24 Kraken  kraken  NA          ""       http~ ""    2011-07-28T0~         0
 #> 2   270 Binance binance NA          "Binanc~ http~ ""    2017-07-14T0~         0
-#> # ... with 9 more variables: is_redistributable <lgl>, maker_fee <dbl>,
+#> # ... with 10 more variables: is_redistributable <lgl>, maker_fee <dbl>,
 #> #   taker_fee <dbl>, spot_volume_usd <dbl>, spot_volume_last_updated <dttm>,
-#> #   tags <lgl>, urls <list>, countries <lgl>, fiats <list>
+#> #   weekly_visits <int>, tags <lgl>, urls <list>, countries <lgl>, fiats <list>
 ```
 
 Then we can access information on the fee structure,
@@ -303,8 +332,8 @@ ex_info %>% select(contains("fee"))
 #> # A tibble: 2 x 2
 #>   maker_fee taker_fee
 #>       <dbl>     <dbl>
-#> 1     -0.02     0.075
-#> 2      0.02     0.04
+#> 1      0.02      0.05
+#> 2      0.02      0.04
 ```
 
 the amount of cryptocurrencies being traded (in USD)
@@ -314,8 +343,8 @@ ex_info %>% select(contains("spot"))
 #> # A tibble: 2 x 2
 #>   spot_volume_usd spot_volume_last_updated
 #>             <dbl> <dttm>                  
-#> 1     1292760024. 2022-01-10 19:30:16     
-#> 2    18540127903. 2022-01-10 19:30:16
+#> 1     1283889675. 2022-01-25 16:40:15     
+#> 2    18800952081. 2022-01-25 16:40:15
 ```
 
 or the fiat currencies allowed:
