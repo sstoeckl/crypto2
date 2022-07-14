@@ -44,7 +44,7 @@
 #' \dontrun{
 #' # return new listings from the last 30 days
 #' new_listings <- crypto_listings(which="new", quote=FALSE)
-#' new_listings2 <- crypto_listings(which="new", quote=FALSE, convert="BTC")
+#' new_listings2 <- crypto_listings(which="new", quote=FALSE, convert="BTC,USD")
 #' # return latest listing (last available data of all CC including quotes)
 #' latest_listings <- crypto_listings(which="latest", quote=TRUE)
 #'
@@ -54,7 +54,7 @@
 #'
 #' # report in two different currencies
 #' listings_2014w1_BTC <- crypto_listings(which="historical", quote=TRUE,
-#' start_date = "20140101", end_date="20140107", interval="day", convert="USD,BTC")
+#' start_date = "20140101", end_date="20140107", interval="day", convert="BTC")
 #' }
 #'
 #' @name crypto_listings
