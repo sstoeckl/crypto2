@@ -30,6 +30,7 @@
 #'   \item{low}{Market low}
 #'   \item{close}{Market close}
 #'   \item{volume}{Volume 24 hours}
+#'   \item{market_cap}{Market cap - close x circulatingy supply}
 #'   \item{time_open}{Timestamp of open}
 #'   \item{time_close}{Timestamp of close}
 #'   \item{time_high}{Timestamp of high}
