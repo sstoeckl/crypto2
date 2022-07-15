@@ -2,12 +2,13 @@
 #'
 #' This code uses the web api. It retrieves listing data (latest/new/historic) and does not require an 'API' key.
 #'
-#' @param which Shall the code retrieve the latest listing, the new listings or a historic listing?
-#' @param convert (default: USD) to one or more of available fiat or precious metals prices (`fiat_list()`). If more
-#' than one are selected please separate by comma (e.g. "USD,BTC")
+#' @param which string Shall the code retrieve the latest listing, the new listings or a historic listing?
+#' @param convert string (default: USD) to one or more of available fiat or precious metals prices (`fiat_list()`). If more
+#' than one are selected please separate by comma (e.g. "USD,BTC"), only necessary if 'quote=TRUE'
+#' @param limit integer Return the top n records, default is 5000 (max allowed by CMC)
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
-#' @param quote set to TRUE if you want to include price data (FALSE=default)
+#' @param quote logical set to TRUE if you want to include price data (FALSE=default)
 #'
 #' @return List of latest/new/historic listings of cryptocurrencies in a tibble (depending on the "which"-switch and
 #' whether "quote" is requested, the result may only contain some of the following variables):
@@ -44,7 +45,7 @@
 #' \dontrun{
 #' # return new listings from the last 30 days
 #' new_listings <- crypto_listings(which="new", quote=FALSE)
-#' new_listings2 <- crypto_listings(which="new", quote=FALSE, convert="BTC,USD")
+#' new_listings2 <- crypto_listings(which="new", quote=TRUE, convert="BTC,USD")
 #' # return latest listing (last available data of all CC including quotes)
 #' latest_listings <- crypto_listings(which="latest", quote=TRUE)
 #'
@@ -53,20 +54,20 @@
 #' start_date = "20140101", end_date="20140107", interval="day")
 #'
 #' # report in two different currencies
-#' listings_2014w1_BTC <- crypto_listings(which="historical", quote=TRUE,
-#' start_date = "20140101", end_date="20140107", interval="day", convert="BTC")
+#' listings_2014w1_USDBTC <- crypto_listings(which="historical", quote=TRUE,
+#' start_date = "20140101", end_date="20140107", interval="day", convert="USD,BTC")
 #' }
 #'
 #' @name crypto_listings
 #'
 #' @export
 #'
-crypto_listings <- function(which="latest", convert="USD", start_date = NULL, end_date = NULL, interval = "day", quote=FALSE) {
+crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_date = NULL, end_date = NULL, interval = "day", quote=FALSE) {
   # get current coins
   listing_raw <- NULL
   if (which=="new"){
     for (i in 1:10){
-      new_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/new?limit=5000&convert=",convert,"&start=",(i-1)*5000+1)
+      new_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/new?limit=",limit,"&convert=",convert,"&start=",(i-1)*5000+1)
       new_raw <- jsonlite::fromJSON(new_url)
       listing_raw <- bind_rows(listing_raw,
                                new_raw$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(c(date_added,last_updated),as.Date)) %>%
@@ -75,12 +76,12 @@ crypto_listings <- function(which="latest", convert="USD", start_date = NULL, en
     }
     listing <- listing_raw %>% select(-tags,-quote,-platform) %>% unique()
     if (quote){
-      lquote <- listing_raw %>% select(quote) %>% tidyr::unnest_wider(quote)
+      lquote <- listing_raw %>% select(quote) %>% tidyr::unnest(quote) %>% tidyr::unnest(everything(), names_sep="_")
       listing <- listing_raw %>% select(-tags,-quote,-platform) %>% bind_cols(lquote) %>% unique()
     }
   } else if (which=="latest"){
     for (i in 1:10){
-      latest_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=5000",
+      latest_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=",limit,
                         "&aux=market_cap_by_total_supply&convert=",convert,"&start=",(i-1)*5000+1)
       latest_raw <- jsonlite::fromJSON(latest_url)
       listing_raw <- bind_rows(listing_raw,
@@ -90,16 +91,18 @@ crypto_listings <- function(which="latest", convert="USD", start_date = NULL, en
     }
     listing <- listing_raw %>% select(-quote) %>% unique()
     if (quote){
-      lquote <- listing_raw %>% select(quote) %>% tidyr::unnest(quote) %>% tidyr::unnest(cols=everything()) %>% select(-last_updated)
+      lquote <- listing_raw %>% select(quote) %>% tidyr::unnest(quote) %>% tidyr::unnest(everything(), names_sep="_")
       listing <- listing_raw %>% select(-quote) %>% bind_cols(lquote) %>% unique()
     }
   } else if (which=="historical"){
+    if (is.null(start_date)) { start_date <- "20130428" }
     sdate <- as.Date(start_date, format="%Y%m%d")
+    if (is.null(end_date)) { end_date <- gsub("-", "", lubridate::today()) }
     edate <- as.Date(end_date, format="%Y%m%d")
     dates <- seq(sdate, edate, by=interval)
     tbdate <- enframe(dates[which(dates<Sys.Date())],name=NULL) %>% rename(date=value) %>%
       mutate(historyurl = paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/historical?date=",dates,
-                                 "&limit=5000&sort=cmc_rank&sort_dir=asc&convert=",convert,"&start="))
+                                 "&limit=",limit,"&sort=cmc_rank&sort_dir=asc&convert=",convert,"&start="))
     # scraping tools
     scrape_web <- function(historyurl,quote){
       listing_raw <- NULL
@@ -113,7 +116,7 @@ crypto_listings <- function(which="latest", convert="USD", start_date = NULL, en
       }
       listing <- listing_raw %>% select(-tags,-quote,-platform) %>% unique()
       if (quote){
-        lquote <- listing_raw %>% select(quote) %>% tidyr::unnest(quote) %>% tidyr::unnest(cols=everything()) %>% select(-last_updated)
+        lquote <- listing_raw %>% select(quote) %>% tidyr::unnest(quote) %>% tidyr::unnest(everything(), names_sep="_")
         listing <- listing_raw %>% select(-tags,-quote,-platform) %>% bind_cols(lquote) %>% unique()
       }
       pb$tick()

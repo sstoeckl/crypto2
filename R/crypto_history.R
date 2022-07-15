@@ -13,8 +13,7 @@
 #' @param limit integer Return the top n records, default is all tokens
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
-#' @param interval string Interval with which to sample data, default 'daily'. Must be one of `"hourly" "daily" "weekly"
-#' "monthly" "yearly" "1d" "2d" "3d" "7d" "14d" "15d" "30d" "60d" "90d" "365d"`
+#' @param interval string Interval with which to sample data according to what `seq()` needs
 #' @param sleep integer Seconds to sleep for between API requests
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #

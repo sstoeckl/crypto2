@@ -7,6 +7,7 @@
 crypto_listings(
   which = "latest",
   convert = "USD",
+  limit = 5000,
   start_date = NULL,
   end_date = NULL,
   interval = "day",
@@ -14,16 +15,18 @@ crypto_listings(
 )
 }
 \arguments{
-\item{which}{Shall the code retrieve the latest listing, the new listings or a historic listing?}
+\item{which}{string Shall the code retrieve the latest listing, the new listings or a historic listing?}
 
-\item{convert}{(default: USD) to one or more of available fiat or precious metals prices (\code{fiat_list()}). If more
-than one are selected please separate by comma (e.g. "USD,BTC")}
+\item{convert}{string (default: USD) to one or more of available fiat or precious metals prices (\code{fiat_list()}). If more
+than one are selected please separate by comma (e.g. "USD,BTC"), only necessary if 'quote=TRUE'}
+
+\item{limit}{integer Return the top n records, default is 5000 (max allowed by CMC)}
 
 \item{start_date}{string Start date to retrieve data from, format 'yyyymmdd'}
 
 \item{end_date}{string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed}
 
-\item{quote}{set to TRUE if you want to include price data (FALSE=default)}
+\item{quote}{logical set to TRUE if you want to include price data (FALSE=default)}
 }
 \value{
 List of latest/new/historic listings of cryptocurrencies in a tibble (depending on the "which"-switch and
@@ -59,7 +62,7 @@ This code uses the web api. It retrieves listing data (latest/new/historic) and 
 \dontrun{
 # return new listings from the last 30 days
 new_listings <- crypto_listings(which="new", quote=FALSE)
-new_listings2 <- crypto_listings(which="new", quote=FALSE, convert="BTC")
+new_listings2 <- crypto_listings(which="new", quote=TRUE, convert="BTC,USD")
 # return latest listing (last available data of all CC including quotes)
 latest_listings <- crypto_listings(which="latest", quote=TRUE)
 
@@ -68,7 +71,7 @@ listings_2014w1 <- crypto_listings(which="historical", quote=TRUE,
 start_date = "20140101", end_date="20140107", interval="day")
 
 # report in two different currencies
-listings_2014w1_BTC <- crypto_listings(which="historical", quote=TRUE,
+listings_2014w1_USDBTC <- crypto_listings(which="historical", quote=TRUE,
 start_date = "20140101", end_date="20140107", interval="day", convert="USD,BTC")
 }
 

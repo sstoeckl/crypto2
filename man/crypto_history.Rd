@@ -28,7 +28,7 @@ than one are selected please separate by comma (e.g. "USD,BTC")}
 
 \item{end_date}{string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed}
 
-\item{interval}{string Interval with which to sample data, default 'daily'. Must be one of \verb{"hourly" "daily" "weekly" "monthly" "yearly" "1d" "2d" "3d" "7d" "14d" "15d" "30d" "60d" "90d" "365d"}}
+\item{interval}{string Interval with which to sample data according to what \code{seq()} needs}
 
 \item{sleep}{integer Seconds to sleep for between API requests}
 
