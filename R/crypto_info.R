@@ -6,6 +6,7 @@
 #' or provide list of cryptocurrencies in the `crypto_list()` format (e.g. current and/or dead coins since 2015)
 #' @param limit integer Return the top n records, default is all tokens
 #' @param requestLimit limiting the length of request URLs when bundling the api calls
+#' @param sleep integer (default 60) Seconds to sleep between API requests
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #'
 #' @return List of (active and historically existing) cryptocurrencies in a tibble:
@@ -51,7 +52,7 @@
 #'
 #' @export
 #'
-crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, finalWait = TRUE) {
+crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, sleep = 60, finalWait = TRUE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -74,7 +75,7 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, fina
   if (is.vector(id_vec)) id_vec <- tibble::enframe(id_vec,name = NULL, value = "id")
   # define backoff rate
   rate <- purrr::rate_delay(pause = 60,max_times = 2)
-  rate2 <- purrr::rate_delay(60)
+  rate2 <- purrr::rate_delay(sleep)
   #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
   # Modify function to run insistently.
   insistent_scrape <- purrr::possibly(purrr::insistently(purrr::slowly(scrape_web, rate2), rate, quiet = FALSE),otherwise=NULL)
@@ -137,6 +138,7 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, fina
 #' or provide list of exchanges in the `exchange_list()` format (e.g. current and/or delisted)
 #' @param limit integer Return the top n records, default is all exchanges
 #' @param requestLimit limiting the length of request URLs when bundling the api calls
+#' @param sleep integer (default 60) Seconds to sleep between API requests
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #'
 #' @return List of (active and historically existing) exchanges in a tibble:
@@ -180,7 +182,7 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, fina
 #'
 #' @export
 #'
-exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 300, finalWait = TRUE) {
+exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 300, sleep = 60, finalWait = TRUE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(exchange_list)) exchange_list <- exchange_list()
   # limit amount of exchanges downloaded
@@ -203,7 +205,7 @@ exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 300
   if (is.vector(id_vec)) id_vec <- tibble::enframe(id_vec,name = NULL, value = "id")
   # define backoff rate
   rate <- purrr::rate_delay(pause=5,max_times = 2)
-  rate2 <- purrr::rate_delay(60)
+  rate2 <- purrr::rate_delay(sleep)
   #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
   # Modify function to run insistently.
   insistent_scrape <- purrr::possibly(purrr::insistently(purrr::slowly(scrape_web, rate2), rate, quiet = FALSE),otherwise=NULL)

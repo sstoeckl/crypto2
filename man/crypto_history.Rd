@@ -11,7 +11,7 @@ crypto_history(
   start_date = NULL,
   end_date = NULL,
   interval = NULL,
-  sleep = NULL,
+  sleep = 60,
   finalWait = TRUE
 )
 }
@@ -30,7 +30,7 @@ than one are selected please separate by comma (e.g. "USD,BTC")}
 
 \item{interval}{string Interval with which to sample data according to what \code{seq()} needs}
 
-\item{sleep}{integer Seconds to sleep for between API requests}
+\item{sleep}{integer (default 60) Seconds to sleep between API requests}
 
 \item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 }

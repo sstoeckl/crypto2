@@ -13,8 +13,10 @@
 #' @param limit integer Return the top n records, default is all tokens
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
+#' @param interval string Interval with which to sample data, default 'daily'. Must be one of `"hourly" "daily" "weekly"
+#' "monthly" "yearly" "1d" "2d" "3d" "7d" "14d" "15d" "30d" "60d" "90d" "365d"`
 #' @param interval string Interval with which to sample data according to what `seq()` needs
-#' @param sleep integer Seconds to sleep for between API requests
+#' @param sleep integer (default 60) Seconds to sleep between API requests
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #
 #' @return Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
@@ -72,7 +74,7 @@
 #'
 #' @export
 #'
-crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, interval = NULL, sleep = NULL, finalWait = TRUE) {
+crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, interval = NULL, sleep = 60, finalWait = TRUE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -127,7 +129,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   ))
   # define backoff rate
   rate <- purrr::rate_delay(pause = 60,max_times = 2)
-  rate2 <- purrr::rate_delay(60)
+  rate2 <- purrr::rate_delay(sleep)
   #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
   # Modify function to run insistently.
   insistent_scrape <- purrr::possibly(purrr::insistently(purrr::slowly(scrape_web, rate2), rate, quiet = FALSE),otherwise=NULL)

@@ -8,6 +8,7 @@ exchange_info(
   exchange_list = NULL,
   limit = NULL,
   requestLimit = 300,
+  sleep = 60,
   finalWait = TRUE
 )
 }
@@ -18,6 +19,8 @@ or provide list of exchanges in the \code{exchange_list()} format (e.g. current 
 \item{limit}{integer Return the top n records, default is all exchanges}
 
 \item{requestLimit}{limiting the length of request URLs when bundling the api calls}
+
+\item{sleep}{integer (default 60) Seconds to sleep between API requests}
 
 \item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 }

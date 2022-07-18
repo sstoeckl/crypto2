@@ -11,7 +11,9 @@ crypto_listings(
   start_date = NULL,
   end_date = NULL,
   interval = "day",
-  quote = FALSE
+  quote = FALSE,
+  sleep = 60,
+  finalWait = TRUE
 )
 }
 \arguments{
@@ -26,7 +28,13 @@ than one are selected please separate by comma (e.g. "USD,BTC"), only necessary 
 
 \item{end_date}{string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed}
 
+\item{interval}{string Interval with which to sample data according to what \code{seq()} needs}
+
 \item{quote}{logical set to TRUE if you want to include price data (FALSE=default)}
+
+\item{sleep}{integer (default 60) Seconds to sleep between API requests}
+
+\item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 }
 \value{
 List of latest/new/historic listings of cryptocurrencies in a tibble (depending on the "which"-switch and
@@ -35,6 +43,8 @@ whether "quote" is requested, the result may only contain some of the following 
 \item{name}{Coin name}
 \item{symbol}{Coin symbol (not-unique)}
 \item{slug}{Coin URL slug (unique)}
+\item{date_added}{Date when the coin was added to the dataset}
+\item{last_updated}{Last update of the data in the database}
 \item{rank}{Current rank on CMC (if still active)}
 \item{market_cap}{market cap - close x circulatingy supply}
 \item{market_cap_by_total_supply}{market cap - close x total supply}

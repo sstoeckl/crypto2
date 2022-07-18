@@ -8,7 +8,10 @@
 #' @param limit integer Return the top n records, default is 5000 (max allowed by CMC)
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
+#' @param interval string Interval with which to sample data according to what `seq()` needs
 #' @param quote logical set to TRUE if you want to include price data (FALSE=default)
+#' @param sleep integer (default 60) Seconds to sleep between API requests
+#' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #'
 #' @return List of latest/new/historic listings of cryptocurrencies in a tibble (depending on the "which"-switch and
 #' whether "quote" is requested, the result may only contain some of the following variables):
@@ -16,6 +19,8 @@
 #'   \item{name}{Coin name}
 #'   \item{symbol}{Coin symbol (not-unique)}
 #'   \item{slug}{Coin URL slug (unique)}
+#'   \item{date_added}{Date when the coin was added to the dataset}
+#'   \item{last_updated}{Last update of the data in the database}
 #'   \item{rank}{Current rank on CMC (if still active)}
 #'   \item{market_cap}{market cap - close x circulatingy supply}
 #'   \item{market_cap_by_total_supply}{market cap - close x total supply}
@@ -62,7 +67,7 @@
 #'
 #' @export
 #'
-crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_date = NULL, end_date = NULL, interval = "day", quote=FALSE) {
+crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_date = NULL, end_date = NULL, interval = "day", quote=FALSE, sleep = 60, finalWait = TRUE) {
   # get current coins
   listing_raw <- NULL
   if (which=="new"){
@@ -124,7 +129,7 @@ crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_d
     }
     # define backoff rate
     rate <- purrr::rate_delay(pause = 60,max_times = 2)
-    rate2 <- purrr::rate_delay(0)
+    rate2 <- purrr::rate_delay(sleep)
     #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
     # Modify function to run insistently.
     insistent_scrape <- purrr::possibly(purrr::insistently(purrr::slowly(scrape_web, rate2), rate, quiet = FALSE),otherwise=NULL)
@@ -135,6 +140,16 @@ crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_d
     data <- tbdate %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x, quote)))
     # Modify massive dataframe
     listing <- data %>% select(-historyurl) %>% tidyr::unnest(out)
+  }
+  # wait 60s before finishing (or you might end up with the web-api 60s bug)
+  if (finalWait){
+    pb <- progress_bar$new(
+      format = "Final wait [:bar] :percent eta: :eta",
+      total = 60, clear = FALSE, width= 60)
+    for (i in 1:60) {
+      pb$tick()
+      Sys.sleep(1)
+    }
   }
   return(listing)
 }
