@@ -46,7 +46,7 @@ whether "quote" is requested, the result may only contain some of the following 
 \item{date_added}{Date when the coin was added to the dataset}
 \item{last_updated}{Last update of the data in the database}
 \item{rank}{Current rank on CMC (if still active)}
-\item{market_cap}{market cap - close x circulatingy supply}
+\item{market_cap}{market cap - close x circulating supply}
 \item{market_cap_by_total_supply}{market cap - close x total supply}
 \item{market_cap_dominance}{market cap dominance}
 \item{fully_diluted_market_cap}{fully diluted market cap}

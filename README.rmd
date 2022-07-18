@@ -39,6 +39,8 @@ It allows the user to retrieve
 
 # Update
 
+Since version 1.4.4 a new function `crypto_listings()` was introduced that retrieves new/latest/historical listings and listing information at CMC. Additionally some aspects of the other functions have been reworked. We noticed that `finalWait = TRUE` does not seem to be necessary at the moment, as well as `sleep` can be set to '0' seconds. If you experience strange behavior this might be due to the the api sending back strange (old) results. In this case let `sleep = 60` (the default) and `finalWait = TRUE` (the default).
+
 Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new "feature" introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again. Additionally, since version v1.4.3 the package allows for a data `interval` larger than daily (e.g. '2d' or '7d'/'weekly')
 
 ## Installation
@@ -75,7 +77,7 @@ Next we download information on the first three coins from that list.
 
 ```{r example-info}
 # retrieve information for all (the first 3) of those coins
-coin_info <- crypto_info(coins,limit=3)
+coin_info <- crypto_info(coins,limit=3, finalWait=FALSE)
 
 # and give the first two lines of information per coin
 coin_info
@@ -103,7 +105,7 @@ In a next step we download time series data for these coins.
 
 ```{r history}
 # retrieve historical data for all (the first 3) of them
-coin_hist <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210105")
+coin_hist <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
 
 # and give the first two times of information per coin
 coin_hist %>% group_by(slug) %>% slice(1:2)
@@ -113,7 +115,7 @@ Similarly, we could download the same data on a monthly basis.
 
 ```{r historym}
 # retrieve historical data for all (the first 3) of them
-coin_hist_m <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210501", interval ="monthly")
+coin_hist_m <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210501", interval ="monthly", finalWait=FALSE)
 
 # and give the first two times of information per coin
 coin_hist_m %>% group_by(slug) %>% slice(1:2)
@@ -130,10 +132,17 @@ So we download the time series again depicting prices in terms of Bitcoin and Eu
 
 ```{r history2}
 # retrieve historical data for all (the first 3) of them
-coin_hist2 <- crypto_history(coins, convert="BTC,EUR", limit=3, start_date="20210101", end_date="20210105")
+coin_hist2 <- crypto_history(coins, convert="BTC,EUR", limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
 
 # and give the first two times of information per coin
 coin_hist2 %>% group_by(slug,ref_cur) %>% slice(1:2)
+```
+
+As a new features in version 1.4.4. we introduced the possibility to download historical listings and listing information (add `quote = TRUE`).
+
+```{r}
+latest_listings <- crypto_listings(which="latest", limit=10, quote=TRUE, finalWait=FALSE)
+latest_listings
 ```
 
 Last and least, one can get information on exchanges. For this download a list of active/inactive/untracked exchanges using `exchange_list()`:
@@ -146,7 +155,7 @@ exchanges
 and then download information on "binance" and "kraken":
 
 ```{r exchange-info}
-ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')))
+ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')), finalWait=FALSE)
 ex_info
 ```
 
