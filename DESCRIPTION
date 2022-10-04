@@ -1,6 +1,6 @@
 Package: crypto2
 Title: Download Crypto Currency Data from 'CoinMarketCap' without 'API'
-Version: 1.4.4
+Version: 1.4.4.99
 Date: 2022-07-18
 Authors@R: c(person("Sebastian", "Stoeckl", email = "sebastian.stoeckl@uni.li", role = c("aut","cre"), comment = c(ORCID = "0000-0002-4196-6093", "Package commissioner and maintainer.")),person("Jesse", "Vent", email = "cryptopackage@icloud.com", role = c("ctb"), comment = c("Creator of the crypto package that provided the idea and basis for this package.")))
 Maintainer: Sebastian Stoeckl <sebastian.stoeckl@uni.li>
@@ -11,7 +11,7 @@ Depends: R (>= 4.0.0)
 Imports: dplyr, tibble, tidyr, purrr, progress, stats, lubridate, jsonlite, cli, plyr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests: 
     spelling
 Language: en-US
