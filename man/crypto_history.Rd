@@ -11,8 +11,8 @@ crypto_history(
   start_date = NULL,
   end_date = NULL,
   interval = NULL,
-  sleep = 60,
-  finalWait = TRUE
+  sleep = 0,
+  finalWait = FALSE
 )
 }
 \arguments{

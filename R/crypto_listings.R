@@ -67,7 +67,7 @@
 #'
 #' @export
 #'
-crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_date = NULL, end_date = NULL, interval = "day", quote=FALSE, sleep = 60, finalWait = TRUE) {
+crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_date = NULL, end_date = NULL, interval = "day", quote=FALSE, sleep = 0, finalWait = FALSE) {
   # get current coins
   listing_raw <- NULL
   if (which=="new"){

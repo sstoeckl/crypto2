@@ -74,7 +74,7 @@
 #'
 #' @export
 #'
-crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, interval = NULL, sleep = 60, finalWait = TRUE) {
+crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, interval = NULL, sleep = 0, finalWait = FALSE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
