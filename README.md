@@ -313,16 +313,16 @@ latest_listings
 #> # A tibble: 10 × 23
 #>       id name    symbol slug  self_…¹ self_…² tvl_r…³ last_upd…⁴ USD_p…⁵ USD_v…⁶
 #>    <int> <chr>   <chr>  <chr> <lgl>   <lgl>   <lgl>   <date>       <dbl>   <dbl>
-#>  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-12 1.92e+4 2.54e10
-#>  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-12 4.89e-1 1.47e 9
-#>  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-12 6.00e-2 2.19e 8
-#>  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-12 1.00e+0 3.37e10
-#>  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-12 1.30e+3 8.43e 9
-#>  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-12 2.72e+2 5.66e 8
-#>  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-12 3.86e-1 4.25e 8
-#>  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-12 1.00e+0 3.06e 9
-#>  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-12 1.00e+0 5.33e 9
-#> 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-12 3.12e+1 5.72e 8
+#>  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-12 1.92e+4 2.52e10
+#>  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-12 4.89e-1 1.44e 9
+#>  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-12 6.01e-2 2.18e 8
+#>  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-12 1.00e+0 3.35e10
+#>  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-12 1.30e+3 8.35e 9
+#>  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-12 2.71e+2 5.58e 8
+#>  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-12 3.81e-1 4.72e 8
+#>  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-12 1.00e+0 3.00e 9
+#>  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-12 1.00e+0 5.31e 9
+#> 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-12 3.12e+1 5.54e 8
 #> # … with 13 more variables: USD_volume_change_24h <dbl>,
 #> #   USD_percent_change_1h <dbl>, USD_percent_change_24h <dbl>,
 #> #   USD_percent_change_7d <dbl>, USD_percent_change_30d <dbl>,
@@ -338,7 +338,7 @@ aggregate market statistics for CMC. We can use it to plot
 ``` r
 all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
 all_quotes
-#> # A tibble: 3,446 × 12
+#> # A tibble: 3,447 × 12
 #>    timestamp  btc_domi…¹ activ…² activ…³ activ…⁴ USD_t…⁵ USD_t…⁶ USD_t…⁷ USD_a…⁸
 #>    <date>          <dbl>   <int>   <int>   <int>   <dbl>   <dbl>   <dbl>   <dbl>
 #>  1 2013-04-29       94.2      NA      NA      NA  1.58e9       0      NA  9.19e7
@@ -351,7 +351,7 @@ all_quotes
 #>  8 2013-05-06       94.1      NA      NA      NA  1.37e9       0      NA  8.12e7
 #>  9 2013-05-07       94.4      NA      NA      NA  1.31e9       0      NA  7.38e7
 #> 10 2013-05-08       94.4      NA      NA      NA  1.32e9       0      NA  7.43e7
-#> # … with 3,436 more rows, 3 more variables: USD_altcoin_volume_24h <dbl>,
+#> # … with 3,437 more rows, 3 more variables: USD_altcoin_volume_24h <dbl>,
 #> #   USD_altcoin_volume_24h_reported <dbl>, USD_timestamp <chr>, and abbreviated
 #> #   variable names ¹​btc_dominance, ²​active_cryptocurrencies, ³​active_exchanges,
 #> #   ⁴​active_market_pairs, ⁵​USD_total_market_cap, ⁶​USD_total_volume_24h,
@@ -433,8 +433,8 @@ ex_info %>% select(contains("spot"))
 #> # A tibble: 2 × 2
 #>   spot_volume_usd spot_volume_last_updated
 #>             <dbl> <dttm>                  
-#> 1       14237760. 2022-10-12 21:25:16     
-#> 2    10085778533. 2022-10-12 21:25:16
+#> 1       14153733. 2022-10-12 22:20:16     
+#> 2    10030793849. 2022-10-12 22:20:16
 ```
 
 or the fiat currencies allowed:
