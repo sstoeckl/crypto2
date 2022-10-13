@@ -50,7 +50,6 @@ full_list <- crypto_list(only_active=FALSE,add_untracked=TRUE)
 coin_list_2015 <- active_list \%>\%
 dplyr::filter(first_historical_data<="2015-12-31",
               last_historical_data>="2015-01-01")
-
 }
 
 \dontrun{

@@ -7,12 +7,12 @@
 exchange_list(only_active = TRUE, add_untracked = FALSE)
 }
 \arguments{
-\item{only_active}{Shall the code only retrieve active coins (TRUE=default) or include inactive coins (FALSE)}
+\item{only_active}{Shall the code only retrieve active exchanges (TRUE=default) or include inactive coins (FALSE)}
 
-\item{add_untracked}{Shall the code additionally retrieve untracked coins (FALSE=default)}
+\item{add_untracked}{Shall the code additionally retrieve untracked exchanges (FALSE=default)}
 }
 \value{
-List of (active and historically existing) cryptocurrencies in a tibble:
+List of (active and historically existing) exchanges in a tibble:
 \item{id}{CMC exchange id (unique identifier)}
 \item{name}{Exchange name}
 \item{slug}{Exchange URL slug (unique)}
@@ -21,7 +21,7 @@ List of (active and historically existing) cryptocurrencies in a tibble:
 \item{last_historical_data}{Last time listed on CMC, \emph{today's date} if still listed}
 }
 \description{
-This code uses the web api. It retrieves data for all historic and all active coins and does not require an 'API' key.
+This code uses the web api. It retrieves data for all historic and all active exchanges and does not require an 'API' key.
 }
 \examples{
 \dontrun{
@@ -29,7 +29,6 @@ This code uses the web api. It retrieves data for all historic and all active co
 ex_active_list <- exchange_list(only_active=TRUE)
 ex_all_but_untracked_list <- exchange_list(only_active=FALSE)
 ex_full_list <- exchange_list(only_active=FALSE,add_untracked=TRUE)
-
 }
 
 }

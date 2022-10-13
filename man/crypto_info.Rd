@@ -8,13 +8,13 @@ crypto_info(
   coin_list = NULL,
   limit = NULL,
   requestLimit = 300,
-  sleep = 60,
-  finalWait = TRUE
+  sleep = 0,
+  finalWait = FALSE
 )
 }
 \arguments{
 \item{coin_list}{string if NULL retrieve all currently active coins (\code{crypto_list()}),
-or provide list of cryptocurrencies in the \code{crypto_list()} format (e.g. current and/or dead coins since 2015)}
+or provide list of cryptocurrencies in the \code{crypto_list()} or \code{cryptoi_listings()} format (e.g. current and/or dead coins since 2015)}
 
 \item{limit}{integer Return the top n records, default is all tokens}
 

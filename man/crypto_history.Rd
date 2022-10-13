@@ -17,7 +17,7 @@ crypto_history(
 }
 \arguments{
 \item{coin_list}{string if NULL retrieve all currently existing coins (\code{crypto_list()}),
-or provide list of crypto currencies in the \code{crypto_list()} format (e.g. current and/or dead coins since 2015)}
+or provide list of crypto currencies in the \code{crypto_list()} or \code{cryptoi_listings()} format (e.g. current and/or dead coins since 2015)}
 
 \item{convert}{(default: USD) to one or more of available fiat or precious metals prices (\code{fiat_list()}). If more
 than one are selected please separate by comma (e.g. "USD,BTC")}

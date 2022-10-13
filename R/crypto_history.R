@@ -7,7 +7,7 @@
 #' to predict future market movements or trends.
 #'
 #' @param coin_list string if NULL retrieve all currently existing coins (`crypto_list()`),
-#' or provide list of crypto currencies in the `crypto_list()` format (e.g. current and/or dead coins since 2015)
+#' or provide list of crypto currencies in the `crypto_list()` or `cryptoi_listings()` format (e.g. current and/or dead coins since 2015)
 #' @param convert (default: USD) to one or more of available fiat or precious metals prices (`fiat_list()`). If more
 #' than one are selected please separate by comma (e.g. "USD,BTC")
 #' @param limit integer Return the top n records, default is all tokens

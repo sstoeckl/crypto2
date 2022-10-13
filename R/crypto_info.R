@@ -3,7 +3,7 @@
 #' This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an 'API' key.
 #'
 #' @param coin_list string if NULL retrieve all currently active coins (`crypto_list()`),
-#' or provide list of cryptocurrencies in the `crypto_list()` format (e.g. current and/or dead coins since 2015)
+#' or provide list of cryptocurrencies in the `crypto_list()` or `cryptoi_listings()` format (e.g. current and/or dead coins since 2015)
 #' @param limit integer Return the top n records, default is all tokens
 #' @param requestLimit limiting the length of request URLs when bundling the api calls
 #' @param sleep integer (default 60) Seconds to sleep between API requests
@@ -52,7 +52,7 @@
 #'
 #' @export
 #'
-crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, sleep = 60, finalWait = TRUE) {
+crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, sleep = 0, finalWait = FALSE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -114,7 +114,7 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, slee
 
   # results
   results <- do.call(rbind, out_all)
-  message(cli::cat_bullet("Sleep for 60s before finishing to not have next function call end up with this data!", bullet = "pointer",bullet_col = "red"))
+
 
   if (length(results) == 0L) stop("No coin info data downloaded.", call. = FALSE)
 
