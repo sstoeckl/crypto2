@@ -19,3 +19,4 @@ sandbox_cmc_apikey
 ^cran-comments\.md$
 man/figures/
 ^CRAN-SUBMISSION$
+README-quotes-plot-1.png
