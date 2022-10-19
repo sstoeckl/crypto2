@@ -25,7 +25,7 @@ This code uses the web api. It retrieves data for all historic and all active ex
 }
 \examples{
 \dontrun{
-# return all coins
+# return all exchanges
 ex_active_list <- exchange_list(only_active=TRUE)
 ex_all_but_untracked_list <- exchange_list(only_active=FALSE)
 ex_full_list <- exchange_list(only_active=FALSE,add_untracked=TRUE)
