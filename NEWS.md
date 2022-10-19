@@ -1,6 +1,14 @@
 # crypto2 (development version)
 
-# crypto 1.4.3 (development)
+# crypto 1.4.5 
+
+Added a new function `crypto_global_quotes()` which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.
+
+# crypto 1.4.4 
+
+A new function `crypto_listings()` is introduced to retrieve new/latest/historical listings and listing information at CMC. Thje option `finalWait = TRUE` does not seem to be necessary any more, also `sleep` can be set to '0' seconds.
+
+# crypto 1.4.3 
 
 change limit==1 bug, add interval parameter (offered by pull-request), also change the amount of id splits to allow for max url length 2000
 
