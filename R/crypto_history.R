@@ -84,6 +84,10 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   UNIXstart <- format(as.numeric(as.POSIXct(start_date, format="%Y%m%d")),scientific = FALSE)
   if (is.null(end_date)) { end_date <- gsub("-", "", lubridate::today()) }
   UNIXend <- format(as.numeric(as.POSIXct(end_date, format="%Y%m%d", tz = "UTC")),scientific = FALSE)
+  # check dates
+  if (as.numeric(end_date)<20130429) stop("Attention: CMC Data is only available after 2013-04-29!")
+  if (as.numeric(start_date)<20130429) warning("CMC Data (that will be downloaded) starts after 2013-04-29!")
+  # intervals
   if (is.null(interval)) {
     interval <- 'daily'
   } else if (

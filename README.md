@@ -59,7 +59,8 @@ It allows the user to retrieve
 # Update
 
 Since version 1.4.5 I have added a new function `crypto_global_quotes()`
-which retrieves global aggregate market statistics for CMC.
+which retrieves global aggregate market statistics for CMC. There also
+were some bugs fixed.
 
 Since version 1.4.4 a new function `crypto_listings()` was introduced
 that retrieves new/latest/historical listings and listing information at
@@ -140,8 +141,6 @@ coin_info <- crypto_info(coins, limit=3, finalWait=FALSE)
 #> 
 #> Scraping  https://web-api.coinmarketcap.com/v1/cryptocurrency/info?id=1,2,3  with  65  characters!
 #> ❯ Processing crypto info
-#> 
-#> ❯ Sleep for 60s before finishing to not have next function call end up with this data!
 #> 
 
 # and give the first two lines of information per coin
@@ -313,16 +312,16 @@ latest_listings
 #> # A tibble: 10 × 23
 #>       id name    symbol slug  self_…¹ self_…² tvl_r…³ last_upd…⁴ USD_p…⁵ USD_v…⁶
 #>    <int> <chr>   <chr>  <chr> <lgl>   <lgl>   <lgl>   <date>       <dbl>   <dbl>
-#>  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-12 1.92e+4 2.52e10
-#>  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-12 4.89e-1 1.44e 9
-#>  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-12 6.01e-2 2.18e 8
-#>  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-12 1.00e+0 3.35e10
-#>  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-12 1.30e+3 8.35e 9
-#>  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-12 2.71e+2 5.58e 8
-#>  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-12 3.81e-1 4.72e 8
-#>  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-12 1.00e+0 3.00e 9
-#>  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-12 1.00e+0 5.31e 9
-#> 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-12 3.12e+1 5.54e 8
+#>  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-19 1.92e+4 2.36e10
+#>  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-19 4.62e-1 1.33e 9
+#>  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-19 5.99e-2 2.53e 8
+#>  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-19 1.00e+0 3.33e10
+#>  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-19 1.29e+3 8.45e 9
+#>  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-19 2.73e+2 4.98e 8
+#>  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-19 3.57e-1 4.15e 8
+#>  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-19 1.00e+0 2.61e 9
+#>  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-19 1.00e+0 5.91e 9
+#> 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-19 2.97e+1 6.38e 8
 #> # … with 13 more variables: USD_volume_change_24h <dbl>,
 #> #   USD_percent_change_1h <dbl>, USD_percent_change_24h <dbl>,
 #> #   USD_percent_change_7d <dbl>, USD_percent_change_30d <dbl>,
@@ -333,12 +332,12 @@ latest_listings
 ```
 
 An additional feature that was added in version 1.4.5 retrieves global
-aggregate market statistics for CMC. We can use it to plot
+aggregate market statistics for CMC.
 
 ``` r
 all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
 all_quotes
-#> # A tibble: 3,447 × 12
+#> # A tibble: 3,453 × 12
 #>    timestamp  btc_domi…¹ activ…² activ…³ activ…⁴ USD_t…⁵ USD_t…⁶ USD_t…⁷ USD_a…⁸
 #>    <date>          <dbl>   <int>   <int>   <int>   <dbl>   <dbl>   <dbl>   <dbl>
 #>  1 2013-04-29       94.2      NA      NA      NA  1.58e9       0      NA  9.19e7
@@ -351,7 +350,7 @@ all_quotes
 #>  8 2013-05-06       94.1      NA      NA      NA  1.37e9       0      NA  8.12e7
 #>  9 2013-05-07       94.4      NA      NA      NA  1.31e9       0      NA  7.38e7
 #> 10 2013-05-08       94.4      NA      NA      NA  1.32e9       0      NA  7.43e7
-#> # … with 3,437 more rows, 3 more variables: USD_altcoin_volume_24h <dbl>,
+#> # … with 3,443 more rows, 3 more variables: USD_altcoin_volume_24h <dbl>,
 #> #   USD_altcoin_volume_24h_reported <dbl>, USD_timestamp <chr>, and abbreviated
 #> #   variable names ¹​btc_dominance, ²​active_cryptocurrencies, ³​active_exchanges,
 #> #   ⁴​active_market_pairs, ⁵​USD_total_market_cap, ⁶​USD_total_volume_24h,
@@ -378,20 +377,20 @@ a list of active/inactive/untracked exchanges using `exchange_list()`:
 ``` r
 exchanges <- exchange_list(only_active=TRUE)
 exchanges
-#> # A tibble: 526 × 6
+#> # A tibble: 527 × 6
 #>       id name         slug         is_active first_historical_data last_histor…¹
 #>    <int> <chr>        <chr>            <int> <date>                <date>       
-#>  1    16 Poloniex     poloniex             1 2018-04-26            2022-10-12   
-#>  2    21 BTCC         btcc                 1 2018-04-26            2022-10-12   
-#>  3    22 Bittrex      bittrex              1 2018-04-26            2022-10-12   
-#>  4    24 Kraken       kraken               1 2018-04-26            2022-10-12   
-#>  5    34 Bittylicious bittylicious         1 2018-04-26            2022-10-12   
-#>  6    36 CEX.IO       cex-io               1 2018-04-26            2022-10-12   
-#>  7    37 Bitfinex     bitfinex             1 2018-04-26            2022-10-12   
-#>  8    42 HitBTC       hitbtc               1 2018-04-26            2022-10-12   
-#>  9    50 EXMO         exmo                 1 2018-04-26            2022-10-12   
-#> 10    61 Okcoin       okcoin               1 2018-04-26            2022-10-12   
-#> # … with 516 more rows, and abbreviated variable name ¹​last_historical_data
+#>  1    16 Poloniex     poloniex             1 2018-04-26            2022-10-19   
+#>  2    21 BTCC         btcc                 1 2018-04-26            2022-10-19   
+#>  3    22 Bittrex      bittrex              1 2018-04-26            2022-10-19   
+#>  4    24 Kraken       kraken               1 2018-04-26            2022-10-19   
+#>  5    34 Bittylicious bittylicious         1 2018-04-26            2022-10-19   
+#>  6    36 CEX.IO       cex-io               1 2018-04-26            2022-10-19   
+#>  7    37 Bitfinex     bitfinex             1 2018-04-26            2022-10-19   
+#>  8    42 HitBTC       hitbtc               1 2018-04-26            2022-10-19   
+#>  9    50 EXMO         exmo                 1 2018-04-26            2022-10-19   
+#> 10    61 Okcoin       okcoin               1 2018-04-26            2022-10-19   
+#> # … with 517 more rows, and abbreviated variable name ¹​last_historical_data
 ```
 
 and then download information on “binance” and “bittrex”:
@@ -433,8 +432,8 @@ ex_info %>% select(contains("spot"))
 #> # A tibble: 2 × 2
 #>   spot_volume_usd spot_volume_last_updated
 #>             <dbl> <dttm>                  
-#> 1       14153733. 2022-10-12 22:20:16     
-#> 2    10030793849. 2022-10-12 22:20:16
+#> 1       15170263. 2022-10-19 20:15:16     
+#> 2    11045438701. 2022-10-19 20:15:16
 ```
 
 or the fiat currencies allowed:

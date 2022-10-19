@@ -41,7 +41,7 @@ It allows the user to retrieve
 
 # Update
 
-Since version 1.4.5 I have added a new function `crypto_global_quotes()` which retrieves global aggregate market statistics for CMC.
+Since version 1.4.5 I have added a new function `crypto_global_quotes()` which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.
 
 Since version 1.4.4 a new function `crypto_listings()` was introduced that retrieves new/latest/historical listings and listing information at CMC. Additionally some aspects of the other functions have been reworked. We noticed that `finalWait = TRUE` does not seem to be necessary at the moment, as well as `sleep` can be set to '0' seconds. If you experience strange behavior this might be due to the the api sending back strange (old) results. In this case let `sleep = 60` (the default) and `finalWait = TRUE` (the default).
 
@@ -149,7 +149,7 @@ latest_listings <- crypto_listings(which="latest", limit=10, quote=TRUE, finalWa
 latest_listings
 ```
 
-An additional feature that was added in version 1.4.5 retrieves global aggregate market statistics for CMC. We can use it to plot 
+An additional feature that was added in version 1.4.5 retrieves global aggregate market statistics for CMC.
 
 ```{r quotes}
 all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
