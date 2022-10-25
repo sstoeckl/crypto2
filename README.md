@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# crypto2 <a href='https://github.com/sstoeckl/crypto2'><img src='man/figures/crypto2_hex.png' align="right" height="139" /></a>
+# crypto2 <a href='https://github.com/sstoeckl/crypto2'><img src='man/figures/crypto2_hex.png' align="right" height="139" style="float:right; height:200px;"/></a>
 
 <!-- badges: start -->
 
@@ -320,16 +320,16 @@ latest_listings
 #> # A tibble: 10 × 23
 #>       id name    symbol slug  self_…¹ self_…² tvl_r…³ last_upd…⁴ USD_p…⁵ USD_v…⁶
 #>    <int> <chr>   <chr>  <chr> <lgl>   <lgl>   <lgl>   <date>       <dbl>   <dbl>
-#>  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-25 1.95e+4 2.49e10
-#>  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-25 4.52e-1 1.12e 9
-#>  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-25 6.06e-2 2.41e 8
-#>  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-25 1.00e+0 3.41e10
-#>  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-25 1.38e+3 1.13e10
-#>  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-25 2.78e+2 5.36e 8
-#>  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-25 3.69e-1 3.50e 8
-#>  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-25 1.00e+0 2.59e 9
-#>  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-25 1.00e+0 4.47e 9
-#> 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-25 2.89e+1 5.23e 8
+#>  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-25 1.95e+4 2.50e10
+#>  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-25 4.53e-1 1.11e 9
+#>  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-25 6.08e-2 2.41e 8
+#>  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-25 1.00e+0 3.42e10
+#>  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-25 1.38e+3 1.14e10
+#>  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-25 2.79e+2 5.43e 8
+#>  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-25 3.71e-1 3.57e 8
+#>  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-25 1.00e+0 2.58e 9
+#>  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-25 1.00e+0 4.48e 9
+#> 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-25 2.91e+1 5.26e 8
 #> # … with 13 more variables: USD_volume_change_24h <dbl>,
 #> #   USD_percent_change_1h <dbl>, USD_percent_change_24h <dbl>,
 #> #   USD_percent_change_7d <dbl>, USD_percent_change_30d <dbl>,
@@ -440,8 +440,8 @@ ex_info %>% select(contains("spot"))
 #> # A tibble: 2 × 2
 #>   spot_volume_usd spot_volume_last_updated
 #>             <dbl> <dttm>                  
-#> 1       15472175. 2022-10-25 14:45:16     
-#> 2     9639717159. 2022-10-25 14:45:16
+#> 1       16025712. 2022-10-25 15:10:16     
+#> 2     9656049729. 2022-10-25 15:10:16
 ```
 
 or the fiat currencies allowed:

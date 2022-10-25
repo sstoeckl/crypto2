@@ -1,4 +1,6 @@
 url: https://sstoeckl.github.io/crypto2/
 template:
   bootstrap: 5
-
+  bootswatch: spacelab
+navbar:
+  bg: primary

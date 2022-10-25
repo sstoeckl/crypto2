@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# crypto2 <a href='https://github.com/sstoeckl/crypto2'><img src='man/figures/crypto2_hex.png' align="right" height="139" /></a>
+# crypto2 <a href='https://github.com/sstoeckl/crypto2'><img src='man/figures/crypto2_hex.png' align="right" height="139" style="float:right; height:200px;"/></a>
 
  <!-- badges: start -->
 
