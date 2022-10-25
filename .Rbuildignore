@@ -20,3 +20,7 @@ sandbox_cmc_apikey
 man/figures/
 ^CRAN-SUBMISSION$
 README-quotes-plot-1.png
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
