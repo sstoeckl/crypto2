@@ -7,13 +7,21 @@
 
 [![Project
 Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![Build
+[![Travis Build
 Status](https://travis-ci.org/sstoeckl/crypto2.svg?branch=master)](https://travis-ci.org/sstoeckl/crypto2)
+[![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
-[![](http://cranlogs.r-pkg.org/badges/grand-total/crypto2)](https://cran.r-project.org/package=crypto2)
-[![](http://cranlogs.r-pkg.org/badges/crypto2)](https://cran.r-project.org/package=crypto2)
-[![](http://cranlogs.r-pkg.org/badges/last-week/crypto2)](https://cran.r-project.org/package=crypto2)
+[![CRAN
+downloads](http://cranlogs.r-pkg.org/badges/grand-total/crypto2)](https://cran.r-project.org/package=crypto2)
+[![CRAN downloads last
+month](http://cranlogs.r-pkg.org/badges/crypto2)](https://cran.r-project.org/package=crypto2)
+[![CRAN downloads last
+week](http://cranlogs.r-pkg.org/badges/last-week/crypto2)](https://cran.r-project.org/package=crypto2)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+[![Website -
+pkgdown](https://img.shields.io/website-up-down-green-red/https/sstoeckl.github.io/crypto2.svg)](https://sstoeckl.github.io/crypto2/)
 <!-- badges: end -->
 
 # Historical Cryptocurrency Prices for Active and Delisted Tokens!
@@ -312,16 +320,16 @@ latest_listings
 #> # A tibble: 10 × 23
 #>       id name    symbol slug  self_…¹ self_…² tvl_r…³ last_upd…⁴ USD_p…⁵ USD_v…⁶
 #>    <int> <chr>   <chr>  <chr> <lgl>   <lgl>   <lgl>   <date>       <dbl>   <dbl>
-#>  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-19 1.92e+4 2.36e10
-#>  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-19 4.62e-1 1.33e 9
-#>  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-19 5.99e-2 2.53e 8
-#>  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-19 1.00e+0 3.33e10
-#>  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-19 1.29e+3 8.45e 9
-#>  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-19 2.73e+2 4.98e 8
-#>  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-19 3.57e-1 4.15e 8
-#>  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-19 1.00e+0 2.61e 9
-#>  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-19 1.00e+0 5.91e 9
-#> 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-19 2.97e+1 6.38e 8
+#>  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-25 1.95e+4 2.49e10
+#>  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-25 4.52e-1 1.12e 9
+#>  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-25 6.06e-2 2.41e 8
+#>  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-25 1.00e+0 3.41e10
+#>  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-25 1.38e+3 1.13e10
+#>  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-25 2.78e+2 5.36e 8
+#>  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-25 3.69e-1 3.50e 8
+#>  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-25 1.00e+0 2.59e 9
+#>  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-25 1.00e+0 4.47e 9
+#> 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-25 2.89e+1 5.23e 8
 #> # … with 13 more variables: USD_volume_change_24h <dbl>,
 #> #   USD_percent_change_1h <dbl>, USD_percent_change_24h <dbl>,
 #> #   USD_percent_change_7d <dbl>, USD_percent_change_30d <dbl>,
@@ -337,7 +345,7 @@ aggregate market statistics for CMC.
 ``` r
 all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
 all_quotes
-#> # A tibble: 3,453 × 12
+#> # A tibble: 3,459 × 12
 #>    timestamp  btc_domi…¹ activ…² activ…³ activ…⁴ USD_t…⁵ USD_t…⁶ USD_t…⁷ USD_a…⁸
 #>    <date>          <dbl>   <int>   <int>   <int>   <dbl>   <dbl>   <dbl>   <dbl>
 #>  1 2013-04-29       94.2      NA      NA      NA  1.58e9       0      NA  9.19e7
@@ -350,7 +358,7 @@ all_quotes
 #>  8 2013-05-06       94.1      NA      NA      NA  1.37e9       0      NA  8.12e7
 #>  9 2013-05-07       94.4      NA      NA      NA  1.31e9       0      NA  7.38e7
 #> 10 2013-05-08       94.4      NA      NA      NA  1.32e9       0      NA  7.43e7
-#> # … with 3,443 more rows, 3 more variables: USD_altcoin_volume_24h <dbl>,
+#> # … with 3,449 more rows, 3 more variables: USD_altcoin_volume_24h <dbl>,
 #> #   USD_altcoin_volume_24h_reported <dbl>, USD_timestamp <chr>, and abbreviated
 #> #   variable names ¹​btc_dominance, ²​active_cryptocurrencies, ³​active_exchanges,
 #> #   ⁴​active_market_pairs, ⁵​USD_total_market_cap, ⁶​USD_total_volume_24h,
@@ -369,7 +377,7 @@ all_quotes %>% select(timestamp, USD_total_market_cap, USD_altcoin_market_cap) %
   ggplot2::labs(title="Market capitalization in bn USD", subtitle="CoinMarketCap.com")
 ```
 
-![](README-quotes-plot-1.png)<!-- -->
+![](man/figures/README-quotes-plot-1.png)<!-- -->
 
 Last and least, one can get information on exchanges. For this download
 a list of active/inactive/untracked exchanges using `exchange_list()`:
@@ -377,20 +385,20 @@ a list of active/inactive/untracked exchanges using `exchange_list()`:
 ``` r
 exchanges <- exchange_list(only_active=TRUE)
 exchanges
-#> # A tibble: 527 × 6
+#> # A tibble: 520 × 6
 #>       id name         slug         is_active first_historical_data last_histor…¹
 #>    <int> <chr>        <chr>            <int> <date>                <date>       
-#>  1    16 Poloniex     poloniex             1 2018-04-26            2022-10-19   
-#>  2    21 BTCC         btcc                 1 2018-04-26            2022-10-19   
-#>  3    22 Bittrex      bittrex              1 2018-04-26            2022-10-19   
-#>  4    24 Kraken       kraken               1 2018-04-26            2022-10-19   
-#>  5    34 Bittylicious bittylicious         1 2018-04-26            2022-10-19   
-#>  6    36 CEX.IO       cex-io               1 2018-04-26            2022-10-19   
-#>  7    37 Bitfinex     bitfinex             1 2018-04-26            2022-10-19   
-#>  8    42 HitBTC       hitbtc               1 2018-04-26            2022-10-19   
-#>  9    50 EXMO         exmo                 1 2018-04-26            2022-10-19   
-#> 10    61 Okcoin       okcoin               1 2018-04-26            2022-10-19   
-#> # … with 517 more rows, and abbreviated variable name ¹​last_historical_data
+#>  1    16 Poloniex     poloniex             1 2018-04-26            2022-10-25   
+#>  2    21 BTCC         btcc                 1 2018-04-26            2022-10-25   
+#>  3    22 Bittrex      bittrex              1 2018-04-26            2022-10-25   
+#>  4    24 Kraken       kraken               1 2018-04-26            2022-10-25   
+#>  5    34 Bittylicious bittylicious         1 2018-04-26            2022-10-25   
+#>  6    36 CEX.IO       cex-io               1 2018-04-26            2022-10-25   
+#>  7    37 Bitfinex     bitfinex             1 2018-04-26            2022-10-25   
+#>  8    42 HitBTC       hitbtc               1 2018-04-26            2022-10-25   
+#>  9    50 EXMO         exmo                 1 2018-04-26            2022-10-25   
+#> 10    61 Okcoin       okcoin               1 2018-04-26            2022-10-25   
+#> # … with 510 more rows, and abbreviated variable name ¹​last_historical_data
 ```
 
 and then download information on “binance” and “bittrex”:
@@ -432,8 +440,8 @@ ex_info %>% select(contains("spot"))
 #> # A tibble: 2 × 2
 #>   spot_volume_usd spot_volume_last_updated
 #>             <dbl> <dttm>                  
-#> 1       15170263. 2022-10-19 20:15:16     
-#> 2    11045438701. 2022-10-19 20:15:16
+#> 1       15472175. 2022-10-25 14:45:16     
+#> 2     9639717159. 2022-10-25 14:45:16
 ```
 
 or the fiat currencies allowed:
