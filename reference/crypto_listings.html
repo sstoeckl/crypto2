@@ -59,6 +59,8 @@
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interval <span class="op">=</span> <span class="st">"day"</span>,</span>
 <span>  quote <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  sort <span class="op">=</span> <span class="st">"cmc_rank"</span>,</span>
+<span>  sort_dir <span class="op">=</span> <span class="st">"desc"</span>,</span>
 <span>  sleep <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  finalWait <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -93,6 +95,16 @@ than one are selected please separate by comma (e.g. "USD,BTC"), only necessary 
 
 <dt>quote</dt>
 <dd><p>logical set to TRUE if you want to include price data (FALSE=default)</p></dd>
+
+
+<dt>sort</dt>
+<dd><p>string use to sort results, possible values: "cmc_rank" (DEFAULT), "name", "symbol", "market_cap", "price",
+"circulating_supply", "total_supply", "max_supply", "num_market_pairs", "volume_24h", "percent_change_1h", "percent_change_24h",
+"percent_change_7d". Especially useful if you only want to download the top x entries using "limit"</p></dd>
+
+
+<dt>sort_dir</dt>
+<dd><p>string used to specify the direction of the sort in "sort". Possible values are "asc" (DEFAULT) and "desc"</p></dd>
 
 
 <dt>sleep</dt>
@@ -202,6 +214,10 @@ whether "quote" is requested, the result may only contain some of the following 
 <span class="r-in"><span><span class="co"># report in two different currencies</span></span></span>
 <span class="r-in"><span><span class="va">listings_2014w1_USDBTC</span> <span class="op">&lt;-</span> <span class="fu">crypto_listings</span><span class="op">(</span>which<span class="op">=</span><span class="st">"historical"</span>, quote<span class="op">=</span><span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>start_date <span class="op">=</span> <span class="st">"20140101"</span>, end_date<span class="op">=</span><span class="st">"20140107"</span>, interval<span class="op">=</span><span class="st">"day"</span>, convert<span class="op">=</span><span class="st">"USD,BTC"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># only download the top 10 crypto currencies based on their market capitalization</span></span></span>
+<span class="r-in"><span><span class="va">listings_2015w1_mcsort</span> <span class="op">&lt;-</span> <span class="fu">crypto_listings</span><span class="op">(</span>which<span class="op">=</span><span class="st">"historical"</span>, quote<span class="op">=</span><span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>start_date <span class="op">=</span> <span class="st">"20150101"</span>, end_date<span class="op">=</span><span class="st">"20150107"</span>, interval<span class="op">=</span><span class="st">"day"</span>, sort<span class="op">=</span><span class="st">"market_cap"</span>, sort_dir<span class="op">=</span><span class="st">"desc"</span>, limit<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

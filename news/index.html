@@ -44,7 +44,9 @@
       <small>Source: <a href="https://github.com/sstoeckl/crypto2/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
-    <div class="section level2"><h2 class="pkg-version" data-toc-text="development version" id="crypto2-development-version">crypto2 (development version)<a class="anchor" aria-label="anchor" href="#crypto2-development-version"></a></h2></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="crypto2-development-version">crypto2 (development version)<a class="anchor" aria-label="anchor" href="#crypto2-development-version"></a></h2>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.4.0" id="crypto2-140">crypto2 1.4.0<a class="anchor" aria-label="anchor" href="#crypto2-140"></a></h2><p class="text-muted">CRAN release: 2022-01-10</p>
 <p>Due to a change in the web-api of CMC we can only make one call to the api per minute (else, it will just deliver the same output as for the first call of the 60 seconds). To reduce the overhang, I have redesigned the interfaces to retrieve as many ids from one api call as possible (limited by the 2000 character limitation of the URL). We can set <code>requestLimit</code> to increase/decrease the number of simultaneous ids that are retrieved from CMC.</p>
@@ -63,7 +65,8 @@
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.3.9000" id="crypto2-1139000">crypto2 1.1.3.9000<a class="anchor" aria-label="anchor" href="#crypto2-1139000"></a></h2>
-<ul><li>Corrected small error in crypto_info where non-existing slugs led to break of the code (because for some reason I stopped using “Insistent”)</li></ul></div>
+<ul><li>Corrected small error in crypto_info where non-existing slugs led to break of the code (because for some reason I stopped using “Insistent”)</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.3.9000" id="crypto2-1139000-1">crypto2 1.1.3.9000<a class="anchor" aria-label="anchor" href="#crypto2-1139000-1"></a></h2>
 <ul><li>Correct a glitch in the tag data, where now not enough group observations are available. Info I have therefore deleted.</li>
