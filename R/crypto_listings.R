@@ -10,6 +10,10 @@
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
 #' @param interval string Interval with which to sample data according to what `seq()` needs
 #' @param quote logical set to TRUE if you want to include price data (FALSE=default)
+#' @param sort string use to sort results, possible values: "cmc_rank" (DEFAULT), "name", "symbol", "market_cap", "price",
+#' "circulating_supply", "total_supply", "max_supply", "num_market_pairs", "volume_24h", "percent_change_1h", "percent_change_24h",
+#' "percent_change_7d". Especially useful if you only want to download the top x entries using "limit"
+#' @param sort_dir string used to specify the direction of the sort in "sort". Possible values are "asc" (DEFAULT) and "desc"
 #' @param sleep integer (default 60) Seconds to sleep between API requests
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #'
@@ -61,18 +65,22 @@
 #' # report in two different currencies
 #' listings_2014w1_USDBTC <- crypto_listings(which="historical", quote=TRUE,
 #' start_date = "20140101", end_date="20140107", interval="day", convert="USD,BTC")
+#'
+#' # only download the top 10 crypto currencies based on their market capitalization
+#' listings_2015w1_mcsort <- crypto_listings(which="historical", quote=TRUE,
+#' start_date = "20150101", end_date="20150107", interval="day", sort="market_cap", sort_dir="desc", limit=10)
 #' }
 #'
 #' @name crypto_listings
 #'
 #' @export
 #'
-crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_date = NULL, end_date = NULL, interval = "day", quote=FALSE, sleep = 0, finalWait = FALSE) {
+crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_date = NULL, end_date = NULL, interval = "day", quote=FALSE, sort="cmc_rank", sort_dir="desc", sleep = 0, finalWait = FALSE) {
   # get current coins
   listing_raw <- NULL
   if (which=="new"){
     for (i in 1:10){
-      new_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/new?limit=",limit,"&convert=",convert,"&start=",(i-1)*5000+1)
+      new_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/new?limit=",limit,"&convert=",convert,"&sort=",sort,"&sort_dir=",sort_dir,"&start=",(i-1)*5000+1)
       new_raw <- jsonlite::fromJSON(new_url)
       listing_raw <- bind_rows(listing_raw,
                                new_raw$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(c(date_added,last_updated),as.Date)) %>%
@@ -87,7 +95,7 @@ crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_d
   } else if (which=="latest"){
     for (i in 1:10){
       latest_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=",limit,
-                        "&aux=market_cap_by_total_supply&convert=",convert,"&start=",(i-1)*5000+1)
+                        "&aux=market_cap_by_total_supply&convert=",convert,"&sort=",sort,"&sort_dir=",sort_dir,"&start=",(i-1)*5000+1)
       latest_raw <- jsonlite::fromJSON(latest_url)
       listing_raw <- bind_rows(listing_raw,
                                latest_raw$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(c(last_updated),as.Date)) %>%
@@ -107,7 +115,7 @@ crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_d
     dates <- seq(sdate, edate, by=interval)
     tbdate <- enframe(dates[which(dates<Sys.Date())],name=NULL) %>% rename(date=value) %>%
       mutate(historyurl = paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/historical?date=",dates,
-                                 "&limit=",limit,"&sort=cmc_rank&sort_dir=asc&convert=",convert,"&start="))
+                                 "&limit=",limit,"&convert=",convert,"&sort=",sort,"&sort_dir=",sort_dir,"&start="))
     # scraping tools
     scrape_web <- function(historyurl,quote){
       listing_raw <- NULL
