@@ -24,3 +24,4 @@ README-quotes-plot-1.png
 ^docs$
 ^pkgdown$
 ^\.github$
+^LICENSE\.md$
