@@ -17,7 +17,9 @@
 #' "monthly" "yearly" "1d" "2d" "3d" "7d" "14d" "15d" "30d" "60d" "90d" "365d"`
 #' @param interval string Interval with which to sample data according to what `seq()` needs
 #' @param sleep integer (default 60) Seconds to sleep between API requests
+#' @param wait waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
+#' @param single_id Do you want to download data individually coin by coin (default FALSE to reduce down-"load")
 #
 #' @return Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
 #'   \item{timestamp}{Timestamp of entry in database}
@@ -60,6 +62,8 @@
 #'
 #' # Retrieving market history since 2020 for ALL crypto currencies
 #' all_coins <- crypto_history(start_date = '20200101',limit=10)
+#' # Retrieving the same coins id by id
+#' all_coins2 <- crypto_history(start_date = '20200101',limit=10, single_id=TRUE)
 #'
 #' # Retrieve 2015 history for all 2015 crypto currencies
 #' coin_list_2015 <- crypto_list(only_active=TRUE) %>%
@@ -77,7 +81,7 @@
 #'
 #' @export
 #'
-crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, interval = NULL, sleep = 0, finalWait = FALSE) {
+crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_date = NULL, end_date = NULL, interval = NULL, sleep = 0, wait = 60, finalWait = FALSE, single_id=FALSE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
@@ -116,7 +120,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     if(interval=="60d"){dl<-dl/60}else if(interval=="90d"){dl<-dl/90}else if(interval=="365d"|interval=="yearly"){dl<-dl/365}else
     if(interval=="2h"){dl<-dl/2}else if(interval=="3h"){dl<-dl/3}else if(interval=="4h"){dl<-dl/4}else if(interval=="6h"){dl<-dl/6}
   # determine number of splits based on either max 10000 datapoints or max-length of url
-  n <- max(ceiling(nrow(ids)/floor(10000/dl)),ceiling(nrow(ids)/(2000-142)*6))
+  if (!single_id) {n <- max(ceiling(nrow(ids)/floor(10000/dl)),ceiling(nrow(ids)/(2000-142)*6))} else {n<-nrow(ids)}
   id_vec <- plyr::laply(split(ids$id, sort(seq_len(nrow(ids))%%n)),function(x) paste0(x,collapse=","))
   # define scraper_function
   scrape_web <- function(historyurl){
@@ -141,7 +145,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
    id
   ))
   # define backoff rate
-  rate <- purrr::rate_delay(pause = 60,max_times = 2)
+  rate <- purrr::rate_delay(pause = wait, max_times = 2)
   rate2 <- purrr::rate_delay(sleep)
   #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
   # Modify function to run insistently.
@@ -151,7 +155,10 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
                          total = nrow(id_vec), clear = FALSE)
   message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",bullet_col = "green"))
   data <- id_vec %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x)))
-  if (nrow(coin_list)==1) {data2 <- data$out} else {data2 <- data$out %>% unlist(.,recursive=FALSE)}
+  if (!single_id) {if (nrow(coin_list)==1) {data2 <- data$out} else {data2 <- data$out %>% unlist(.,recursive=FALSE)}
+  } else {
+    data2 <- data$out
+  }
   # 2. Here comes the second part: Clean and create dataset
   map_scrape <- function(lout){
     pb2$tick()
@@ -175,9 +182,10 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
                           total = length(data2), clear = FALSE)
   message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
   out_info <- purrr::map(data2,.f = ~ insistent_map(.x))
+  #filter
 
   # results
-  results <- do.call(rbind, out_info) %>% tibble::as_tibble() %>% left_join(coin_list %>% select(id, slug), by ="id") %>% relocate(slug, .after = id)
+  results <- bind_rows(out_info) %>% tibble::as_tibble() %>% left_join(coin_list %>% select(id, slug), by ="id") %>% relocate(slug, .after = id)
   # wait 60s before finishing (or you might end up with the web-api 60s bug)
   if (finalWait){
     pb <- progress_bar$new(

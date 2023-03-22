@@ -12,7 +12,9 @@ crypto_history(
   end_date = NULL,
   interval = NULL,
   sleep = 0,
-  finalWait = FALSE
+  wait = 60,
+  finalWait = FALSE,
+  single_id = FALSE
 )
 }
 \arguments{
@@ -32,7 +34,11 @@ than one are selected please separate by comma (e.g. "USD,BTC")}
 
 \item{sleep}{integer (default 60) Seconds to sleep between API requests}
 
+\item{wait}{waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)}
+
 \item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
+
+\item{single_id}{Do you want to download data individually coin by coin (default FALSE to reduce down-"load")}
 }
 \value{
 Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
@@ -72,6 +78,8 @@ one_coin <- crypto_history(limit = 1)
 
 # Retrieving market history since 2020 for ALL crypto currencies
 all_coins <- crypto_history(start_date = '20200101',limit=10)
+# Retrieving the same coins id by id
+all_coins2 <- crypto_history(start_date = '20200101',limit=10, single_id=TRUE)
 
 # Retrieve 2015 history for all 2015 crypto currencies
 coin_list_2015 <- crypto_list(only_active=TRUE) \%>\%
@@ -79,6 +87,9 @@ coin_list_2015 <- crypto_list(only_active=TRUE) \%>\%
               last_historical_data>="2015-01-01")
 coins_2015 <- crypto_history(coin_list = coin_list_2015,
 start_date = "20150101", end_date="20151231", limit=20, interval="90d")
+# retrieve hourly bitcoin data for 2 days
+btc_hourly <- crypto_history(coin_list = coin_list_2015,
+start_date = "20150101", end_date="20150103", limit=1, interval="1h")
 
 }
 
