@@ -62,6 +62,7 @@
 <span>  sort <span class="op">=</span> <span class="st">"cmc_rank"</span>,</span>
 <span>  sort_dir <span class="op">=</span> <span class="st">"desc"</span>,</span>
 <span>  sleep <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  wait <span class="op">=</span> <span class="fl">60</span>,</span>
 <span>  finalWait <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -109,6 +110,10 @@ than one are selected please separate by comma (e.g. "USD,BTC"), only necessary 
 
 <dt>sleep</dt>
 <dd><p>integer (default 60) Seconds to sleep between API requests</p></dd>
+
+
+<dt>wait</dt>
+<dd><p>waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)</p></dd>
 
 
 <dt>finalWait</dt>

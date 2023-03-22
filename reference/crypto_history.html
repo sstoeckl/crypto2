@@ -71,7 +71,9 @@ to predict future market movements or trends.</p>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interval <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sleep <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  finalWait <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  wait <span class="op">=</span> <span class="fl">60</span>,</span>
+<span>  finalWait <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  single_id <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -107,8 +109,16 @@ than one are selected please separate by comma (e.g. "USD,BTC")</p></dd>
 <dd><p>integer (default 60) Seconds to sleep between API requests</p></dd>
 
 
+<dt>wait</dt>
+<dd><p>waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)</p></dd>
+
+
 <dt>finalWait</dt>
 <dd><p>to avoid calling the web-api again with another command before 60s are over (TRUE=default)</p></dd>
+
+
+<dt>single_id</dt>
+<dd><p>Do you want to download data individually coin by coin (default FALSE to reduce down-"load")</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -179,6 +189,8 @@ ALL active coins then do not pass an argument to <code>crypto_history()</code>, 
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Retrieving market history since 2020 for ALL crypto currencies</span></span></span>
 <span class="r-in"><span><span class="va">all_coins</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>start_date <span class="op">=</span> <span class="st">'20200101'</span>,limit<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Retrieving the same coins id by id</span></span></span>
+<span class="r-in"><span><span class="va">all_coins2</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>start_date <span class="op">=</span> <span class="st">'20200101'</span>,limit<span class="op">=</span><span class="fl">10</span>, single_id<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Retrieve 2015 history for all 2015 crypto currencies</span></span></span>
 <span class="r-in"><span><span class="va">coin_list_2015</span> <span class="op">&lt;-</span> <span class="fu"><a href="crypto_list.html">crypto_list</a></span><span class="op">(</span>only_active<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
@@ -186,6 +198,9 @@ ALL active coins then do not pass an argument to <code>crypto_history()</code>, 
 <span class="r-in"><span>              <span class="va">last_historical_data</span><span class="op">&gt;=</span><span class="st">"2015-01-01"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">coins_2015</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>coin_list <span class="op">=</span> <span class="va">coin_list_2015</span>,</span></span>
 <span class="r-in"><span>start_date <span class="op">=</span> <span class="st">"20150101"</span>, end_date<span class="op">=</span><span class="st">"20151231"</span>, limit<span class="op">=</span><span class="fl">20</span>, interval<span class="op">=</span><span class="st">"90d"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># retrieve hourly bitcoin data for 2 days</span></span></span>
+<span class="r-in"><span><span class="va">btc_hourly</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>coin_list <span class="op">=</span> <span class="va">coin_list_2015</span>,</span></span>
+<span class="r-in"><span>start_date <span class="op">=</span> <span class="st">"20150101"</span>, end_date<span class="op">=</span><span class="st">"20150103"</span>, limit<span class="op">=</span><span class="fl">1</span>, interval<span class="op">=</span><span class="st">"1h"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
