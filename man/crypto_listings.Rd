@@ -15,6 +15,7 @@ crypto_listings(
   sort = "cmc_rank",
   sort_dir = "desc",
   sleep = 0,
+  wait = 60,
   finalWait = FALSE
 )
 }
@@ -41,6 +42,8 @@ than one are selected please separate by comma (e.g. "USD,BTC"), only necessary 
 \item{sort_dir}{string used to specify the direction of the sort in "sort". Possible values are "asc" (DEFAULT) and "desc"}
 
 \item{sleep}{integer (default 60) Seconds to sleep between API requests}
+
+\item{wait}{waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)}
 
 \item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 }

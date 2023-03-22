@@ -15,6 +15,7 @@
 #' "percent_change_7d". Especially useful if you only want to download the top x entries using "limit"
 #' @param sort_dir string used to specify the direction of the sort in "sort". Possible values are "asc" (DEFAULT) and "desc"
 #' @param sleep integer (default 60) Seconds to sleep between API requests
+#' @param wait waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #'
 #' @return List of latest/new/historic listings of cryptocurrencies in a tibble (depending on the "which"-switch and
@@ -75,7 +76,7 @@
 #'
 #' @export
 #'
-crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_date = NULL, end_date = NULL, interval = "day", quote=FALSE, sort="cmc_rank", sort_dir="desc", sleep = 0, finalWait = FALSE) {
+crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_date = NULL, end_date = NULL, interval = "day", quote=FALSE, sort="cmc_rank", sort_dir="desc", sleep = 0, wait = 60, finalWait = FALSE) {
   # get current coins
   listing_raw <- NULL
   if (which=="new"){
@@ -136,7 +137,7 @@ crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_d
       return(listing)
     }
     # define backoff rate
-    rate <- purrr::rate_delay(pause = 60,max_times = 2)
+    rate <- purrr::rate_delay(pause = wait, max_times = 2)
     rate2 <- purrr::rate_delay(sleep)
     #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
     # Modify function to run insistently.
