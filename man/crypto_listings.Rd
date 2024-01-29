@@ -12,7 +12,7 @@ crypto_listings(
   end_date = NULL,
   interval = "day",
   quote = FALSE,
-  sort = "cmc_rank",
+  sort = "market_cap",
   sort_dir = "desc",
   sleep = 0,
   wait = 60,
@@ -35,9 +35,10 @@ than one are selected please separate by comma (e.g. "USD,BTC"), only necessary 
 
 \item{quote}{logical set to TRUE if you want to include price data (FALSE=default)}
 
-\item{sort}{string use to sort results, possible values: "cmc_rank" (DEFAULT), "name", "symbol", "market_cap", "price",
-"circulating_supply", "total_supply", "max_supply", "num_market_pairs", "volume_24h", "percent_change_1h", "percent_change_24h",
-"percent_change_7d". Especially useful if you only want to download the top x entries using "limit"}
+\item{sort}{string use to sort results, possible values: "name", "symbol", "market_cap", "price",
+"circulating_supply", "total_supply", "max_supply", "num_market_pairs", "volume_24h",
+"volume_7d", "volume_30d", "percent_change_1h", "percent_change_24h",
+"percent_change_7d". Especially useful if you only want to download the top x entries using "limit" (deprecated for "new")}
 
 \item{sort_dir}{string used to specify the direction of the sort in "sort". Possible values are "asc" (DEFAULT) and "desc"}
 
