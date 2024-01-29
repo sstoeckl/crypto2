@@ -17,7 +17,6 @@ knitr::opts_chunk$set(
  <!-- badges: start -->
 
   [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-  [![Travis Build Status](https://travis-ci.org/sstoeckl/crypto2.svg?branch=master)](https://travis-ci.org/sstoeckl/crypto2)
   [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
   [![CRAN status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
   [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/crypto2)](https://cran.r-project.org/package=crypto2)
@@ -44,7 +43,7 @@ It allows the user to retrieve
 
 # Update
 
-Since version 1.4.6 I have added the possibility to "sort" the historical `crypto_listings()` in _asc_ending or _desc_ending order ("sort_dir") to allow for the possibility to download only the top x crypto currencies using "limit" based on the requested sort.
+Since version 1.4.6 I have added the possibility to "sort" the historical `crypto_listings()` in _asc_ending or _desc_ending order ("sort_dir") to allow for the possibility to download only the top x crypto currencies using "limit" based on the requested sort (not available for "new" sorting). Also corrected some problems when sourcing lists that now do not have the "last_historical_data" field available any more.
 
 Since version 1.4.5 I have added a new function `crypto_global_quotes()` which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.
 

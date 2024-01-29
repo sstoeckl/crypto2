@@ -2,7 +2,7 @@
 
 # crypto 1.4.6 
 
-Added new options "sort" and "sort_dir" for `crypto_listings()` to allow for the nsorting of results, which in combination with "limit" allows, for example, to only download the top 100 CCs according to market capitalization that were listed at a certain date.
+Added new options "sort" and "sort_dir" for `crypto_listings()` to allow for the sorting of results, which in combination with "limit" allows, for example, to only download the top 100 CCs according to market capitalization that were listed at a certain date. Correct missing last_historical_data date conversion due to the now missing field.
 
 # crypto 1.4.5 
 

@@ -7,8 +7,6 @@
 
 [![Project
 Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![Travis Build
-Status](https://travis-ci.org/sstoeckl/crypto2.svg?branch=master)](https://travis-ci.org/sstoeckl/crypto2)
 [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
@@ -37,34 +35,42 @@ through the website of
 
 It allows the user to retrieve
 
--   `crypto_listings()` a list of all coins that were historically
-    listed on CMC (main dataset to avoid delisting bias) according to
-    the [CMC API
-    documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyListingsHistorical)
--   `crypto_list()` a list of all coins that are listed as either being
-    *active*, *delisted* or *untracked* according to the [CMC API
-    documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyMap)
--   `crypto_info()` a list of all information available for all
-    available coins according to the [CMC API
-    documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyInfo)
--   `crypto_history()` the **most powerful** function of this package
-    that allows to download the entire available history for all coins
-    covered by CMC according to the [CMC API
-    documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyOhlcvHistorical)
--   `crypto_global_quotes()` a dataset of historical global crypto
-    currency market metrics to the [CMC API
-    documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1GlobalmetricsQuotesHistorical)
--   `fiat_list()` a mapping of all fiat currencies (plus precious
-    metals) available via the [CMC WEB
-    API](https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap)
--   `exchange_list()` a list of all exchanges available as either being
-    *active*, *delisted* or *untracked* according to the [CMC API
-    documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMap)
--   `exchange_info()` a list of all information available for all given
-    exchanges according to the [CMC API
-    documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeInfo)
+- `crypto_listings()` a list of all coins that were historically listed
+  on CMC (main dataset to avoid delisting bias) according to the [CMC
+  API
+  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyListingsHistorical)
+- `crypto_list()` a list of all coins that are listed as either being
+  *active*, *delisted* or *untracked* according to the [CMC API
+  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyMap)
+- `crypto_info()` a list of all information available for all available
+  coins according to the [CMC API
+  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyInfo)
+- `crypto_history()` the **most powerful** function of this package that
+  allows to download the entire available history for all coins covered
+  by CMC according to the [CMC API
+  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyOhlcvHistorical)
+- `crypto_global_quotes()` a dataset of historical global crypto
+  currency market metrics to the [CMC API
+  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1GlobalmetricsQuotesHistorical)
+- `fiat_list()` a mapping of all fiat currencies (plus precious metals)
+  available via the [CMC WEB
+  API](https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap)
+- `exchange_list()` a list of all exchanges available as either being
+  *active*, *delisted* or *untracked* according to the [CMC API
+  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMap)
+- `exchange_info()` a list of all information available for all given
+  exchanges according to the [CMC API
+  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeInfo)
 
 # Update
+
+Since version 1.4.6 I have added the possibility to “sort” the
+historical `crypto_listings()` in \_asc_ending or \_desc_ending order
+(“sort_dir”) to allow for the possibility to download only the top x
+crypto currencies using “limit” based on the requested sort (not
+available for “new” sorting). Also corrected some problems when sourcing
+lists that now do not have the “last_historical_data” field available
+any more.
 
 Since version 1.4.5 I have added a new function `crypto_global_quotes()`
 which retrieves global aggregate market statistics for CMC. There also
@@ -153,17 +159,17 @@ coin_info <- crypto_info(coins, limit=3, finalWait=FALSE)
 
 # and give the first two lines of information per coin
 coin_info
-#> # A tibble: 3 × 19
-#>      id name   symbol categ…¹ descr…² slug  logo  subre…³ notice date_…⁴ twitt…⁵
-#> * <int> <chr>  <chr>  <chr>   <chr>   <chr> <chr> <chr>   <chr>  <chr>   <chr>  
-#> 1     1 Bitco… BTC    coin    "## Wh… bitc… http… bitcoin ""     2013-0… ""     
-#> 2     2 Litec… LTC    coin    "## Wh… lite… http… liteco… ""     2013-0… "Litec…
-#> 3     3 Namec… NMC    coin    "Namec… name… http… nameco… ""     2013-0… "Namec…
-#> # … with 8 more variables: is_hidden <int>, date_launched <lgl>,
+#> # A tibble: 3 × 20
+#>      id name     symbol category description        slug  logo  subreddit notice
+#> * <int> <chr>    <chr>  <chr>    <chr>              <chr> <chr> <chr>     <chr> 
+#> 1     1 Bitcoin  BTC    coin     "## What Is Bitco… bitc… http… bitcoin   ""    
+#> 2     2 Litecoin LTC    coin     "## What Is Litec… lite… http… litecoin  ""    
+#> 3     3 Namecoin NMC    coin     "Namecoin (NMC) i… name… http… namecoin  ""    
+#> # ℹ 11 more variables: date_added <chr>, twitter_username <chr>,
+#> #   is_hidden <int>, date_launched <chr>,
 #> #   self_reported_circulating_supply <lgl>, self_reported_market_cap <lgl>,
-#> #   tags <list>, self_reported_tags <lgl>, urls <list>, platform <list>, and
-#> #   abbreviated variable names ¹​category, ²​description, ³​subreddit,
-#> #   ⁴​date_added, ⁵​twitter_username
+#> #   infinite_supply <lgl>, tags <list>, self_reported_tags <lgl>, urls <list>,
+#> #   platform <list>
 ```
 
 In a next step we show the logos of the three coins as provided by
@@ -177,13 +183,13 @@ In addition we show tags provided by <https://coinmarketcap.com>.
 coin_info %>% select(slug,tags) %>% tidyr::unnest(tags) %>% group_by(slug) %>% slice(1,n())
 #> # A tibble: 6 × 2
 #> # Groups:   slug [3]
-#>   slug     tags              
-#>   <chr>    <chr>             
-#> 1 bitcoin  mineable          
-#> 2 bitcoin  paradigm-portfolio
-#> 3 litecoin mineable          
-#> 4 litecoin medium-of-exchange
-#> 5 namecoin mineable          
+#>   slug     tags                 
+#>   <chr>    <chr>                
+#> 1 bitcoin  mineable             
+#> 2 bitcoin  ftx-bankruptcy-estate
+#> 3 litecoin mineable             
+#> 4 litecoin medium-of-exchange   
+#> 5 namecoin mineable             
 #> 6 namecoin platform
 ```
 
@@ -193,12 +199,12 @@ by <https://coinmarketcap.com>.
 ``` r
 coin_info %>% select(slug,urls) %>% tidyr::unnest(urls) %>% filter(name %in% c("reddit","twitter"))
 #> # A tibble: 5 × 3
-#>   slug     name    url                                
-#>   <chr>    <chr>   <chr>                              
-#> 1 bitcoin  reddit  https://reddit.com/r/bitcoin       
-#> 2 litecoin twitter https://twitter.com/LitecoinProject
-#> 3 litecoin reddit  https://reddit.com/r/litecoin      
-#> 4 namecoin twitter https://twitter.com/Namecoin       
+#>   slug     name    url                          
+#>   <chr>    <chr>   <chr>                        
+#> 1 bitcoin  reddit  https://reddit.com/r/bitcoin 
+#> 2 litecoin twitter https://twitter.com/litecoin 
+#> 3 litecoin reddit  https://reddit.com/r/litecoin
+#> 4 namecoin twitter https://twitter.com/Namecoin 
 #> 5 namecoin reddit  https://reddit.com/r/namecoin
 ```
 
@@ -224,7 +230,7 @@ coin_hist %>% group_by(slug) %>% slice(1:2)
 #> 4 2021-01-02 23:59:59     2 liteco… Lite… LTC    USD     1.26e+2 1.40e+2 1.24e+2
 #> 5 2021-01-01 23:59:59     3 nameco… Name… NMC    USD     4.39e-1 4.63e-1 4.32e-1
 #> 6 2021-01-02 23:59:59     3 nameco… Name… NMC    USD     4.51e-1 5.10e-1 4.15e-1
-#> # … with 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
+#> # ℹ 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
 #> #   time_open <dttm>, time_close <dttm>, time_high <dttm>, time_low <dttm>
 ```
 
@@ -250,7 +256,7 @@ coin_hist_m %>% group_by(slug) %>% slice(1:2)
 #> 4 2021-02-01 23:59:59     2 liteco… Lite… LTC    USD     1.30e+2 1.36e+2 1.26e+2
 #> 5 2021-01-01 23:59:59     3 nameco… Name… NMC    USD     4.39e-1 4.63e-1 4.32e-1
 #> 6 2021-02-01 23:59:59     3 nameco… Name… NMC    USD     7.82e-1 8.05e-1 7.48e-1
-#> # … with 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
+#> # ℹ 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
 #> #   time_open <dttm>, time_close <dttm>, time_high <dttm>, time_low <dttm>
 ```
 
@@ -273,7 +279,7 @@ fiats
 #>  8  2788 Czech Koruna         Kč    CZK   
 #>  9  2789 Danish Krone         kr    DKK   
 #> 10  2790 Euro                 €     EUR   
-#> # … with 83 more rows
+#> # ℹ 83 more rows
 ```
 
 So we download the time series again depicting prices in terms of
@@ -294,19 +300,19 @@ coin_hist2 %>% group_by(slug,ref_cur) %>% slice(1:2)
 #> # Groups:   slug, ref_cur [6]
 #>    timestamp              id slug   name  symbol ref_cur    open    high     low
 #>    <dttm>              <int> <chr>  <chr> <chr>  <chr>     <dbl>   <dbl>   <dbl>
-#>  1 2021-01-01 23:59:43     1 bitco… Bitc… BTC    BTC     1   e+0 1.00e+0 9.98e-1
-#>  2 2021-01-02 23:59:43     1 bitco… Bitc… BTC    BTC     1   e+0 1.00e+0 9.99e-1
-#>  3 2021-01-01 23:59:06     1 bitco… Bitc… BTC    EUR     2.37e+4 2.43e+4 2.36e+4
-#>  4 2021-01-02 23:59:06     1 bitco… Bitc… BTC    EUR     2.42e+4 2.73e+4 2.40e+4
-#>  5 2021-01-01 23:59:43     2 litec… Lite… LTC    BTC     4.30e-3 4.56e-3 4.27e-3
-#>  6 2021-01-02 23:59:43     2 litec… Lite… LTC    BTC     4.30e-3 4.24e-3 4.23e-3
-#>  7 2021-01-01 23:59:06     2 litec… Lite… LTC    EUR     1.02e+2 1.09e+2 1.01e+2
-#>  8 2021-01-02 23:59:06     2 litec… Lite… LTC    EUR     1.04e+2 1.16e+2 1.02e+2
-#>  9 2021-01-01 23:59:43     3 namec… Name… NMC    BTC     1.51e-5 1.58e-5 1.50e-5
-#> 10 2021-01-02 23:59:43     3 namec… Name… NMC    BTC     1.54e-5 1.57e-5 1.31e-5
-#> 11 2021-01-01 23:59:06     3 namec… Name… NMC    EUR     3.60e-1 3.80e-1 3.54e-1
-#> 12 2021-01-02 23:59:06     3 namec… Name… NMC    EUR     3.71e-1 4.21e-1 3.41e-1
-#> # … with 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
+#>  1 2021-01-02 00:00:00     1 bitco… Bitc… BTC    BTC     1   e+0 1.00e+0 9.99e-1
+#>  2 2021-01-03 00:00:00     1 bitco… Bitc… BTC    BTC     1   e+0 1.00e+0 9.97e-1
+#>  3 2021-01-02 00:00:00     1 bitco… Bitc… BTC    EUR     2.37e+4 2.43e+4 2.36e+4
+#>  4 2021-01-03 00:00:00     1 bitco… Bitc… BTC    EUR     2.42e+4 2.73e+4 2.40e+4
+#>  5 2021-01-02 00:00:00     2 litec… Lite… LTC    BTC     4.30e-3 4.55e-3 4.26e-3
+#>  6 2021-01-03 00:00:00     2 litec… Lite… LTC    BTC     4.31e-3 4.24e-3 4.22e-3
+#>  7 2021-01-02 00:00:00     2 litec… Lite… LTC    EUR     1.02e+2 1.09e+2 1.01e+2
+#>  8 2021-01-03 00:00:00     2 litec… Lite… LTC    EUR     1.04e+2 1.16e+2 1.02e+2
+#>  9 2021-01-02 00:00:00     3 namec… Name… NMC    BTC     1.51e-5 1.58e-5 1.50e-5
+#> 10 2021-01-03 00:00:00     3 namec… Name… NMC    BTC     1.54e-5 1.57e-5 1.31e-5
+#> 11 2021-01-02 00:00:00     3 namec… Name… NMC    EUR     3.60e-1 3.80e-1 3.54e-1
+#> 12 2021-01-03 00:00:00     3 namec… Name… NMC    EUR     3.72e-1 4.21e-1 3.41e-1
+#> # ℹ 7 more variables: close <dbl>, volume <dbl>, market_cap <dbl>,
 #> #   time_open <dttm>, time_close <dttm>, time_high <dttm>, time_low <dttm>
 ```
 
@@ -317,26 +323,26 @@ download historical listings and listing information (add
 ``` r
 latest_listings <- crypto_listings(which="latest", limit=10, quote=TRUE, finalWait=FALSE)
 latest_listings
-#> # A tibble: 10 × 23
-#>       id name    symbol slug  self_…¹ self_…² tvl_r…³ last_upd…⁴ USD_p…⁵ USD_v…⁶
-#>    <int> <chr>   <chr>  <chr> <lgl>   <lgl>   <lgl>   <date>       <dbl>   <dbl>
-#>  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-25 1.95e+4 2.50e10
-#>  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-25 4.53e-1 1.11e 9
-#>  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-25 6.08e-2 2.41e 8
-#>  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-25 1.00e+0 3.42e10
-#>  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-25 1.38e+3 1.14e10
-#>  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-25 2.79e+2 5.43e 8
-#>  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-25 3.71e-1 3.57e 8
-#>  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-25 1.00e+0 2.58e 9
-#>  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-25 1.00e+0 4.48e 9
-#> 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-25 2.91e+1 5.26e 8
-#> # … with 13 more variables: USD_volume_change_24h <dbl>,
-#> #   USD_percent_change_1h <dbl>, USD_percent_change_24h <dbl>,
-#> #   USD_percent_change_7d <dbl>, USD_percent_change_30d <dbl>,
-#> #   USD_percent_change_60d <dbl>, USD_percent_change_90d <dbl>,
-#> #   USD_market_cap <dbl>, USD_market_cap_dominance <dbl>,
-#> #   USD_fully_diluted_market_cap <dbl>, USD_tvl <lgl>,
-#> #   USD_market_cap_by_total_supply <dbl>, USD_last_updated <chr>, and …
+#> # A tibble: 10 × 24
+#>       id name        symbol slug      infinite_supply self_reported_circulatin…¹
+#>    <int> <chr>       <chr>  <chr>     <lgl>           <lgl>                     
+#>  1     1 Bitcoin     BTC    bitcoin   FALSE           NA                        
+#>  2    52 XRP         XRP    xrp       FALSE           NA                        
+#>  3    74 Dogecoin    DOGE   dogecoin  TRUE            NA                        
+#>  4   825 Tether USDt USDT   tether    TRUE            NA                        
+#>  5  1027 Ethereum    ETH    ethereum  TRUE            NA                        
+#>  6  1839 BNB         BNB    bnb       FALSE           NA                        
+#>  7  2010 Cardano     ADA    cardano   FALSE           NA                        
+#>  8  3408 USDC        USDC   usd-coin  FALSE           NA                        
+#>  9  5426 Solana      SOL    solana    TRUE            NA                        
+#> 10  5805 Avalanche   AVAX   avalanche FALSE           NA                        
+#> # ℹ abbreviated name: ¹​self_reported_circulating_supply
+#> # ℹ 18 more variables: self_reported_market_cap <lgl>, tvl_ratio <lgl>,
+#> #   last_updated <date>, USD_price <dbl>, USD_volume_24h <dbl>,
+#> #   USD_volume_change_24h <dbl>, USD_percent_change_1h <dbl>,
+#> #   USD_percent_change_24h <dbl>, USD_percent_change_7d <dbl>,
+#> #   USD_percent_change_30d <dbl>, USD_percent_change_60d <dbl>,
+#> #   USD_percent_change_90d <dbl>, USD_market_cap <dbl>, …
 ```
 
 An additional feature that was added in version 1.4.5 retrieves global
@@ -345,24 +351,25 @@ aggregate market statistics for CMC.
 ``` r
 all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
 all_quotes
-#> # A tibble: 3,459 × 12
-#>    timestamp  btc_domi…¹ activ…² activ…³ activ…⁴ USD_t…⁵ USD_t…⁶ USD_t…⁷ USD_a…⁸
-#>    <date>          <dbl>   <int>   <int>   <int>   <dbl>   <dbl>   <dbl>   <dbl>
-#>  1 2013-04-29       94.2      NA      NA      NA  1.58e9       0      NA  9.19e7
-#>  2 2013-04-30       94.4      NA      NA      NA  1.69e9       0      NA  9.47e7
-#>  3 2013-05-01       94.4      NA      NA      NA  1.64e9       0      NA  9.24e7
-#>  4 2013-05-02       94.1      NA      NA      NA  1.33e9       0      NA  7.90e7
-#>  5 2013-05-03       94.2      NA      NA      NA  1.28e9       0      NA  7.45e7
-#>  6 2013-05-04       93.9      NA      NA      NA  1.17e9       0      NA  7.16e7
-#>  7 2013-05-05       94.0      NA      NA      NA  1.34e9       0      NA  8.07e7
-#>  8 2013-05-06       94.1      NA      NA      NA  1.37e9       0      NA  8.12e7
-#>  9 2013-05-07       94.4      NA      NA      NA  1.31e9       0      NA  7.38e7
-#> 10 2013-05-08       94.4      NA      NA      NA  1.32e9       0      NA  7.43e7
-#> # … with 3,449 more rows, 3 more variables: USD_altcoin_volume_24h <dbl>,
-#> #   USD_altcoin_volume_24h_reported <dbl>, USD_timestamp <chr>, and abbreviated
-#> #   variable names ¹​btc_dominance, ²​active_cryptocurrencies, ³​active_exchanges,
-#> #   ⁴​active_market_pairs, ⁵​USD_total_market_cap, ⁶​USD_total_volume_24h,
-#> #   ⁷​USD_total_volume_24h_reported, ⁸​USD_altcoin_market_cap
+#> # A tibble: 3,921 × 13
+#>    timestamp  btc_dominance eth_dominance active_cryptocurrencies
+#>    <date>             <dbl>         <dbl>                   <int>
+#>  1 2013-04-29          94.2             0                      NA
+#>  2 2013-04-30          94.4             0                      NA
+#>  3 2013-05-01          94.4             0                      NA
+#>  4 2013-05-02          94.1             0                      NA
+#>  5 2013-05-03          94.2             0                      NA
+#>  6 2013-05-04          93.9             0                      NA
+#>  7 2013-05-05          94.0             0                      NA
+#>  8 2013-05-06          94.1             0                      NA
+#>  9 2013-05-07          94.4             0                      NA
+#> 10 2013-05-08          94.4             0                      NA
+#> # ℹ 3,911 more rows
+#> # ℹ 9 more variables: active_exchanges <int>, active_market_pairs <int>,
+#> #   USD_total_market_cap <dbl>, USD_total_volume_24h <dbl>,
+#> #   USD_total_volume_24h_reported <dbl>, USD_altcoin_market_cap <dbl>,
+#> #   USD_altcoin_volume_24h <dbl>, USD_altcoin_volume_24h_reported <dbl>,
+#> #   USD_timestamp <chr>
 ```
 
 We can use those quotes to plot information on the aggregate market
@@ -385,20 +392,21 @@ a list of active/inactive/untracked exchanges using `exchange_list()`:
 ``` r
 exchanges <- exchange_list(only_active=TRUE)
 exchanges
-#> # A tibble: 520 × 6
-#>       id name         slug         is_active first_historical_data last_histor…¹
-#>    <int> <chr>        <chr>            <int> <date>                <date>       
-#>  1    16 Poloniex     poloniex             1 2018-04-26            2022-10-25   
-#>  2    21 BTCC         btcc                 1 2018-04-26            2022-10-25   
-#>  3    22 Bittrex      bittrex              1 2018-04-26            2022-10-25   
-#>  4    24 Kraken       kraken               1 2018-04-26            2022-10-25   
-#>  5    34 Bittylicious bittylicious         1 2018-04-26            2022-10-25   
-#>  6    36 CEX.IO       cex-io               1 2018-04-26            2022-10-25   
-#>  7    37 Bitfinex     bitfinex             1 2018-04-26            2022-10-25   
-#>  8    42 HitBTC       hitbtc               1 2018-04-26            2022-10-25   
-#>  9    50 EXMO         exmo                 1 2018-04-26            2022-10-25   
-#> 10    61 Okcoin       okcoin               1 2018-04-26            2022-10-25   
-#> # … with 510 more rows, and abbreviated variable name ¹​last_historical_data
+#> # A tibble: 703 × 8
+#>       id name         slug         is_active is_listed is_redistributable
+#>    <int> <chr>        <chr>            <int>     <int>              <int>
+#>  1    16 Poloniex     poloniex             1         0                  1
+#>  2    21 BTCC         btcc                 1         0                  1
+#>  3    24 Kraken       kraken               1         0                  1
+#>  4    34 Bittylicious bittylicious         1         0                  0
+#>  5    36 CEX.IO       cex-io               1         0                  1
+#>  6    37 Bitfinex     bitfinex             1         0                  1
+#>  7    42 HitBTC       hitbtc               1         0                  1
+#>  8    50 EXMO         exmo                 1         0                  1
+#>  9    61 Okcoin       okcoin               1         0                  1
+#> 10    68 Indodax      indodax              1         0                  1
+#> # ℹ 693 more rows
+#> # ℹ 2 more variables: first_historical_data <date>, last_historical_data <date>
 ```
 
 and then download information on “binance” and “bittrex”:
@@ -407,78 +415,76 @@ and then download information on “binance” and “bittrex”:
 ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','bittrex')), finalWait=FALSE)
 #> ❯ Scraping exchange info
 #> 
-#> Scraping exchanges from  https://web-api.coinmarketcap.com/v1/exchange/info?id=22,270  with  60  characters!
+#> Scraping exchanges from  https://web-api.coinmarketcap.com/v1/exchange/info?id=270  with  57  characters!
 #> ❯ Processing exchange info
 #> 
 ex_info
-#> # A tibble: 2 × 19
-#>      id name    slug  descr…¹ notice logo  type  date_…² is_hi…³ is_re…⁴ maker…⁵
-#> * <int> <chr>   <chr> <chr>   <chr>  <chr> <chr> <chr>     <int> <lgl>     <dbl>
-#> 1    22 Bittrex bitt…  <NA>   ""     http… ""    2014-0…       0 NA         0   
-#> 2   270 Binance bina… "## Wh… "Bina… http… ""    2017-0…       0 NA         0.02
-#> # … with 8 more variables: taker_fee <dbl>, spot_volume_usd <dbl>,
+#> # A tibble: 1 × 23
+#>      id name    slug    description  notice logo  type  porStatus porAuditStatus
+#> * <int> <chr>   <chr>   <chr>        <chr>  <chr> <chr>     <int>          <int>
+#> 1   270 Binance binance "## What Is… ""     http… ""            1              0
+#> # ℹ 14 more variables: walletSourceStatus <int>, porSwitch <chr>,
+#> #   date_launched <chr>, is_hidden <int>, is_redistributable <int>,
+#> #   maker_fee <dbl>, taker_fee <dbl>, spot_volume_usd <dbl>,
 #> #   spot_volume_last_updated <dttm>, weekly_visits <int>, tags <lgl>,
-#> #   urls <list>, countries <lgl>, fiats <list>, and abbreviated variable names
-#> #   ¹​description, ²​date_launched, ³​is_hidden, ⁴​is_redistributable, ⁵​maker_fee
+#> #   urls <list>, countries <lgl>, fiats <list>
 ```
 
 Then we can access information on the fee structure,
 
 ``` r
 ex_info %>% select(contains("fee"))
-#> # A tibble: 2 × 2
+#> # A tibble: 1 × 2
 #>   maker_fee taker_fee
 #>       <dbl>     <dbl>
-#> 1      0         0   
-#> 2      0.02      0.04
+#> 1      0.02      0.04
 ```
 
 the amount of cryptocurrencies being traded (in USD)
 
 ``` r
 ex_info %>% select(contains("spot"))
-#> # A tibble: 2 × 2
+#> # A tibble: 1 × 2
 #>   spot_volume_usd spot_volume_last_updated
 #>             <dbl> <dttm>                  
-#> 1       16025712. 2022-10-25 15:10:16     
-#> 2     9656049729. 2022-10-25 15:10:16
+#> 1    11352096686. 2024-01-29 23:25:16
 ```
 
 or the fiat currencies allowed:
 
 ``` r
 ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
-#> # A tibble: 47 × 2
-#>    slug    value
-#>    <chr>   <chr>
-#>  1 bittrex USD  
-#>  2 binance AED  
-#>  3 binance ARS  
-#>  4 binance AUD  
-#>  5 binance AZN  
-#>  6 binance BRL  
-#>  7 binance CAD  
-#>  8 binance CHF  
-#>  9 binance CLP  
-#> 10 binance COP  
-#> # … with 37 more rows
+#> # A tibble: 11 × 2
+#>    slug    value 
+#>    <chr>   <chr> 
+#>  1 binance "EUR" 
+#>  2 binance " GBP"
+#>  3 binance " BRL"
+#>  4 binance " AUD"
+#>  5 binance " UAH"
+#>  6 binance " RUB"
+#>  7 binance " TRY"
+#>  8 binance " ZAR"
+#>  9 binance " PLN"
+#> 10 binance " NGN"
+#> 11 binance " RON"
 ```
 
 ### Author/License
 
--   **Sebastian Stöckl** - Package Creator, Modifier & Maintainer -
-    [sstoeckl on github](https://github.com/sstoeckl)
+- **Sebastian Stöckl** - Package Creator, Modifier & Maintainer -
+  [sstoeckl on github](https://github.com/sstoeckl)
 
 This project is licensed under the MIT License - see the \<license.md\>
 file for details\</license.md\>
 
 ### Acknowledgments
 
--   Thanks to the team at <https://coinmarketcap.com> for the great work
-    they do, especially to [Alice Liu (Research
-    Lead)](https://www.linkedin.com/in/alicejingliu/) and [Aaron
-    K.](https://www.linkedin.com/in/aaroncwk/) for their support with
-    regard to information on delistings.
--   Thanks to Jesse Vent for providing the (not fully research
-    compatible) [`crypto`](https://github.com/JesseVent/crypto)-package
-    that inspired this package.
+- Thanks to the team at <https://coinmarketcap.com> for the great work
+  they do, especially to [Alice Liu (Research
+  Lead)](https://www.linkedin.com/in/alicejingliu/) and [Aaron
+  K.](https://www.linkedin.com/in/aaroncwk/) for their support with
+  regard to information on delistings.
+- Thanks to Jesse Vent for providing the (not fully research compatible)
+  [`crypto`](https://github.com/JesseVent/crypto)-package that inspired
+  this package.
