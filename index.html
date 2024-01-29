@@ -102,6 +102,7 @@
 <div class="section level1">
 <h1 id="update">Update<a class="anchor" aria-label="anchor" href="#update"></a>
 </h1>
+<p>Since version 1.4.6 I have added the possibility to “sort” the historical <code><a href="reference/crypto_listings.html">crypto_listings()</a></code> in _asc_ending or _desc_ending order (“sort_dir”) to allow for the possibility to download only the top x crypto currencies using “limit” based on the requested sort (not available for “new” sorting). Also corrected some problems when sourcing lists that now do not have the “last_historical_data” field available any more.</p>
 <p>Since version 1.4.5 I have added a new function <code><a href="reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.</p>
 <p>Since version 1.4.4 a new function <code><a href="reference/crypto_listings.html">crypto_listings()</a></code> was introduced that retrieves new/latest/historical listings and listing information at CMC. Additionally some aspects of the other functions have been reworked. We noticed that <code>finalWait = TRUE</code> does not seem to be necessary at the moment, as well as <code>sleep</code> can be set to ‘0’ seconds. If you experience strange behavior this might be due to the the api sending back strange (old) results. In this case let <code>sleep = 60</code> (the default) and <code>finalWait = TRUE</code> (the default).</p>
 <p>Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new “feature” introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again. Additionally, since version v1.4.3 the package allows for a data <code>interval</code> larger than daily (e.g. ‘2d’ or ‘7d’/‘weekly’)</p>
@@ -152,17 +153,17 @@
 <span></span>
 <span><span class="co"># and give the first two lines of information per coin</span></span>
 <span><span class="va">coin_info</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 19</span></span>
-<span><span class="co">#&gt;      id name   symbol categ…¹ descr…² slug  logo  subre…³ notice date_…⁴ twitt…⁵</span></span>
-<span><span class="co">#&gt; * &lt;int&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;  </span></span>
-<span><span class="co">#&gt; 1     1 Bitco… BTC    coin    "## Wh… bitc… http… bitcoin ""     2013-0… ""     </span></span>
-<span><span class="co">#&gt; 2     2 Litec… LTC    coin    "## Wh… lite… http… liteco… ""     2013-0… "Litec…</span></span>
-<span><span class="co">#&gt; 3     3 Namec… NMC    coin    "Namec… name… http… nameco… ""     2013-0… "Namec…</span></span>
-<span><span class="co">#&gt; # … with 8 more variables: is_hidden &lt;int&gt;, date_launched &lt;lgl&gt;,</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 20</span></span>
+<span><span class="co">#&gt;      id name     symbol category description        slug  logo  subreddit notice</span></span>
+<span><span class="co">#&gt; * &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt;              &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1     1 Bitcoin  BTC    coin     "## What Is Bitco… bitc… http… bitcoin   ""    </span></span>
+<span><span class="co">#&gt; 2     2 Litecoin LTC    coin     "## What Is Litec… lite… http… litecoin  ""    </span></span>
+<span><span class="co">#&gt; 3     3 Namecoin NMC    coin     "Namecoin (NMC) i… name… http… namecoin  ""    </span></span>
+<span><span class="co">#&gt; # ℹ 11 more variables: date_added &lt;chr&gt;, twitter_username &lt;chr&gt;,</span></span>
+<span><span class="co">#&gt; #   is_hidden &lt;int&gt;, date_launched &lt;chr&gt;,</span></span>
 <span><span class="co">#&gt; #   self_reported_circulating_supply &lt;lgl&gt;, self_reported_market_cap &lt;lgl&gt;,</span></span>
-<span><span class="co">#&gt; #   tags &lt;list&gt;, self_reported_tags &lt;lgl&gt;, urls &lt;list&gt;, platform &lt;list&gt;, and</span></span>
-<span><span class="co">#&gt; #   abbreviated variable names ¹​category, ²​description, ³​subreddit,</span></span>
-<span><span class="co">#&gt; #   ⁴​date_added, ⁵​twitter_username</span></span></code></pre></div>
+<span><span class="co">#&gt; #   infinite_supply &lt;lgl&gt;, tags &lt;list&gt;, self_reported_tags &lt;lgl&gt;, urls &lt;list&gt;,</span></span>
+<span><span class="co">#&gt; #   platform &lt;list&gt;</span></span></code></pre></div>
 <p>In a next step we show the logos of the three coins as provided by <a href="https://coinmarketcap.com" class="external-link uri">https://coinmarketcap.com</a>.</p>
 <p><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png" width="5%" height="5%" style="display: block; margin: auto;"><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/2.png" width="5%" height="5%" style="display: block; margin: auto;"><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/3.png" width="5%" height="5%" style="display: block; margin: auto;"></p>
 <p>In addition we show tags provided by <a href="https://coinmarketcap.com" class="external-link uri">https://coinmarketcap.com</a>.</p>
@@ -170,24 +171,24 @@
 <code class="sourceCode R"><span><span class="va">coin_info</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">slug</span>,<span class="va">tags</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html" class="external-link">unnest</a></span><span class="op">(</span><span class="va">tags</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">slug</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 2</span></span>
 <span><span class="co">#&gt; # Groups:   slug [3]</span></span>
-<span><span class="co">#&gt;   slug     tags              </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;             </span></span>
-<span><span class="co">#&gt; 1 bitcoin  mineable          </span></span>
-<span><span class="co">#&gt; 2 bitcoin  paradigm-portfolio</span></span>
-<span><span class="co">#&gt; 3 litecoin mineable          </span></span>
-<span><span class="co">#&gt; 4 litecoin medium-of-exchange</span></span>
-<span><span class="co">#&gt; 5 namecoin mineable          </span></span>
+<span><span class="co">#&gt;   slug     tags                 </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;                </span></span>
+<span><span class="co">#&gt; 1 bitcoin  mineable             </span></span>
+<span><span class="co">#&gt; 2 bitcoin  ftx-bankruptcy-estate</span></span>
+<span><span class="co">#&gt; 3 litecoin mineable             </span></span>
+<span><span class="co">#&gt; 4 litecoin medium-of-exchange   </span></span>
+<span><span class="co">#&gt; 5 namecoin mineable             </span></span>
 <span><span class="co">#&gt; 6 namecoin platform</span></span></code></pre></div>
 <p>Additionally: Here are some urls pertaining to these coins as provided by <a href="https://coinmarketcap.com" class="external-link uri">https://coinmarketcap.com</a>.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">coin_info</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">slug</span>,<span class="va">urls</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html" class="external-link">unnest</a></span><span class="op">(</span><span class="va">urls</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reddit"</span>,<span class="st">"twitter"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 3</span></span>
-<span><span class="co">#&gt;   slug     name    url                                </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;                              </span></span>
-<span><span class="co">#&gt; 1 bitcoin  reddit  https://reddit.com/r/bitcoin       </span></span>
-<span><span class="co">#&gt; 2 litecoin twitter https://twitter.com/LitecoinProject</span></span>
-<span><span class="co">#&gt; 3 litecoin reddit  https://reddit.com/r/litecoin      </span></span>
-<span><span class="co">#&gt; 4 namecoin twitter https://twitter.com/Namecoin       </span></span>
+<span><span class="co">#&gt;   slug     name    url                          </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;                        </span></span>
+<span><span class="co">#&gt; 1 bitcoin  reddit  https://reddit.com/r/bitcoin </span></span>
+<span><span class="co">#&gt; 2 litecoin twitter https://twitter.com/litecoin </span></span>
+<span><span class="co">#&gt; 3 litecoin reddit  https://reddit.com/r/litecoin</span></span>
+<span><span class="co">#&gt; 4 namecoin twitter https://twitter.com/Namecoin </span></span>
 <span><span class="co">#&gt; 5 namecoin reddit  https://reddit.com/r/namecoin</span></span></code></pre></div>
 <p>In a next step we download time series data for these coins.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -210,7 +211,7 @@
 <span><span class="co">#&gt; 4 2021-01-02 23:59:59     2 liteco… Lite… LTC    USD     1.26e+2 1.40e+2 1.24e+2</span></span>
 <span><span class="co">#&gt; 5 2021-01-01 23:59:59     3 nameco… Name… NMC    USD     4.39e-1 4.63e-1 4.32e-1</span></span>
 <span><span class="co">#&gt; 6 2021-01-02 23:59:59     3 nameco… Name… NMC    USD     4.51e-1 5.10e-1 4.15e-1</span></span>
-<span><span class="co">#&gt; # … with 7 more variables: close &lt;dbl&gt;, volume &lt;dbl&gt;, market_cap &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; # ℹ 7 more variables: close &lt;dbl&gt;, volume &lt;dbl&gt;, market_cap &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   time_open &lt;dttm&gt;, time_close &lt;dttm&gt;, time_high &lt;dttm&gt;, time_low &lt;dttm&gt;</span></span></code></pre></div>
 <p>Similarly, we could download the same data on a monthly basis.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -233,7 +234,7 @@
 <span><span class="co">#&gt; 4 2021-02-01 23:59:59     2 liteco… Lite… LTC    USD     1.30e+2 1.36e+2 1.26e+2</span></span>
 <span><span class="co">#&gt; 5 2021-01-01 23:59:59     3 nameco… Name… NMC    USD     4.39e-1 4.63e-1 4.32e-1</span></span>
 <span><span class="co">#&gt; 6 2021-02-01 23:59:59     3 nameco… Name… NMC    USD     7.82e-1 8.05e-1 7.48e-1</span></span>
-<span><span class="co">#&gt; # … with 7 more variables: close &lt;dbl&gt;, volume &lt;dbl&gt;, market_cap &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; # ℹ 7 more variables: close &lt;dbl&gt;, volume &lt;dbl&gt;, market_cap &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   time_open &lt;dttm&gt;, time_close &lt;dttm&gt;, time_high &lt;dttm&gt;, time_low &lt;dttm&gt;</span></span></code></pre></div>
 <p>Alternatively, we could determine the price of these coins in other currencies. A list of such currencies is available as <code><a href="reference/crypto_list.html">fiat_list()</a></code></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -252,7 +253,7 @@
 <span><span class="co">#&gt;  8  2788 Czech Koruna         Kč    CZK   </span></span>
 <span><span class="co">#&gt;  9  2789 Danish Krone         kr    DKK   </span></span>
 <span><span class="co">#&gt; 10  2790 Euro                 €     EUR   </span></span>
-<span><span class="co">#&gt; # … with 83 more rows</span></span></code></pre></div>
+<span><span class="co">#&gt; # ℹ 83 more rows</span></span></code></pre></div>
 <p>So we download the time series again depicting prices in terms of Bitcoin and Euro (note that multiple currencies can be given to <code>convert</code>, separated by “,”).</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># retrieve historical data for all (the first 3) of them</span></span>
@@ -268,66 +269,67 @@
 <span><span class="co">#&gt; # Groups:   slug, ref_cur [6]</span></span>
 <span><span class="co">#&gt;    timestamp              id slug   name  symbol ref_cur    open    high     low</span></span>
 <span><span class="co">#&gt;    &lt;dttm&gt;              &lt;int&gt; &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt;  1 2021-01-01 23:59:43     1 bitco… Bitc… BTC    BTC     1   e+0 1.00e+0 9.98e-1</span></span>
-<span><span class="co">#&gt;  2 2021-01-02 23:59:43     1 bitco… Bitc… BTC    BTC     1   e+0 1.00e+0 9.99e-1</span></span>
-<span><span class="co">#&gt;  3 2021-01-01 23:59:06     1 bitco… Bitc… BTC    EUR     2.37e+4 2.43e+4 2.36e+4</span></span>
-<span><span class="co">#&gt;  4 2021-01-02 23:59:06     1 bitco… Bitc… BTC    EUR     2.42e+4 2.73e+4 2.40e+4</span></span>
-<span><span class="co">#&gt;  5 2021-01-01 23:59:43     2 litec… Lite… LTC    BTC     4.30e-3 4.56e-3 4.27e-3</span></span>
-<span><span class="co">#&gt;  6 2021-01-02 23:59:43     2 litec… Lite… LTC    BTC     4.30e-3 4.24e-3 4.23e-3</span></span>
-<span><span class="co">#&gt;  7 2021-01-01 23:59:06     2 litec… Lite… LTC    EUR     1.02e+2 1.09e+2 1.01e+2</span></span>
-<span><span class="co">#&gt;  8 2021-01-02 23:59:06     2 litec… Lite… LTC    EUR     1.04e+2 1.16e+2 1.02e+2</span></span>
-<span><span class="co">#&gt;  9 2021-01-01 23:59:43     3 namec… Name… NMC    BTC     1.51e-5 1.58e-5 1.50e-5</span></span>
-<span><span class="co">#&gt; 10 2021-01-02 23:59:43     3 namec… Name… NMC    BTC     1.54e-5 1.57e-5 1.31e-5</span></span>
-<span><span class="co">#&gt; 11 2021-01-01 23:59:06     3 namec… Name… NMC    EUR     3.60e-1 3.80e-1 3.54e-1</span></span>
-<span><span class="co">#&gt; 12 2021-01-02 23:59:06     3 namec… Name… NMC    EUR     3.71e-1 4.21e-1 3.41e-1</span></span>
-<span><span class="co">#&gt; # … with 7 more variables: close &lt;dbl&gt;, volume &lt;dbl&gt;, market_cap &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt;  1 2021-01-02 00:00:00     1 bitco… Bitc… BTC    BTC     1   e+0 1.00e+0 9.99e-1</span></span>
+<span><span class="co">#&gt;  2 2021-01-03 00:00:00     1 bitco… Bitc… BTC    BTC     1   e+0 1.00e+0 9.97e-1</span></span>
+<span><span class="co">#&gt;  3 2021-01-02 00:00:00     1 bitco… Bitc… BTC    EUR     2.37e+4 2.43e+4 2.36e+4</span></span>
+<span><span class="co">#&gt;  4 2021-01-03 00:00:00     1 bitco… Bitc… BTC    EUR     2.42e+4 2.73e+4 2.40e+4</span></span>
+<span><span class="co">#&gt;  5 2021-01-02 00:00:00     2 litec… Lite… LTC    BTC     4.30e-3 4.55e-3 4.26e-3</span></span>
+<span><span class="co">#&gt;  6 2021-01-03 00:00:00     2 litec… Lite… LTC    BTC     4.31e-3 4.24e-3 4.22e-3</span></span>
+<span><span class="co">#&gt;  7 2021-01-02 00:00:00     2 litec… Lite… LTC    EUR     1.02e+2 1.09e+2 1.01e+2</span></span>
+<span><span class="co">#&gt;  8 2021-01-03 00:00:00     2 litec… Lite… LTC    EUR     1.04e+2 1.16e+2 1.02e+2</span></span>
+<span><span class="co">#&gt;  9 2021-01-02 00:00:00     3 namec… Name… NMC    BTC     1.51e-5 1.58e-5 1.50e-5</span></span>
+<span><span class="co">#&gt; 10 2021-01-03 00:00:00     3 namec… Name… NMC    BTC     1.54e-5 1.57e-5 1.31e-5</span></span>
+<span><span class="co">#&gt; 11 2021-01-02 00:00:00     3 namec… Name… NMC    EUR     3.60e-1 3.80e-1 3.54e-1</span></span>
+<span><span class="co">#&gt; 12 2021-01-03 00:00:00     3 namec… Name… NMC    EUR     3.72e-1 4.21e-1 3.41e-1</span></span>
+<span><span class="co">#&gt; # ℹ 7 more variables: close &lt;dbl&gt;, volume &lt;dbl&gt;, market_cap &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   time_open &lt;dttm&gt;, time_close &lt;dttm&gt;, time_high &lt;dttm&gt;, time_low &lt;dttm&gt;</span></span></code></pre></div>
 <p>As a new features in version 1.4.4. we introduced the possibility to download historical listings and listing information (add <code>quote = TRUE</code>).</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">latest_listings</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_listings.html">crypto_listings</a></span><span class="op">(</span>which<span class="op">=</span><span class="st">"latest"</span>, limit<span class="op">=</span><span class="fl">10</span>, quote<span class="op">=</span><span class="cn">TRUE</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">latest_listings</span></span>
-<span><span class="co">#&gt; # A tibble: 10 × 23</span></span>
-<span><span class="co">#&gt;       id name    symbol slug  self_…¹ self_…² tvl_r…³ last_upd…⁴ USD_p…⁵ USD_v…⁶</span></span>
-<span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt; &lt;lgl&gt;   &lt;lgl&gt;   &lt;lgl&gt;   &lt;date&gt;       &lt;dbl&gt;   &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt;  1     1 Bitcoin BTC    bitc… NA      NA      NA      2022-10-25 1.95e+4 2.50e10</span></span>
-<span><span class="co">#&gt;  2    52 XRP     XRP    xrp   NA      NA      NA      2022-10-25 4.53e-1 1.11e 9</span></span>
-<span><span class="co">#&gt;  3    74 Dogeco… DOGE   doge… NA      NA      NA      2022-10-25 6.08e-2 2.41e 8</span></span>
-<span><span class="co">#&gt;  4   825 Tether  USDT   teth… NA      NA      NA      2022-10-25 1.00e+0 3.42e10</span></span>
-<span><span class="co">#&gt;  5  1027 Ethere… ETH    ethe… NA      NA      NA      2022-10-25 1.38e+3 1.14e10</span></span>
-<span><span class="co">#&gt;  6  1839 BNB     BNB    bnb   NA      NA      NA      2022-10-25 2.79e+2 5.43e 8</span></span>
-<span><span class="co">#&gt;  7  2010 Cardano ADA    card… NA      NA      NA      2022-10-25 3.71e-1 3.57e 8</span></span>
-<span><span class="co">#&gt;  8  3408 USD Co… USDC   usd-… NA      NA      NA      2022-10-25 1.00e+0 2.58e 9</span></span>
-<span><span class="co">#&gt;  9  4687 Binanc… BUSD   bina… NA      NA      NA      2022-10-25 1.00e+0 4.48e 9</span></span>
-<span><span class="co">#&gt; 10  5426 Solana  SOL    sola… NA      NA      NA      2022-10-25 2.91e+1 5.26e 8</span></span>
-<span><span class="co">#&gt; # … with 13 more variables: USD_volume_change_24h &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   USD_percent_change_1h &lt;dbl&gt;, USD_percent_change_24h &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   USD_percent_change_7d &lt;dbl&gt;, USD_percent_change_30d &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   USD_percent_change_60d &lt;dbl&gt;, USD_percent_change_90d &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   USD_market_cap &lt;dbl&gt;, USD_market_cap_dominance &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   USD_fully_diluted_market_cap &lt;dbl&gt;, USD_tvl &lt;lgl&gt;,</span></span>
-<span><span class="co">#&gt; #   USD_market_cap_by_total_supply &lt;dbl&gt;, USD_last_updated &lt;chr&gt;, and …</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 10 × 24</span></span>
+<span><span class="co">#&gt;       id name        symbol slug      infinite_supply self_reported_circulatin…¹</span></span>
+<span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;     &lt;lgl&gt;           &lt;lgl&gt;                     </span></span>
+<span><span class="co">#&gt;  1     1 Bitcoin     BTC    bitcoin   FALSE           NA                        </span></span>
+<span><span class="co">#&gt;  2    52 XRP         XRP    xrp       FALSE           NA                        </span></span>
+<span><span class="co">#&gt;  3    74 Dogecoin    DOGE   dogecoin  TRUE            NA                        </span></span>
+<span><span class="co">#&gt;  4   825 Tether USDt USDT   tether    TRUE            NA                        </span></span>
+<span><span class="co">#&gt;  5  1027 Ethereum    ETH    ethereum  TRUE            NA                        </span></span>
+<span><span class="co">#&gt;  6  1839 BNB         BNB    bnb       FALSE           NA                        </span></span>
+<span><span class="co">#&gt;  7  2010 Cardano     ADA    cardano   FALSE           NA                        </span></span>
+<span><span class="co">#&gt;  8  3408 USDC        USDC   usd-coin  FALSE           NA                        </span></span>
+<span><span class="co">#&gt;  9  5426 Solana      SOL    solana    TRUE            NA                        </span></span>
+<span><span class="co">#&gt; 10  5805 Avalanche   AVAX   avalanche FALSE           NA                        </span></span>
+<span><span class="co">#&gt; # ℹ abbreviated name: ¹​self_reported_circulating_supply</span></span>
+<span><span class="co">#&gt; # ℹ 18 more variables: self_reported_market_cap &lt;lgl&gt;, tvl_ratio &lt;lgl&gt;,</span></span>
+<span><span class="co">#&gt; #   last_updated &lt;date&gt;, USD_price &lt;dbl&gt;, USD_volume_24h &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   USD_volume_change_24h &lt;dbl&gt;, USD_percent_change_1h &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   USD_percent_change_24h &lt;dbl&gt;, USD_percent_change_7d &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   USD_percent_change_30d &lt;dbl&gt;, USD_percent_change_60d &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   USD_percent_change_90d &lt;dbl&gt;, USD_market_cap &lt;dbl&gt;, …</span></span></code></pre></div>
 <p>An additional feature that was added in version 1.4.5 retrieves global aggregate market statistics for CMC.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_quotes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_global_quotes.html">crypto_global_quotes</a></span><span class="op">(</span>which<span class="op">=</span><span class="st">"historical"</span>, quote<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">all_quotes</span></span>
-<span><span class="co">#&gt; # A tibble: 3,459 × 12</span></span>
-<span><span class="co">#&gt;    timestamp  btc_domi…¹ activ…² activ…³ activ…⁴ USD_t…⁵ USD_t…⁶ USD_t…⁷ USD_a…⁸</span></span>
-<span><span class="co">#&gt;    &lt;date&gt;          &lt;dbl&gt;   &lt;int&gt;   &lt;int&gt;   &lt;int&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt;  1 2013-04-29       94.2      NA      NA      NA  1.58e9       0      NA  9.19e7</span></span>
-<span><span class="co">#&gt;  2 2013-04-30       94.4      NA      NA      NA  1.69e9       0      NA  9.47e7</span></span>
-<span><span class="co">#&gt;  3 2013-05-01       94.4      NA      NA      NA  1.64e9       0      NA  9.24e7</span></span>
-<span><span class="co">#&gt;  4 2013-05-02       94.1      NA      NA      NA  1.33e9       0      NA  7.90e7</span></span>
-<span><span class="co">#&gt;  5 2013-05-03       94.2      NA      NA      NA  1.28e9       0      NA  7.45e7</span></span>
-<span><span class="co">#&gt;  6 2013-05-04       93.9      NA      NA      NA  1.17e9       0      NA  7.16e7</span></span>
-<span><span class="co">#&gt;  7 2013-05-05       94.0      NA      NA      NA  1.34e9       0      NA  8.07e7</span></span>
-<span><span class="co">#&gt;  8 2013-05-06       94.1      NA      NA      NA  1.37e9       0      NA  8.12e7</span></span>
-<span><span class="co">#&gt;  9 2013-05-07       94.4      NA      NA      NA  1.31e9       0      NA  7.38e7</span></span>
-<span><span class="co">#&gt; 10 2013-05-08       94.4      NA      NA      NA  1.32e9       0      NA  7.43e7</span></span>
-<span><span class="co">#&gt; # … with 3,449 more rows, 3 more variables: USD_altcoin_volume_24h &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   USD_altcoin_volume_24h_reported &lt;dbl&gt;, USD_timestamp &lt;chr&gt;, and abbreviated</span></span>
-<span><span class="co">#&gt; #   variable names ¹​btc_dominance, ²​active_cryptocurrencies, ³​active_exchanges,</span></span>
-<span><span class="co">#&gt; #   ⁴​active_market_pairs, ⁵​USD_total_market_cap, ⁶​USD_total_volume_24h,</span></span>
-<span><span class="co">#&gt; #   ⁷​USD_total_volume_24h_reported, ⁸​USD_altcoin_market_cap</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 3,921 × 13</span></span>
+<span><span class="co">#&gt;    timestamp  btc_dominance eth_dominance active_cryptocurrencies</span></span>
+<span><span class="co">#&gt;    &lt;date&gt;             &lt;dbl&gt;         &lt;dbl&gt;                   &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1 2013-04-29          94.2             0                      NA</span></span>
+<span><span class="co">#&gt;  2 2013-04-30          94.4             0                      NA</span></span>
+<span><span class="co">#&gt;  3 2013-05-01          94.4             0                      NA</span></span>
+<span><span class="co">#&gt;  4 2013-05-02          94.1             0                      NA</span></span>
+<span><span class="co">#&gt;  5 2013-05-03          94.2             0                      NA</span></span>
+<span><span class="co">#&gt;  6 2013-05-04          93.9             0                      NA</span></span>
+<span><span class="co">#&gt;  7 2013-05-05          94.0             0                      NA</span></span>
+<span><span class="co">#&gt;  8 2013-05-06          94.1             0                      NA</span></span>
+<span><span class="co">#&gt;  9 2013-05-07          94.4             0                      NA</span></span>
+<span><span class="co">#&gt; 10 2013-05-08          94.4             0                      NA</span></span>
+<span><span class="co">#&gt; # ℹ 3,911 more rows</span></span>
+<span><span class="co">#&gt; # ℹ 9 more variables: active_exchanges &lt;int&gt;, active_market_pairs &lt;int&gt;,</span></span>
+<span><span class="co">#&gt; #   USD_total_market_cap &lt;dbl&gt;, USD_total_volume_24h &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   USD_total_volume_24h_reported &lt;dbl&gt;, USD_altcoin_market_cap &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   USD_altcoin_volume_24h &lt;dbl&gt;, USD_altcoin_volume_24h_reported &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   USD_timestamp &lt;chr&gt;</span></span></code></pre></div>
 <p>We can use those quotes to plot information on the aggregate market capitalization:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_quotes</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">timestamp</span>, <span class="va">USD_total_market_cap</span>, <span class="va">USD_altcoin_market_cap</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -341,71 +343,70 @@
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exchanges</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exchange_list.html">exchange_list</a></span><span class="op">(</span>only_active<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">exchanges</span></span>
-<span><span class="co">#&gt; # A tibble: 520 × 6</span></span>
-<span><span class="co">#&gt;       id name         slug         is_active first_historical_data last_histor…¹</span></span>
-<span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;        &lt;chr&gt;            &lt;int&gt; &lt;date&gt;                &lt;date&gt;       </span></span>
-<span><span class="co">#&gt;  1    16 Poloniex     poloniex             1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt;  2    21 BTCC         btcc                 1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt;  3    22 Bittrex      bittrex              1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt;  4    24 Kraken       kraken               1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt;  5    34 Bittylicious bittylicious         1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt;  6    36 CEX.IO       cex-io               1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt;  7    37 Bitfinex     bitfinex             1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt;  8    42 HitBTC       hitbtc               1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt;  9    50 EXMO         exmo                 1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt; 10    61 Okcoin       okcoin               1 2018-04-26            2022-10-25   </span></span>
-<span><span class="co">#&gt; # … with 510 more rows, and abbreviated variable name ¹​last_historical_data</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 703 × 8</span></span>
+<span><span class="co">#&gt;       id name         slug         is_active is_listed is_redistributable</span></span>
+<span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;        &lt;chr&gt;            &lt;int&gt;     &lt;int&gt;              &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1    16 Poloniex     poloniex             1         0                  1</span></span>
+<span><span class="co">#&gt;  2    21 BTCC         btcc                 1         0                  1</span></span>
+<span><span class="co">#&gt;  3    24 Kraken       kraken               1         0                  1</span></span>
+<span><span class="co">#&gt;  4    34 Bittylicious bittylicious         1         0                  0</span></span>
+<span><span class="co">#&gt;  5    36 CEX.IO       cex-io               1         0                  1</span></span>
+<span><span class="co">#&gt;  6    37 Bitfinex     bitfinex             1         0                  1</span></span>
+<span><span class="co">#&gt;  7    42 HitBTC       hitbtc               1         0                  1</span></span>
+<span><span class="co">#&gt;  8    50 EXMO         exmo                 1         0                  1</span></span>
+<span><span class="co">#&gt;  9    61 Okcoin       okcoin               1         0                  1</span></span>
+<span><span class="co">#&gt; 10    68 Indodax      indodax              1         0                  1</span></span>
+<span><span class="co">#&gt; # ℹ 693 more rows</span></span>
+<span><span class="co">#&gt; # ℹ 2 more variables: first_historical_data &lt;date&gt;, last_historical_data &lt;date&gt;</span></span></code></pre></div>
 <p>and then download information on “binance” and “bittrex”:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exchange_info.html">exchange_info</a></span><span class="op">(</span><span class="va">exchanges</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">slug</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'binance'</span>,<span class="st">'bittrex'</span><span class="op">)</span><span class="op">)</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ❯ Scraping exchange info</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Scraping exchanges from  https://web-api.coinmarketcap.com/v1/exchange/info?id=22,270  with  60  characters!</span></span>
+<span><span class="co">#&gt; Scraping exchanges from  https://web-api.coinmarketcap.com/v1/exchange/info?id=270  with  57  characters!</span></span>
 <span><span class="co">#&gt; ❯ Processing exchange info</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="va">ex_info</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 19</span></span>
-<span><span class="co">#&gt;      id name    slug  descr…¹ notice logo  type  date_…² is_hi…³ is_re…⁴ maker…⁵</span></span>
-<span><span class="co">#&gt; * &lt;int&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;     &lt;int&gt; &lt;lgl&gt;     &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1    22 Bittrex bitt…  &lt;NA&gt;   ""     http… ""    2014-0…       0 NA         0   </span></span>
-<span><span class="co">#&gt; 2   270 Binance bina… "## Wh… "Bina… http… ""    2017-0…       0 NA         0.02</span></span>
-<span><span class="co">#&gt; # … with 8 more variables: taker_fee &lt;dbl&gt;, spot_volume_usd &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 23</span></span>
+<span><span class="co">#&gt;      id name    slug    description  notice logo  type  porStatus porAuditStatus</span></span>
+<span><span class="co">#&gt; * &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;        &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;     &lt;int&gt;          &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1   270 Binance binance "## What Is… ""     http… ""            1              0</span></span>
+<span><span class="co">#&gt; # ℹ 14 more variables: walletSourceStatus &lt;int&gt;, porSwitch &lt;chr&gt;,</span></span>
+<span><span class="co">#&gt; #   date_launched &lt;chr&gt;, is_hidden &lt;int&gt;, is_redistributable &lt;int&gt;,</span></span>
+<span><span class="co">#&gt; #   maker_fee &lt;dbl&gt;, taker_fee &lt;dbl&gt;, spot_volume_usd &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   spot_volume_last_updated &lt;dttm&gt;, weekly_visits &lt;int&gt;, tags &lt;lgl&gt;,</span></span>
-<span><span class="co">#&gt; #   urls &lt;list&gt;, countries &lt;lgl&gt;, fiats &lt;list&gt;, and abbreviated variable names</span></span>
-<span><span class="co">#&gt; #   ¹​description, ²​date_launched, ³​is_hidden, ⁴​is_redistributable, ⁵​maker_fee</span></span></code></pre></div>
+<span><span class="co">#&gt; #   urls &lt;list&gt;, countries &lt;lgl&gt;, fiats &lt;list&gt;</span></span></code></pre></div>
 <p>Then we can access information on the fee structure,</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex_info</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">contains</a></span><span class="op">(</span><span class="st">"fee"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 2</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 2</span></span>
 <span><span class="co">#&gt;   maker_fee taker_fee</span></span>
 <span><span class="co">#&gt;       &lt;dbl&gt;     &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1      0         0   </span></span>
-<span><span class="co">#&gt; 2      0.02      0.04</span></span></code></pre></div>
+<span><span class="co">#&gt; 1      0.02      0.04</span></span></code></pre></div>
 <p>the amount of cryptocurrencies being traded (in USD)</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex_info</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">contains</a></span><span class="op">(</span><span class="st">"spot"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 2</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 2</span></span>
 <span><span class="co">#&gt;   spot_volume_usd spot_volume_last_updated</span></span>
 <span><span class="co">#&gt;             &lt;dbl&gt; &lt;dttm&gt;                  </span></span>
-<span><span class="co">#&gt; 1       16025712. 2022-10-25 15:10:16     </span></span>
-<span><span class="co">#&gt; 2     9656049729. 2022-10-25 15:10:16</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    11352096686. 2024-01-29 23:25:16</span></span></code></pre></div>
 <p>or the fiat currencies allowed:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex_info</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">slug</span>,<span class="va">fiats</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html" class="external-link">unnest</a></span><span class="op">(</span><span class="va">fiats</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 47 × 2</span></span>
-<span><span class="co">#&gt;    slug    value</span></span>
-<span><span class="co">#&gt;    &lt;chr&gt;   &lt;chr&gt;</span></span>
-<span><span class="co">#&gt;  1 bittrex USD  </span></span>
-<span><span class="co">#&gt;  2 binance AED  </span></span>
-<span><span class="co">#&gt;  3 binance ARS  </span></span>
-<span><span class="co">#&gt;  4 binance AUD  </span></span>
-<span><span class="co">#&gt;  5 binance AZN  </span></span>
-<span><span class="co">#&gt;  6 binance BRL  </span></span>
-<span><span class="co">#&gt;  7 binance CAD  </span></span>
-<span><span class="co">#&gt;  8 binance CHF  </span></span>
-<span><span class="co">#&gt;  9 binance CLP  </span></span>
-<span><span class="co">#&gt; 10 binance COP  </span></span>
-<span><span class="co">#&gt; # … with 37 more rows</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 11 × 2</span></span>
+<span><span class="co">#&gt;    slug    value </span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;   &lt;chr&gt; </span></span>
+<span><span class="co">#&gt;  1 binance "EUR" </span></span>
+<span><span class="co">#&gt;  2 binance " GBP"</span></span>
+<span><span class="co">#&gt;  3 binance " BRL"</span></span>
+<span><span class="co">#&gt;  4 binance " AUD"</span></span>
+<span><span class="co">#&gt;  5 binance " UAH"</span></span>
+<span><span class="co">#&gt;  6 binance " RUB"</span></span>
+<span><span class="co">#&gt;  7 binance " TRY"</span></span>
+<span><span class="co">#&gt;  8 binance " ZAR"</span></span>
+<span><span class="co">#&gt;  9 binance " PLN"</span></span>
+<span><span class="co">#&gt; 10 binance " NGN"</span></span>
+<span><span class="co">#&gt; 11 binance " RON"</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="authorlicense">Author/License<a class="anchor" aria-label="anchor" href="#authorlicense"></a>
 </h3>
@@ -463,7 +464,6 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://www.repostatus.org/#active" class="external-link"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status"></a></li>
-<li><a href="https://travis-ci.org/sstoeckl/crypto2" class="external-link"><img src="https://travis-ci.org/sstoeckl/crypto2.svg?branch=master" alt="Travis Build Status"></a></li>
 <li><a href="https://cran.r-project.org/package=crypto2" class="external-link"><img src="https://www.r-pkg.org/badges/last-release/crypto2" alt="CRAN_latest_release_date"></a></li>
 <li><a href="https://CRAN.R-project.org/package=crypto2" class="external-link"><img src="https://www.r-pkg.org/badges/version/crypto2" alt="CRAN status"></a></li>
 <li><a href="https://cran.r-project.org/package=crypto2" class="external-link"><img src="http://cranlogs.r-pkg.org/badges/grand-total/crypto2" alt="CRAN downloads"></a></li>
