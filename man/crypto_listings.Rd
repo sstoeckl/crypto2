@@ -97,7 +97,8 @@ start_date = "20140101", end_date="20140107", interval="day", convert="USD,BTC")
 
 # only download the top 10 crypto currencies based on their market capitalization
 listings_2015w1_mcsort <- crypto_listings(which="historical", quote=TRUE,
-start_date = "20150101", end_date="20150107", interval="day", sort="market_cap", sort_dir="desc", limit=10)
+start_date = "20150101", end_date="20150107", interval="day", sort="market_cap",
+sort_dir="desc", limit=10)
 }
 
 }
