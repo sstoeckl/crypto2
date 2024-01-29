@@ -10,7 +10,7 @@ Added a new function `crypto_global_quotes()` which retrieves global aggregate m
 
 # crypto 1.4.4 
 
-A new function `crypto_listings()` is introduced to retrieve new/latest/historical listings and listing information at CMC. Thje option `finalWait = TRUE` does not seem to be necessary any more, also `sleep` can be set to '0' seconds.
+A new function `crypto_listings()` is introduced to retrieve new/latest/historical listings and listing information at CMC. The option `finalWait = TRUE` does not seem to be necessary any more, also `sleep` can be set to '0' seconds.
 
 # crypto 1.4.3 
 
