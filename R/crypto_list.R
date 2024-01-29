@@ -45,14 +45,26 @@ crypto_list <- function(only_active=TRUE, add_untracked=FALSE) {
   if (!only_active){
     inactive_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=inactive")
     inactive_coins <- jsonlite::fromJSON(inactive_url)
+    date_cols <- inactive_coins$data %>%
+      select_if(is.character) %>%
+      select(where(~ !any(is.na(as.Date(., format = "%Y-%m-%d", tryFormats = c("%Y-%m-%d", "%Y/%m/%d"))))))
+
+    data_formatted <- inactive_coins$data %>%
+      mutate(across(all_of(names(date_cols)), ~ as.Date(., format = "%Y-%m-%d", tryFormats = c("%Y-%m-%d", "%Y/%m/%d"))))
     coins <- dplyr::bind_rows(coins,
-                       inactive_coins$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date))) %>% dplyr::arrange(id)
+                              data_formatted %>% tibble::as_tibble() %>% dplyr::arrange(id))
   }
   if (add_untracked){
     untracked_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=untracked")
     untracked_coins <- jsonlite::fromJSON(untracked_url)
+    date_cols <- untracked_coins$data %>%
+      select_if(is.character) %>%
+      select(where(~ !any(is.na(as.Date(., format = "%Y-%m-%d", tryFormats = c("%Y-%m-%d", "%Y/%m/%d"))))))
+
+    data_formatted <- untracked_coins$data %>%
+      mutate(across(all_of(names(date_cols)), ~ as.Date(., format = "%Y-%m-%d", tryFormats = c("%Y-%m-%d", "%Y/%m/%d"))))
     coins <- dplyr::bind_rows(coins,
-                        untracked_coins$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date),is_active=-1)) %>% dplyr::arrange(id)
+                              data_formatted %>% tibble::as_tibble() %>% dplyr::arrange(id))
   }
   return(coins %>% dplyr::select(id:last_historical_data) %>% dplyr::distinct() %>% dplyr::arrange(id))
 }
