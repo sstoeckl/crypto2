@@ -1,13 +1,13 @@
-#' Retrieves info (urls, logo, description, tags, platform, date_added, notice, status) on CMC for given id or slug
+#' Retrieves info (urls, logo, description, tags, platform, date_added, notice, status,...) on CMC for given id
 #'
-#' This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an 'API' key.
+#' This code retrieves data for all specified coins!
 #'
 #' @param coin_list string if NULL retrieve all currently active coins (`crypto_list()`),
 #' or provide list of cryptocurrencies in the `crypto_list()` or `cryptoi_listings()` format (e.g. current and/or dead coins since 2015)
 #' @param limit integer Return the top n records, default is all tokens
-#' @param requestLimit limiting the length of request URLs when bundling the api calls
-#' @param sleep integer (default 60) Seconds to sleep between API requests
-#' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
+#' @param requestLimit (default: 1) limiting the length of request URLs when bundling the api calls (currently needs to be 1)
+#' @param sleep integer (default: 0) Seconds to sleep between API requests
+#' @param finalWait to avoid calling the web-api again with another command before 60s are over (FALSE=default)
 #'
 #' @return List of (active and historically existing) cryptocurrencies in a tibble:
 #'   \item{id}{CMC id (unique identifier)}
@@ -17,19 +17,20 @@
 #'   \item{category}{Coin category: "token" or "coin"}
 #'   \item{description}{Coin description according to CMC}
 #'   \item{logo}{CMC url of CC logo}
-#'   \item{subreddit}{Name of subreddit community}
+#'   \item{status}{Status message from CMC}
 #'   \item{notice}{Markdown formatted notices from CMC}
+#'   \item{alert_type}{Type of alert on CMC}
+#'   \item{alert_link}{Message link to alert}
 #'   \item{date_added}{Date CC was added to the CMC database}
-#'   \item{twitter_username}{Username of CCs twitter account}
-#'   \item{is_hidden}{TBD}
 #'   \item{date_launched}{Date CC was launched}
+#'   \item{is_audited}{Boolean if CC is audited}
+#'   \item{flags}{Boolean flags for various topics}
 #'   \item{self_reported_circulating_supply}{Self reported circulating supply}
-#'   \item{self reported tags}{Self_reported_tags}
-#'   \item{status}{timestamp and other status messages}
 #'   \item{tags}{Tibble of tags and tag categories}
+#'   \item{faq_description}{FAQ description from CMC}
 #'   \item{url}{Tibble of various resource urls. Gives website, technical_doc (whitepaper),
 #'   source_code, message_board, chat, announcement, reddit, twitter, (block) explorer urls}
-#'   \item{Platform}{Metadata about the parent coin if available. Gives id, name, symbol,
+#'   \item{platform}{Metadata about the parent coin if available. Gives id, name, symbol,
 #'   slug, and token address according to CMC}
 #'
 #' @importFrom cli cat_bullet
@@ -37,6 +38,8 @@
 #' @importFrom jsonlite fromJSON
 #' @importFrom tidyr nest
 #' @importFrom plyr laply
+#' @importFrom tibble enframe
+#' @importFrom lubridate ymd_hms
 #'
 #' @import progress
 #' @import purrr
@@ -45,30 +48,28 @@
 #' @examples
 #' \dontrun{
 #' # return info for bitcoin
-#' coin_info <- crypto_info(limit=3)
+#' coin_info <- crypto_info(limit=10)
 #' }
 #'
 #' @name crypto_info
 #'
 #' @export
 #'
-crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, sleep = 0, finalWait = FALSE) {
+crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 1, sleep = 0, finalWait = FALSE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(coin_list)) coin_list <- crypto_list()
   # limit amount of coins downloaded
   if (!is.null(limit)) coin_list <- coin_list[1:limit, ]
   # extract slugs & ids
-  slugs <- coin_list %>% distinct(slug)
-  ids <- coin_list %>% distinct(id)
+  slugs <- coin_list %>% dplyr::distinct(slug)
+  ids <- coin_list %>% dplyr::distinct(id)
   # Create slug_vec with requestLimit elements concatenated together
-  n <- ceiling(nrow(ids)/requestLimit)
-  id_vec <- plyr::laply(split(ids$id, sort(ids$id%%n)),function(x) paste0(x,collapse=","))
+  #n <- ceiling(nrow(ids)/requestLimit)
+  id_vec <- ids #plyr::laply(split(ids$id, sort(ids$id%%n)),function(x) paste0(x,collapse=","))
   # get current coins
   scrape_web <- function(idv){
-    web_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/info?id=")
-    #web_url <- paste0("https://pro-api.coinmarketcap.com/v1/cryptocurrency/info?CMC_PRO_API_KEY=...&id=")
-    cat("Scraping ",paste0(web_url,idv)," with ",nchar(paste0(web_url,idv))," characters!\n")
-    page <- jsonlite::fromJSON(paste0(web_url,idv))
+    path <- paste0("cryptocurrency/detail?id=")
+    page <- safeFromJSON(construct_url(paste0(path,idv),v=3))
     pb$tick()
     return(page$data)
   }
@@ -84,23 +85,32 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, slee
                          total = nrow(id_vec), clear = FALSE)
   message(cli::cat_bullet("Scraping crypto info", bullet = "pointer",bullet_col = "green"))
   data <- id_vec %>% dplyr::mutate(out = purrr::map(id,.f=~insistent_scrape(.x)))
-  data2 <- data$out %>% unlist(.,recursive=FALSE)
+  data2 <- data$out
   # 2. Here comes the second part: Clean and create dataset
   map_scrape <- function(lout){
     pb2$tick()
     if (length(lout)==0){
       cat("\nThis row of the coin vector does not have info available! Cont to next row.\n")
     } else {
-      out_list <- lout
-      out_list[c("tags","self_reported_tags","tag-names","tag-groups","urls","contract_address","platform")] <- NULL
+      out_list <- lout2 <- lout |>  janitor::clean_names()
+      out_list[c("quotes","crypto_rating","analysis","earn_list","related_exchanges","holders","urls","related_coins","support_wallet_infos",
+                 "wallets","faq_description","tags","statistics","platforms","volume","cex_volume","dex_volume","volume_change_percentage24h",
+                 "watch_count","watch_list_rating","latest_added","launch_price")] <- NULL
       out_list[sapply(out_list,is.null)] <- NA
       out_list <- out_list %>% tibble::as_tibble()
       # add
-      #out_list$status <- c(out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S")) %>% pull(timestamp))
-      if(!is.null(lout$tags)) {out_list$tags <- pull(tibble(tags=lout$`tags`) %>% tidyr::nest(tags=everything()))} else {out_list$tags <- NA}
-      if(!is.null(lout$self_reported_tags)) {out_list$self_reported_tags <- pull(tibble(self_reported_tags=lout$`self_reported_tags`) %>% tidyr::nest(self_reported_tags=everything()))} else {out_list$self_reported_tags <- NA}
-      if(!(length(lout$urls)==0)) {out_list$urls <- pull(lout$urls %>% unlist() %>% enframe(value = "url") %>% tidyr::nest(urls=everything()))} else {out_list$urls <- NA}
-      if(!is.null(lout$platform)) {out_list$platform <- pull(lout$platform %>% as_tibble() %>% tidyr::nest(platform=everything()))} else {out_list$platform <- NA}
+      #out_list$status <- c(out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S")) %>% dplyr::pull(timestamp))
+      if(!is.null(lout2$tags)) {out_list$tags <- dplyr::pull(tibble(tags=lout2$`tags`) %>% tidyr::nest(tags=everything()))} else {out_list$tags <- NA}
+      if(!length(lout2$crypto_rating)==0) {out_list$crypto_rating <- dplyr::pull(tibble(crypto_rating=lout2$`crypto_rating`) %>% tidyr::nest(crypto_rating=everything()))} else {out_list$crypto_rating <- NA}
+      if(!is.null(lout2$urls)) {out_list$urls <- dplyr::pull(tibble(urls=lout2$`urls`) %>% tidyr::nest(urls=everything()))} else {out_list$urls <- NA}
+      if(!is.null(lout2$faq_description)) {out_list$faq_description <- dplyr::pull(tibble(faq_description=lout2$`faq_description`) %>% tidyr::nest(faq_description=everything()))} else {out_list$faq_description <- NA}
+      if(!is.null(lout2$platforms)) {out_list$platform <- dplyr::pull(lout2$platforms %>% as_tibble() %>% tidyr::nest(platform=everything()))} else {out_list$platform <- NA}
+      if(!is_null(lout2$date_launched)) {out_list$date_launched <- as.Date(lubridate::ymd_hms(lout2$date_launched))} else {out_list$date_launched <- NA}
+      if(!is_null(lout2$date_added)) {out_list$date_added <- as.Date(lubridate::ymd_hms(lout2$date_added))} else {out_list$date_added <- NA}
+      if(!is_null(lout2$latest_update_time)) {out_list$latest_update_time <- (lubridate::ymd_hms(lout2$latest_update_time))} else {out_list$latest_update_time <- NA}
+      if(!is_null(lout2$self_reported_circulating_supply)) {out_list$self_reported_circulating_supply <- as.numeric(lout2$self_reported_circulating_supply)} else {out_list$self_reported_circulating_supply <- NA}
+      # add link to pic
+      out_list$logo <- paste0("https://s2.coinmarketcap.com/static/img/coins/64x64/",out_list$id,".png")
     }
     return(out_list)
   }
@@ -154,13 +164,14 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, slee
 #'   \item{is_redistributable}{TBD}
 #'   \item{maker_fee}{Exchanges maker fee}
 #'   \item{taker_fee}{Exchanges maker fee}
-#'   \item{spot_volume_usd}{Current volume in USD according to CMC}
-#'   \item{spot_volume_last_updated}{Latest update of spot volume}
-#'   \item{status}{timestamp and other status messages}
+#'   \item{platform_id}{Platform id on CMC}
+#'   \item{dex_status}{Decentralized exchange status}
+#'   \item{wallet_source_status}{Wallet source status}
+#'   \item{status}{Activity status on CMC}
 #'   \item{tags}{Tibble of tags and tag categories}
-#'   \item{url}{Tibble of various resource urls. Gives website, blog, fee, twitter.}
+#'   \item{urls}{Tibble of various resource urls. Gives website, blog, fee, twitter.}
 #'   \item{countries}{Tibble of countries the exchange is active in}
-#'   \item{fiat}{Tibble of fiat currencies the exchange trades in}
+#'   \item{fiats}{Tibble of fiat currencies the exchange trades in}
 #'
 #' @importFrom cli cat_bullet
 #' @importFrom tibble as_tibble enframe
@@ -175,36 +186,34 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 300, slee
 #' @examples
 #' \dontrun{
 #' # return info for the first three exchanges
-#' exchange_info <- exchange_info(limit=3)
+#' exchange_info <- exchange_info(limit=10)
 #' }
 #'
 #' @name exchange_info
 #'
 #' @export
 #'
-exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 300, sleep = 60, finalWait = TRUE) {
+exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 1, sleep = 0, finalWait = FALSE) {
   # only if no coins are provided use crypto_list() to provide all actively traded coins
   if (is.null(exchange_list)) exchange_list <- exchange_list()
   # limit amount of exchanges downloaded
   if (!is.null(limit)) exchange_list <- exchange_list[1:limit, ]
   # extract slugs
-  slugs <- exchange_list %>% distinct(slug)
-  ids <- exchange_list %>% distinct(id)
+  slugs <- exchange_list %>% dplyr::distinct(slug)
+  ids <- exchange_list %>% dplyr::distinct(id)
   # Create slug_vec with requestLimit elements concatenated together
-  n <- ceiling(nrow(ids)/requestLimit)
-  id_vec <- plyr::laply(split(ids$id, sort(ids$id%%n)),function(x) paste0(x,collapse=","))
+  #n <- ceiling(nrow(ids)/requestLimit)
+  id_vec <- slugs #plyr::laply(split(ids$id, sort(ids$id%%n)),function(x) paste0(x,collapse=","))
   # get current coins
   scrape_web <- function(idv){
-    web_url <- paste0("https://web-api.coinmarketcap.com/v1/exchange/info?id=")
-    #web_url <- paste0("https://pro-api.coinmarketcap.com/v1/exchange/info?CMC_PRO_API_KEY=...&id=")
-    cat("Scraping exchanges from ",paste0(web_url,idv)," with ",nchar(paste0(web_url,idv))," characters!\n")
-    page <- jsonlite::fromJSON(paste0(web_url,idv))
+    path <- paste0("exchange/detail?slug=")
+    page <- safeFromJSON(construct_url(paste0(path,idv),v=3))
     pb$tick()
     return(page$data)
   }
-  if (is.vector(id_vec)) id_vec <- tibble::enframe(id_vec,name = NULL, value = "id")
+
   # define backoff rate
-  rate <- purrr::rate_delay(pause=5,max_times = 2)
+  rate <- purrr::rate_delay(pause = 60,max_times = 2)
   rate2 <- purrr::rate_delay(sleep)
   #rate_backoff(pause_base = 3, pause_cap = 70, pause_min = 40, max_times = 10, jitter = TRUE)
   # Modify function to run insistently.
@@ -212,26 +221,26 @@ exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 300
   # Progress Bar 1
   pb <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
                                    total = nrow(id_vec), clear = FALSE)
-  message(cli::cat_bullet("Scraping exchange info", bullet = "pointer",bullet_col = "green"))
-  data <- id_vec %>% dplyr::mutate(out = purrr::map(id,.f=~insistent_scrape(.x)))
-  data2 <- data$out %>% unlist(.,recursive=FALSE)
+  message(cli::cat_bullet("Scraping crypto info", bullet = "pointer",bullet_col = "green"))
+  data <- id_vec %>% dplyr::mutate(out = purrr::map(slug,.f=~insistent_scrape(.x)))
+  data2 <- data$out
   # 2. Here comes the second part: Clean and create dataset
   map_scrape <- function(lout){
     pb2$tick()
     if (length(lout)==0){
       cat("\nThis row of the exchange vector does not have info available! Cont to next row.\n")
     } else {
-      out_list <- lout
-      out_list[c("tags","urls","countries","fiats")] <- NULL
+      out_list <- lout2 <- lout |>  janitor::clean_names()
+      out_list[c("tags","quote","countries","por_switch","urls","fiats","net_worth_usd")] <- NULL
       out_list[sapply(out_list,is.null)] <- NA
       out_list <- out_list %>% tibble::as_tibble()
       # add
-      #out_list$status <- c(out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S")) %>% pull(timestamp))
-      if(!is.null(lout$spot_volume_last_updated)) {out_list$spot_volume_last_updated <- c(lout$spot_volume_last_updated %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(value,format="%Y-%m-%dT%H:%M:%S")) %>% pull(timestamp))} else {out_list$spot_volume_last_updated <- NA}
-      if(!is.null(lout$tags)) {out_list$tags <- pull(tibble(tags=lout$`tags`) %>% tidyr::nest(tags=everything()))} else {out_list$tags <- NA}
-      if(!(length(flatten(lout$urls))==0)) {out_list$urls <- pull(lout$urls %>% unlist() %>% enframe(value = "url") %>% tidyr::nest(urls=everything()))} else {out_list$urls <- NA}
-      if(!(length(lout$countries)==0)) {out_list$countries <- pull(lout$countries %>% as_tibble() %>% tidyr::nest(countries=everything()))} else {out_list$countries <- NA}
-      if(!length(lout$fiats)==0) {out_list$fiats <- pull(lout$fiats %>% as_tibble() %>% tidyr::nest(fiats=everything()))} else {out_list$fiats <- NA}
+      #out_list$status <- c(out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S")) %>% dplyr::pull(timestamp))
+      if(!length(lout2$tags)==0) {out_list$tags <- dplyr::pull(tibble(tags=lout2$`tags`) %>% tidyr::nest(tags=everything()))} else {out_list$tags <- NA}
+      if(!length(lout2$countries)==0) {out_list$countries <- dplyr::pull(tibble(countries=lout2$`countries`) %>% tidyr::nest(countries=everything()))} else {out_list$countries <- NA}
+      if(!length(lout2$fiats)==0) {out_list$fiats <- dplyr::pull(tibble(fiats=lout2$`fiats`) %>% tidyr::nest(fiats=everything()))} else {out_list$fiats <- NA}
+      if(!length(lout2$urls)==0) {out_list$urls <- dplyr::pull(tibble(urls=lout2$`urls`) %>% tidyr::nest(urls=everything()))} else {out_list$urls <- NA}
+      if(!is_null(lout2$date_launched)) {out_list$date_launched <- as.Date(lubridate::ymd_hms(lout2$date_launched))} else {out_list$date_launched <- NA}
     }
     return(out_list)
   }
