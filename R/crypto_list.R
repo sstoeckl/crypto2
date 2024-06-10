@@ -16,7 +16,6 @@
 #'   \item{last_historical_data}{Last time listed on CMC, *today's date* if still listed}
 #'
 #' @importFrom tibble as_tibble
-#' @importFrom jsonlite fromJSON
 #' @importFrom dplyr bind_rows mutate rename arrange distinct
 #'
 #' @examples
@@ -38,13 +37,14 @@
 #'
 crypto_list <- function(only_active=TRUE, add_untracked=FALSE) {
   # get current coins
-  active_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/map")
-  active_coins <- jsonlite::fromJSON(active_url)
-  coins <- active_coins$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date))
+  path <- paste0("cryptocurrency/map")
+  active_coins <- safeFromJSON(construct_url(path))
+  coins <- active_coins$data %>% tibble::as_tibble() %>%
+    dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date))
 
   if (!only_active){
-    inactive_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=inactive")
-    inactive_coins <- jsonlite::fromJSON(inactive_url)
+    path <- paste0("cryptocurrency/map?listing_status=inactive")
+    inactive_coins <- safeFromJSON(construct_url(path))
     date_cols <- inactive_coins$data %>%
       select_if(is.character) %>%
       select(where(~ !any(is.na(as.Date(., format = "%Y-%m-%d", tryFormats = c("%Y-%m-%d", "%Y/%m/%d"))))))
@@ -52,11 +52,12 @@ crypto_list <- function(only_active=TRUE, add_untracked=FALSE) {
     data_formatted <- inactive_coins$data %>%
       mutate(across(all_of(names(date_cols)), ~ as.Date(., format = "%Y-%m-%d", tryFormats = c("%Y-%m-%d", "%Y/%m/%d"))))
     coins <- dplyr::bind_rows(coins,
-                              data_formatted %>% tibble::as_tibble() %>% dplyr::arrange(id))
+                              data_formatted %>% tibble::as_tibble() %>%
+                                dplyr::arrange(id))
   }
   if (add_untracked){
-    untracked_url <- paste0("https://web-api.coinmarketcap.com/v1/cryptocurrency/map?listing_status=untracked")
-    untracked_coins <- jsonlite::fromJSON(untracked_url)
+    path <- paste0("cryptocurrency/map?listing_status=untracked")
+    untracked_coins <- safeFromJSON(construct_url(path))
     date_cols <- untracked_coins$data %>%
       select_if(is.character) %>%
       select(where(~ !any(is.na(as.Date(., format = "%Y-%m-%d", tryFormats = c("%Y-%m-%d", "%Y/%m/%d"))))))
@@ -64,7 +65,8 @@ crypto_list <- function(only_active=TRUE, add_untracked=FALSE) {
     data_formatted <- untracked_coins$data %>%
       mutate(across(all_of(names(date_cols)), ~ as.Date(., format = "%Y-%m-%d", tryFormats = c("%Y-%m-%d", "%Y/%m/%d"))))
     coins <- dplyr::bind_rows(coins,
-                              data_formatted %>% tibble::as_tibble() %>% dplyr::arrange(id))
+                              data_formatted %>% tibble::as_tibble() %>%
+                                dplyr::arrange(id))
   }
   return(coins %>% dplyr::select(id:last_historical_data) %>% dplyr::distinct() %>% dplyr::arrange(id))
 }
@@ -84,7 +86,6 @@ crypto_list <- function(only_active=TRUE, add_untracked=FALSE) {
 #'   \item{last_historical_data}{Last time listed on CMC, *today's date* if still listed}
 #'
 #' @importFrom tibble as_tibble
-#' @importFrom jsonlite fromJSON
 #' @importFrom dplyr bind_rows mutate rename arrange distinct
 #'
 #' @examples
@@ -101,21 +102,61 @@ crypto_list <- function(only_active=TRUE, add_untracked=FALSE) {
 #'
 exchange_list <- function(only_active=TRUE, add_untracked=FALSE) {
   # get current coins
-  active_url <- paste0("https://web-api.coinmarketcap.com/v1/exchange/map")
-  active_exchanges <- jsonlite::fromJSON(active_url)
-  exchanges <- active_exchanges$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date))
+  path <- paste0("exchange/map")
+  active_exchanges <- safeFromJSON(construct_url(path))
+  exchanges <- active_exchanges$data %>% tibble::as_tibble() %>%
+    dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date))
 
   if (!only_active){
-    inactive_url <- paste0("https://web-api.coinmarketcap.com/v1/exchange/map?listing_status=inactive")
-    inactive_exchanges <- jsonlite::fromJSON(inactive_url)
+    path <- paste0("exchange/map?listing_status=inactive")
+    inactive_exchanges <- safeFromJSON(construct_url(path))
     exchanges <- dplyr::bind_rows(exchanges,
-                              inactive_exchanges$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date))) %>% dplyr::arrange(id)
+                              inactive_exchanges$data %>% tibble::as_tibble() %>%
+                                dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date))) %>%
+      dplyr::arrange(id)
   }
   if (add_untracked){
-    untracked_url <- paste0("https://web-api.coinmarketcap.com/v1/exchange/map?listing_status=untracked")
-    untracked_exchanges <- jsonlite::fromJSON(untracked_url)
+    path <- paste0("exchange/map?listing_status=untracked")
+    untracked_exchanges <- safeFromJSON(construct_url(path))
     exchanges <- dplyr::bind_rows(exchanges,
-                              untracked_exchanges$data %>% tibble::as_tibble() %>% dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date),is_active=-1)) %>% dplyr::arrange(id)
+                              untracked_exchanges$data %>% tibble::as_tibble() %>%
+                                dplyr::mutate(dplyr::across(c(first_historical_data,last_historical_data),as.Date),is_active=-1)) %>%
+      dplyr::arrange(id)
   }
   return(exchanges %>% dplyr::select(id:last_historical_data) %>% dplyr::distinct() %>% dplyr::arrange(id))
+}
+#' Retrieves list of all CMC supported fiat currencies available to convert cryptocurrencies
+#'
+#' This code retrieves data for all available fiat currencies that are available on the website.
+#'
+#' @return List of (active and historically existing) cryptocurrencies in a tibble:
+#'   \item{id}{CMC id (unique identifier)}
+#'   \item{symbol}{Coin symbol (not-unique)}
+#'   \item{name}{Coin name}
+#'   \item{sign}{Fiat currency sign}
+#'
+#' @importFrom tibble as_tibble
+#'
+#' @examples
+#' \dontrun{
+#' # return fiat currencies available through the CMC api
+#' fiat_list <- fiat_list()
+#' }
+#'
+#' @name fiat_list
+#'
+#' @export
+#'
+fiat_list <- function(include_metals=FALSE) {
+  # get current coins
+  if (!include_metals){
+    fiat_url <- paste0("fiat/map")
+    active_fiat <- safeFromJSON(construct_url(fiat_url))
+    fiats <- active_fiat$data %>% tibble::as_tibble()
+  } else {
+    fiat_url <- paste0("fiat/map?include_metals=",include_metals)
+    active_fiat <- safeFromJSON(construct_url(fiat_url))
+    fiats <- active_fiat$data %>% tibble::as_tibble()
+  }
+  return(fiats)
 }

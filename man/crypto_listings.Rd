@@ -12,8 +12,8 @@ crypto_listings(
   end_date = NULL,
   interval = "day",
   quote = FALSE,
-  sort = "market_cap",
-  sort_dir = "desc",
+  sort = "cmc_rank",
+  sort_dir = "asc",
   sleep = 0,
   wait = 60,
   finalWait = FALSE
@@ -22,10 +22,10 @@ crypto_listings(
 \arguments{
 \item{which}{string Shall the code retrieve the latest listing, the new listings or a historic listing?}
 
-\item{convert}{string (default: USD) to one or more of available fiat or precious metals prices (\code{fiat_list()}). If more
+\item{convert}{string (default: USD) to one of available fiat prices (\code{fiat_list()}). If more
 than one are selected please separate by comma (e.g. "USD,BTC"), only necessary if 'quote=TRUE'}
 
-\item{limit}{integer Return the top n records, default is 5000 (max allowed by CMC)}
+\item{limit}{integer Return the top n records}
 
 \item{start_date}{string Start date to retrieve data from, format 'yyyymmdd'}
 
@@ -40,7 +40,7 @@ than one are selected please separate by comma (e.g. "USD,BTC"), only necessary 
 "volume_7d", "volume_30d", "percent_change_1h", "percent_change_24h",
 "percent_change_7d". Especially useful if you only want to download the top x entries using "limit" (deprecated for "new")}
 
-\item{sort_dir}{string used to specify the direction of the sort in "sort". Possible values are "asc" (DEFAULT) and "desc"}
+\item{sort_dir}{(May 2024: currently not available) string used to specify the direction of the sort in "sort". Possible values are "asc" (DEFAULT) and "desc"}
 
 \item{sleep}{integer (default 60) Seconds to sleep between API requests}
 
@@ -76,30 +76,35 @@ whether "quote" is requested, the result may only contain some of the following 
 \item{percent_change_1h}{1 hour return}
 \item{percent_change_24h}{24 hour return}
 \item{percent_change_7d}{7 day return}
+\item{percent_change_30d}{30 day return}
+\item{percent_change_60d}{60 day return}
+\item{percent_change_90d}{90 day return}
 }
 \description{
-This code uses the web api. It retrieves listing data (latest/new/historic) and does not require an 'API' key.
+This code retrieves listing data (latest/new/historic).
 }
 \examples{
 \dontrun{
 # return new listings from the last 30 days
-new_listings <- crypto_listings(which="new", quote=FALSE)
-new_listings2 <- crypto_listings(which="new", quote=TRUE, convert="BTC,USD")
+new_listings <- crypto_listings(which="new", quote=FALSE, limit=50000)
+new_listings2 <- crypto_listings(which="new", quote=TRUE, convert="BTC")
+
 # return latest listing (last available data of all CC including quotes)
-latest_listings <- crypto_listings(which="latest", quote=TRUE)
+latest_listings <- crypto_listings(which="latest", quote=FALSE, limit=50000)
+latest_listings2 <- crypto_listings(which="latest", quote=TRUE, convert="BTC")
 
-# return all listings in the first week of January 2014
-listings_2014w1 <- crypto_listings(which="historical", quote=TRUE,
-start_date = "20140101", end_date="20140107", interval="day")
-
-# report in two different currencies
-listings_2014w1_USDBTC <- crypto_listings(which="historical", quote=TRUE,
-start_date = "20140101", end_date="20140107", interval="day", convert="USD,BTC")
+# return the first 10 listings in the first week of January 2024
+listings_2024w1 <- crypto_listings(which="historical", quote=TRUE,
+start_date = "20240101", end_date="20240102", interval="day", limit=10)
 
 # only download the top 10 crypto currencies based on their market capitalization
-listings_2015w1_mcsort <- crypto_listings(which="historical", quote=TRUE,
-start_date = "20150101", end_date="20150107", interval="day", sort="market_cap",
-sort_dir="desc", limit=10)
+# DOES NOT WORK ANY MORE
+
+# for historically accurate snapshots (e.g. for backtesting crypto investments)
+# you need to download the entire history on one day including price information:
+listings_20200202 <- crypto_listings(which="historical", quote=TRUE, start_date="20200202", end_date="20200202")
+listings_20240202 <- crypto_listings(which="historical", quote=TRUE, start_date="20240202", end_date="20240202", limit=50000)
+# note the much larger amount in CCs in 2024, as well as the existence of many more variables in the dataset
 }
 
 }

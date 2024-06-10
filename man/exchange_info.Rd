@@ -7,9 +7,9 @@
 exchange_info(
   exchange_list = NULL,
   limit = NULL,
-  requestLimit = 300,
-  sleep = 60,
-  finalWait = TRUE
+  requestLimit = 1,
+  sleep = 0,
+  finalWait = FALSE
 )
 }
 \arguments{
@@ -38,13 +38,14 @@ List of (active and historically existing) exchanges in a tibble:
 \item{is_redistributable}{TBD}
 \item{maker_fee}{Exchanges maker fee}
 \item{taker_fee}{Exchanges maker fee}
-\item{spot_volume_usd}{Current volume in USD according to CMC}
-\item{spot_volume_last_updated}{Latest update of spot volume}
-\item{status}{timestamp and other status messages}
+\item{platform_id}{Platform id on CMC}
+\item{dex_status}{Decentralized exchange status}
+\item{wallet_source_status}{Wallet source status}
+\item{status}{Activity status on CMC}
 \item{tags}{Tibble of tags and tag categories}
-\item{url}{Tibble of various resource urls. Gives website, blog, fee, twitter.}
+\item{urls}{Tibble of various resource urls. Gives website, blog, fee, twitter.}
 \item{countries}{Tibble of countries the exchange is active in}
-\item{fiat}{Tibble of fiat currencies the exchange trades in}
+\item{fiats}{Tibble of fiat currencies the exchange trades in}
 }
 \description{
 This code uses the web api. It retrieves data for all active, delisted and untracked exchanges! It does not require an 'API' key.
@@ -52,7 +53,7 @@ This code uses the web api. It retrieves data for all active, delisted and untra
 \examples{
 \dontrun{
 # return info for the first three exchanges
-exchange_info <- exchange_info(limit=3)
+exchange_info <- exchange_info(limit=10)
 }
 
 }

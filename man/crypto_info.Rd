@@ -2,12 +2,12 @@
 % Please edit documentation in R/crypto_info.R
 \name{crypto_info}
 \alias{crypto_info}
-\title{Retrieves info (urls, logo, description, tags, platform, date_added, notice, status) on CMC for given id or slug}
+\title{Retrieves info (urls, logo, description, tags, platform, date_added, notice, status,...) on CMC for given id}
 \usage{
 crypto_info(
   coin_list = NULL,
   limit = NULL,
-  requestLimit = 300,
+  requestLimit = 1,
   sleep = 0,
   finalWait = FALSE
 )
@@ -18,11 +18,11 @@ or provide list of cryptocurrencies in the \code{crypto_list()} or \code{cryptoi
 
 \item{limit}{integer Return the top n records, default is all tokens}
 
-\item{requestLimit}{limiting the length of request URLs when bundling the api calls}
+\item{requestLimit}{(default: 1) limiting the length of request URLs when bundling the api calls (currently needs to be 1)}
 
-\item{sleep}{integer (default 60) Seconds to sleep between API requests}
+\item{sleep}{integer (default: 0) Seconds to sleep between API requests}
 
-\item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
+\item{finalWait}{to avoid calling the web-api again with another command before 60s are over (FALSE=default)}
 }
 \value{
 List of (active and historically existing) cryptocurrencies in a tibble:
@@ -33,28 +33,29 @@ List of (active and historically existing) cryptocurrencies in a tibble:
 \item{category}{Coin category: "token" or "coin"}
 \item{description}{Coin description according to CMC}
 \item{logo}{CMC url of CC logo}
-\item{subreddit}{Name of subreddit community}
+\item{status}{Status message from CMC}
 \item{notice}{Markdown formatted notices from CMC}
+\item{alert_type}{Type of alert on CMC}
+\item{alert_link}{Message link to alert}
 \item{date_added}{Date CC was added to the CMC database}
-\item{twitter_username}{Username of CCs twitter account}
-\item{is_hidden}{TBD}
 \item{date_launched}{Date CC was launched}
+\item{is_audited}{Boolean if CC is audited}
+\item{flags}{Boolean flags for various topics}
 \item{self_reported_circulating_supply}{Self reported circulating supply}
-\item{self reported tags}{Self_reported_tags}
-\item{status}{timestamp and other status messages}
 \item{tags}{Tibble of tags and tag categories}
+\item{faq_description}{FAQ description from CMC}
 \item{url}{Tibble of various resource urls. Gives website, technical_doc (whitepaper),
 source_code, message_board, chat, announcement, reddit, twitter, (block) explorer urls}
-\item{Platform}{Metadata about the parent coin if available. Gives id, name, symbol,
+\item{platform}{Metadata about the parent coin if available. Gives id, name, symbol,
 slug, and token address according to CMC}
 }
 \description{
-This code uses the web api. It retrieves data for all active, delisted and untracked coins! It does not require an 'API' key.
+This code retrieves data for all specified coins!
 }
 \examples{
 \dontrun{
 # return info for bitcoin
-coin_info <- crypto_info(limit=3)
+coin_info <- crypto_info(limit=10)
 }
 
 }
