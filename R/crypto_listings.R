@@ -10,7 +10,7 @@
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
 #' @param interval string Interval with which to sample data according to what `seq()` needs
 #' @param quote logical set to TRUE if you want to include price data (FALSE=default)
-#' @param sort string use to sort results, possible values: "name", "symbol", "market_cap", "price",
+#' @param sort (May 2024: currently not available) string use to sort results, possible values: "name", "symbol", "market_cap", "price",
 #' "circulating_supply", "total_supply", "max_supply", "num_market_pairs", "volume_24h",
 #' "volume_7d", "volume_30d", "percent_change_1h", "percent_change_24h",
 #' "percent_change_7d". Especially useful if you only want to download the top x entries using "limit" (deprecated for "new")

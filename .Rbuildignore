@@ -26,3 +26,4 @@ README-quotes-plot-1.png
 ^\.github$
 ^LICENSE\.md$
 ^CITATION\.cff$
+create_hidden_links.R

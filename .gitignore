@@ -13,3 +13,5 @@ sandbox_cmc_apikey
 R/temp.R
 CRAN-RELEASE
 docs
+
+create_hidden_links.R

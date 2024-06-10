@@ -14,6 +14,8 @@ construct_url <- function(path,v=1) {
     base <- rawToChar(base64enc::base64decode("aHR0cHM6Ly9hcGkuY29pbm1hcmtldGNhcC5jb20vZGF0YS1hcGkvdjMv"))
   } else if (v=="3.1") {
     base <- rawToChar(base64enc::base64decode("aHR0cHM6Ly9hcGkuY29pbm1hcmtldGNhcC5jb20vZGF0YS1hcGkvdjMuMS8="))
+  } else if (v=="agg") {
+    base <- rawToChar(base64enc::base64decode("aHR0cHM6Ly9hcGkuY29pbm1hcmtldGNhcC5jb20vYWdnci92My8="))
   }
   return(paste0(base, path))
 }
@@ -47,4 +49,30 @@ safeFromJSON <- function(...) {
     stop(result$message, call. = FALSE)
   }
   result
+}
+#' checks the dater format (old/new) and converts to date
+#'
+#' @param date_str a date string
+#'
+#' @return a correct date
+#' @keywords internal
+#'
+convert_date <- function(date_str) {
+  # Remove all non-digit characters to check the format
+  clean_date_str <- gsub("[^0-9]", "", date_str)
+
+  # Determine the length of the string to guess the format
+  if (nchar(clean_date_str) == 8) {
+    # Assume the format is YYYYMMDD
+    date_obj <- as.Date(clean_date_str, format = "%Y%m%d")
+  } else if (nchar(date_str) == 10 && grepl("-", date_str)) {
+    # Assume the format is YYYY-MM-DD
+    date_obj <- as.Date(date_str, format = "%Y-%m-%d")
+  } else {
+    # Return NA if the format is not recognized
+    warning("Date format not recognized. Expected 'YYYYMMDD' or 'YYYY-MM-DD'.")
+    date_obj <- NA
+  }
+
+  return(date_obj)
 }

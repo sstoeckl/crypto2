@@ -11,26 +11,28 @@ crypto_history(
   start_date = NULL,
   end_date = NULL,
   interval = NULL,
+  requestLimit = 400,
   sleep = 0,
   wait = 60,
   finalWait = FALSE,
-  single_id = FALSE
+  single_id = TRUE
 )
 }
 \arguments{
 \item{coin_list}{string if NULL retrieve all currently existing coins (\code{crypto_list()}),
 or provide list of crypto currencies in the \code{crypto_list()} or \code{cryptoi_listings()} format (e.g. current and/or dead coins since 2015)}
 
-\item{convert}{(default: USD) to one or more of available fiat or precious metals prices (\code{fiat_list()}). If more
-than one are selected please separate by comma (e.g. "USD,BTC")}
+\item{convert}{(default: USD) to one of available fiat prices (\code{fiat_list()}) or bitcoin 'BTC'. Be aware, that since 2024 only USD and BTC are available here!}
 
 \item{limit}{integer Return the top n records, default is all tokens}
 
-\item{start_date}{string Start date to retrieve data from, format 'yyyymmdd'}
+\item{start_date}{date Start date to retrieve data from}
 
-\item{end_date}{string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed}
+\item{end_date}{date End date to retrieve data from, if not provided, today will be assumed}
 
 \item{interval}{string Interval with which to sample data according to what \code{seq()} needs}
+
+\item{requestLimit}{limiting the length of request URLs when bundling the api calls}
 
 \item{sleep}{integer (default 60) Seconds to sleep between API requests}
 
@@ -38,16 +40,16 @@ than one are selected please separate by comma (e.g. "USD,BTC")}
 
 \item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 
-\item{single_id}{Do you want to download data individually coin by coin (default FALSE to reduce down-"load")}
+\item{single_id}{Download data coin by coin (as of May 2024 this is necessary)}
 }
 \value{
 Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
 \item{timestamp}{Timestamp of entry in database}
-\item{slug}{Coin url slug}
 \item{id}{Coin market cap unique id}
 \item{name}{Coin name}
 \item{symbol}{Coin symbol}
-\item{ref_cur}{Reference currency}
+\item{ref_cur_id}{reference Currency id}
+\item{ref_cur_name}{reference Currency name}
 \item{open}{Market open}
 \item{high}{Market high}
 \item{low}{Market low}
@@ -60,7 +62,7 @@ Crypto currency historic OHLC market data in a dataframe and additional informat
 \item{time_low}{Timestamp of low}
 
 This is the main function of the crypto package. If you want to retrieve
-ALL active coins then do not pass an argument to \code{crypto_history()}, or pass the coin name.
+ALL active coins then do not pass an argument to \code{crypto_history()}, alternatively pass the coin name.
 }
 \description{
 Scrape the crypto currency historic market tables from
@@ -74,22 +76,20 @@ to predict future market movements or trends.
 
 # Retrieving market history for ALL crypto currencies
 all_coins <- crypto_history(limit = 2)
-one_coin <- crypto_history(limit = 1)
+one_coin <- crypto_history(limit = 1, convert="BTC")
 
 # Retrieving market history since 2020 for ALL crypto currencies
-all_coins <- crypto_history(start_date = '20200101',limit=10)
-# Retrieving the same coins id by id
-all_coins2 <- crypto_history(start_date = '20200101',limit=10, single_id=TRUE)
+all_coins <- crypto_history(start_date = '2020-01-01',limit=10)
 
 # Retrieve 2015 history for all 2015 crypto currencies
 coin_list_2015 <- crypto_list(only_active=TRUE) \%>\%
               dplyr::filter(first_historical_data<="2015-12-31",
               last_historical_data>="2015-01-01")
 coins_2015 <- crypto_history(coin_list = coin_list_2015,
-start_date = "20150101", end_date="20151231", limit=20, interval="90d")
+              start_date = "2015-01-01", end_date="2015-12-31", limit=20, interval="30d")
 # retrieve hourly bitcoin data for 2 days
 btc_hourly <- crypto_history(coin_list = coin_list_2015,
-start_date = "20150101", end_date="20150103", limit=1, interval="1h")
+              start_date = "2015-01-01", end_date="2015-01-03", limit=1, interval="1h")
 
 }
 

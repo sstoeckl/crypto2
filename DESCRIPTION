@@ -19,10 +19,11 @@ Imports:
     lubridate,
     jsonlite,
     cli,
-    plyr
+    plyr,
+    base64enc
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests: 
     spelling
 Language: en-US

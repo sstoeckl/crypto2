@@ -11,6 +11,7 @@ crypto_global_quotes(
   end_date = NULL,
   interval = "daily",
   quote = FALSE,
+  requestLimit = 2200,
   finalWait = FALSE
 )
 }
@@ -29,6 +30,10 @@ than one are selected please separate by comma (e.g. "USD,BTC"), only necessary 
 \item{quote}{logical set to TRUE if you want to include price data (FALSE=default)}
 
 \item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
+
+\item{sleep}{integer (default 60) Seconds to sleep between API requests}
+
+\item{wait}{waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)}
 }
 \value{
 List of latest/new/historic listings of crypto currencies in a tibble (depending on the "which"-switch and
@@ -56,20 +61,20 @@ all crypto currencies excluding Bitcoin in the requested currency.}
 \item{altcoin_market_cap	}{number The sum of all individual cryptocurrency market capitalizations excluding Bitcoin in the requested currency.}
 }
 \description{
-This code uses the web api. It retrieves global quote data (latest/historic) and does not require an 'API' key.
+This code retrieves global quote data (latest/historic) from coinmarketcap.com.
 }
 \examples{
 \dontrun{
 # return new listings from the last 30 days
 new_quotes <- crypto_global_quotes(which="latest", quote=FALSE)
-new_quotes2 <- crypto_global_quotes(which="latest", quote=TRUE, convert="BTC,USD")
+new_quotes2 <- crypto_global_quotes(which="latest", quote=TRUE, convert="BTC")
 # return all global quotes in the first week of January 2014
 quotes_2014w1 <- crypto_global_quotes(which="historical", quote=TRUE,
-start_date = "20140101", end_date="20140107", interval="daily")
+  start_date = "20140101", end_date="20140107", interval="daily")
 
 # report in two different currencies
 listings_2014w1_USDBTC <- crypto_global_quotes(which="historical", quote=TRUE,
-start_date = "20140101", end_date="20140107", interval="daily", convert="USD,BTC")
+  start_date = "20200101", end_date="20240530", interval="daily", convert="BTC")
 }
 
 }
