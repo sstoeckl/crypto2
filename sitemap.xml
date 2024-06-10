@@ -19,6 +19,9 @@
     <loc>https://sstoeckl.github.io/crypto2/news/index.html</loc>
   </url>
   <url>
+    <loc>https://sstoeckl.github.io/crypto2/reference/construct_url.html</loc>
+  </url>
+  <url>
     <loc>https://sstoeckl.github.io/crypto2/reference/crypto_global_quotes.html</loc>
   </url>
   <url>
@@ -40,6 +43,12 @@
     <loc>https://sstoeckl.github.io/crypto2/reference/exchange_list.html</loc>
   </url>
   <url>
+    <loc>https://sstoeckl.github.io/crypto2/reference/fiat_list.html</loc>
+  </url>
+  <url>
     <loc>https://sstoeckl.github.io/crypto2/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://sstoeckl.github.io/crypto2/reference/safeFromJSON.html</loc>
   </url>
 </urlset>

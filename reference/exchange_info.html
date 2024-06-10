@@ -54,9 +54,9 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">exchange_info</span><span class="op">(</span></span>
 <span>  exchange_list <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  limit <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  requestLimit <span class="op">=</span> <span class="fl">300</span>,</span>
-<span>  sleep <span class="op">=</span> <span class="fl">60</span>,</span>
-<span>  finalWait <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  requestLimit <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  sleep <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  finalWait <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -124,25 +124,28 @@ or provide list of exchanges in the <code><a href="exchange_list.html">exchange_
 <dt>taker_fee</dt>
 <dd><p>Exchanges maker fee</p></dd>
 
-<dt>spot_volume_usd</dt>
-<dd><p>Current volume in USD according to CMC</p></dd>
+<dt>platform_id</dt>
+<dd><p>Platform id on CMC</p></dd>
 
-<dt>spot_volume_last_updated</dt>
-<dd><p>Latest update of spot volume</p></dd>
+<dt>dex_status</dt>
+<dd><p>Decentralized exchange status</p></dd>
+
+<dt>wallet_source_status</dt>
+<dd><p>Wallet source status</p></dd>
 
 <dt>status</dt>
-<dd><p>timestamp and other status messages</p></dd>
+<dd><p>Activity status on CMC</p></dd>
 
 <dt>tags</dt>
 <dd><p>Tibble of tags and tag categories</p></dd>
 
-<dt>url</dt>
+<dt>urls</dt>
 <dd><p>Tibble of various resource urls. Gives website, blog, fee, twitter.</p></dd>
 
 <dt>countries</dt>
 <dd><p>Tibble of countries the exchange is active in</p></dd>
 
-<dt>fiat</dt>
+<dt>fiats</dt>
 <dd><p>Tibble of fiat currencies the exchange trades in</p></dd>
 
 </dl></div>
@@ -151,7 +154,7 @@ or provide list of exchanges in the <code><a href="exchange_list.html">exchange_
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span><span class="co"># return info for the first three exchanges</span></span></span>
-<span class="r-in"><span><span class="va">exchange_info</span> <span class="op">&lt;-</span> <span class="fu">exchange_info</span><span class="op">(</span>limit<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">exchange_info</span> <span class="op">&lt;-</span> <span class="fu">exchange_info</span><span class="op">(</span>limit<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

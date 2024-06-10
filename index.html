@@ -89,7 +89,7 @@
 <code><a href="reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> a dataset of historical global crypto currency market metrics to the <a href="https://coinmarketcap.com/api/documentation/v1/#operation/getV1GlobalmetricsQuotesHistorical" class="external-link">CMC API documentation</a>
 </li>
 <li>
-<code><a href="reference/crypto_list.html">fiat_list()</a></code> a mapping of all fiat currencies (plus precious metals) available via the <a href="https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap" class="external-link">CMC WEB API</a>
+<code><a href="reference/fiat_list.html">fiat_list()</a></code> a mapping of all fiat currencies (plus precious metals) available via the <a href="https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap" class="external-link">CMC WEB API</a>
 </li>
 <li>
 <code><a href="reference/exchange_list.html">exchange_list()</a></code> a list of all exchanges available as either being <em>active</em>, <em>delisted</em> or <em>untracked</em> according to the <a href="https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMap" class="external-link">CMC API documentation</a>
@@ -236,9 +236,9 @@
 <span><span class="co">#&gt; 6 2021-02-01 23:59:59     3 nameco… Name… NMC    USD     7.82e-1 8.05e-1 7.48e-1</span></span>
 <span><span class="co">#&gt; # ℹ 7 more variables: close &lt;dbl&gt;, volume &lt;dbl&gt;, market_cap &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   time_open &lt;dttm&gt;, time_close &lt;dttm&gt;, time_high &lt;dttm&gt;, time_low &lt;dttm&gt;</span></span></code></pre></div>
-<p>Alternatively, we could determine the price of these coins in other currencies. A list of such currencies is available as <code><a href="reference/crypto_list.html">fiat_list()</a></code></p>
+<p>Alternatively, we could determine the price of these coins in other currencies. A list of such currencies is available as <code><a href="reference/fiat_list.html">fiat_list()</a></code></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fiats</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_list.html">fiat_list</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">fiats</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fiat_list.html">fiat_list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">fiats</span></span>
 <span><span class="co">#&gt; # A tibble: 93 × 4</span></span>
 <span><span class="co">#&gt;       id name                 sign  symbol</span></span>
