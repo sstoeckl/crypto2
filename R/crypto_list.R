@@ -129,6 +129,9 @@ exchange_list <- function(only_active=TRUE, add_untracked=FALSE) {
 #'
 #' This code retrieves data for all available fiat currencies that are available on the website.
 #'
+#' @param include_metals Shall the results include precious metals (TRUE) or not (FALSE=default).
+#' Update: As of May 2024 no more metals are included in this file
+#'
 #' @return List of (active and historically existing) cryptocurrencies in a tibble:
 #'   \item{id}{CMC id (unique identifier)}
 #'   \item{symbol}{Coin symbol (not-unique)}

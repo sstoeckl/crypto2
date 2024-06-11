@@ -6,6 +6,10 @@
 \usage{
 fiat_list(include_metals = FALSE)
 }
+\arguments{
+\item{include_metals}{Shall the results include precious metals (TRUE) or not (FALSE=default).
+Update: As of May 2024 no more metals are included in this file}
+}
 \value{
 List of (active and historically existing) cryptocurrencies in a tibble:
 \item{id}{CMC id (unique identifier)}

@@ -97,6 +97,9 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   # create dates
   if (is.null(start_date)) { start_date <- as.Date("2013-04-28") }
   if (is.null(end_date)) { end_date <- lubridate::today() }
+  # convert dates
+  start_date <- convert_date(start_date)
+  end_date <- convert_date(end_date)
   # check dates
   if (end_date<as.Date("2013-04-29")) stop("Attention: CMC Data is only available after 2013-04-29!")
   if (start_date<as.Date("2013-04-28")) warning("CMC Data (that will be downloaded) starts after 2013-04-29!")
@@ -140,7 +143,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
       UNIXend <- format(as.numeric(end_dates),scientific = FALSE)
       dates <- tibble::tibble(start_dates,end_dates,startDate=UNIXstart, endDate=UNIXend)
     } else {
-      UNIXstart <- format(as.numeric(as.POSIXct(as.Date(start_date))),scientific = FALSE)
+      UNIXstart <- format(as.numeric(as.POSIXct(as.Date(start_date))-1),scientific = FALSE)
       UNIXend <- format(as.numeric(as.POSIXct(as.Date(end_date), tz = "UTC")),scientific = FALSE)
       dates <- tibble::tibble(start_dates=start_date,end_dates=end_date,startDate=UNIXstart, endDate=UNIXend)
     }
@@ -157,11 +160,11 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
       }
       # UNIX format
       # Create UNIX timestamps for download
-      UNIXstart <- format(as.numeric(as.POSIXct(as.Date(start_dates), format="%Y%m%d")),scientific = FALSE)
+      UNIXstart <- format(as.numeric(as.POSIXct(as.Date(start_dates)-1, format="%Y%m%d")),scientific = FALSE)
       UNIXend <- format(as.numeric(as.POSIXct(as.Date(end_dates), format="%Y%m%d", tz = "UTC")),scientific = FALSE)
       dates <- tibble::tibble(start_dates,end_dates,startDate=UNIXstart, endDate=UNIXend)
     } else {
-      UNIXstart <- format(as.numeric(as.POSIXct(as.Date(start_date), format="%Y%m%d")),scientific = FALSE)
+      UNIXstart <- format(as.numeric(as.POSIXct(as.Date(start_date)-1, format="%Y%m%d")),scientific = FALSE)
       UNIXend <- format(as.numeric(as.POSIXct(as.Date(end_date), format="%Y%m%d", tz = "UTC")),scientific = FALSE)
       dates <- tibble::tibble(start_dates=start_date,end_dates=end_date,startDate=UNIXstart, endDate=UNIXend)
     }
@@ -235,7 +238,8 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   # results
   results <-dplyr:: bind_rows(out_info) %>% tibble::as_tibble() %>%
     dplyr::left_join(coin_list %>% dplyr::select(id, slug), by ="id") %>%
-    dplyr::relocate(slug, .after = id)
+    dplyr::relocate(slug, .after = id) %>%
+    dplyr::filter(timestamp>=start_date)
   # wait 60s before finishing (or you might end up with the web-api 60s bug)
   if (finalWait){
     pb <- progress_bar$new(

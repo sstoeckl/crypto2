@@ -7,10 +7,10 @@
 #' than one are selected please separate by comma (e.g. "USD,BTC"), only necessary if 'quote=TRUE'
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
-#' @param interval string Interval with which to sample data, default 'daily'. Must be one of `"hourly" "daily" "weekly"
-#' "monthly" "yearly" "1d" "2d" "3d" "7d" "14d" "15d" "30d" "60d" "90d" "365d"`
+#' @param interval string Interval with which to sample data, default 'daily'. Must be one of `"1d" "2d" "3d" "15d" "30d" "60d"`
 #' @param quote logical set to TRUE if you want to include price data (FALSE=default)
-#' @param sleep integer (default 60) Seconds to sleep between API requests
+#' @param requestLimit integer (default 2200) Maximum number of requests one API call can handle
+#' @param sleep integer (default 0) Seconds to sleep between API requests
 #' @param wait waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #'
@@ -61,7 +61,7 @@
 #' @export
 #'
 crypto_global_quotes <- function(which="latest", convert="USD", start_date = NULL, end_date = NULL, interval = "daily", quote=FALSE,
-                                 requestLimit = 2200, finalWait = FALSE) {
+                                 requestLimit = 2200, sleep=0, wait=60, finalWait = FALSE) {
   # check if convert is valid
   if (!convert %in% c("USD", "BTC")) {
     if (!convert %in% fiat_list()) {
@@ -96,7 +96,20 @@ crypto_global_quotes <- function(which="latest", convert="USD", start_date = NUL
     if (end_date<as.Date("2013-04-29")) stop("Attention: CMC Data is only available after 2013-04-29!")
     if (start_date<as.Date("2013-04-28")) warning("CMC Data (that will be downloaded) starts after 2013-04-29!")
     # intervals
-    interval <- 'daily'
+    # intervals
+    if (is.null(interval)) {
+      interval <- 'daily'
+    } else if (
+      !(interval %in% c("daily", #"weekly", "monthly", "yearly",
+                        "1d", "2d",
+                        "3h", #"4h", "6h", "12h",
+                        "15d", #"2d", "3d",
+                        "30d", #"14d", "15d",
+                        "60d"#, "60d", "90d", "365d"
+      ))){
+      warning('interval was not valid, using "daily". see documentation for allowed values.')
+      interval <- 'daily'
+    }
     # time_period
     time_period="days"
     # create path
@@ -157,11 +170,14 @@ crypto_global_quotes <- function(which="latest", convert="USD", start_date = NUL
       } else {
         # only one currency possible at this time
           outall <- lout$quotes |>  tibble::as_tibble() |>  dplyr::select(-quote) |>  janitor::clean_names() |>
-            dplyr::mutate(timestamp=as.POSIXct(timestamp,tz="UTC"))
+            dplyr::mutate(timestamp=as.Date(as.POSIXct(timestamp,tz="UTC"))) |>
+            dplyr::select(-search_interval)
 
           if (quote) {
             quotes <- lout$quotes$quote |>  purrr::list_rbind() |> tibble::as_tibble() |>  janitor::clean_names() |>
-              dplyr::mutate(timestamp=as.POSIXct(timestamp,tz="UTC"))
+              dplyr::select(-name) |>
+              dplyr::rename_at(dplyr::vars(2:8),~paste0(convert,"_",.)) |>
+              dplyr::mutate(timestamp=as.Date(as.POSIXct(timestamp,tz="UTC")))
             outall <- outall |>  dplyr::left_join(quotes,by="timestamp")
           }
       }
@@ -178,7 +194,7 @@ crypto_global_quotes <- function(which="latest", convert="USD", start_date = NUL
 
     # results
     global_quotes <- dplyr::bind_rows(global_quotes) |>  dplyr::arrange(timestamp)
-  # wait 60s before finishing (or you might end up with the web-api 60s bug)
+  # wait xs before finishing (solving an earlier bug)
   if (finalWait){
     pb <- progress_bar$new(
       format = "Final wait [:bar] :percent eta: :eta",

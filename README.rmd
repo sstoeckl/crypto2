@@ -43,6 +43,20 @@ It allows the user to retrieve
 
 # Update
 
+## Version 2.0.0 (May 2024)
+
+After a major change in the api structure of coinmarketcap.com, the package had to be rewritten. As a result, many functions had to be rewritten, because data was not available any more in a similar format or with similar accuracy. Unfortunately, this will potentially break many users implementations. Here is a detailed list of changes:
+
+- `crypto_list()` has been modified and delivers the same data as before.
+- `exchange_list()` has been modified and delivers the same data as before.
+- `fiat_list()` has been modified and no longer delivers all available currencies and precious metals (therefore only USD and Bitcoin are available any more).
+- `crypto_listings()` needed to be modified, as multiple base currencies are not available any more. Also some of the fields downloaded from CMC might have changed. It still retrieves the latest listings, the new listings as well as historical listings. The fields returned have somewhat slightly changed. Also, no sorting is available any more, so if you want to download the top x CCs by market cap, you have to download all CCs and then sort them in R.
+- `crypto_info()` has been modified, as the data structure has changed. The fields returned have somewhat slightly changed.
+- `crypto_history()` has been modified. It still retrieves all the OHLC history of all the coins, but is slower due to an increased number of necessary api calls. The number of available intervals is strongly limited, but hourly and daily data is still available. Currently only USD and BTC are available as quote currencies through this library.
+- `crypto_global_quotes()` has been modified. It still produces a clear picture of the global market, but the data structure has somewhat slightly changed.
+
+## Version 1.4.7
+
 Since version 1.4.6 I have added the possibility to "sort" the historical `crypto_listings()` in _asc_ending or _desc_ending order ("sort_dir") to allow for the possibility to download only the top x crypto currencies using "limit" based on the requested sort (not available for "new" sorting). Also corrected some problems when sourcing lists that now do not have the "last_historical_data" field available any more.
 
 Since version 1.4.5 I have added a new function `crypto_global_quotes()` which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.
@@ -106,7 +120,7 @@ coin_info %>% select(slug,tags) %>% tidyr::unnest(tags) %>% group_by(slug) %>% s
 Additionally: Here are some urls pertaining to these coins as provided by <https://coinmarketcap.com>.
 
 ```{r urls}
-coin_info %>% select(slug,urls) %>% tidyr::unnest(urls) %>% filter(name %in% c("reddit","twitter"))
+coin_info %>% pull(urls) %>% .[[1]] |> unlist()
 ```
 
 In a next step we download time series data for these coins.
@@ -119,11 +133,11 @@ coin_hist <- crypto_history(coins, limit=3, start_date="20210101", end_date="202
 coin_hist %>% group_by(slug) %>% slice(1:2)
 ```
 
-Similarly, we could download the same data on a monthly basis.
+Similarly, we could download data on an hourly basis.
 
 ```{r historym}
 # retrieve historical data for all (the first 3) of them
-coin_hist_m <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210501", interval ="monthly", finalWait=FALSE)
+coin_hist_m <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210102", interval ="1h", finalWait=FALSE)
 
 # and give the first two times of information per coin
 coin_hist_m %>% group_by(slug) %>% slice(1:2)
@@ -140,15 +154,15 @@ So we download the time series again depicting prices in terms of Bitcoin and Eu
 
 ```{r history2}
 # retrieve historical data for all (the first 3) of them
-coin_hist2 <- crypto_history(coins, convert="BTC,EUR", limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
+coin_hist2 <- crypto_history(coins, convert="USD", limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
 
 # and give the first two times of information per coin
-coin_hist2 %>% group_by(slug,ref_cur) %>% slice(1:2)
+coin_hist2 %>% group_by(slug,ref_cur_name) %>% slice(1:2)
 ```
 
 As a new features in version 1.4.4. we introduced the possibility to download historical listings and listing information (add `quote = TRUE`).
 
-```{r}
+```{r listings}
 latest_listings <- crypto_listings(which="latest", limit=10, quote=TRUE, finalWait=FALSE)
 latest_listings
 ```
@@ -182,7 +196,7 @@ exchanges
 and then download information on "binance" and "bittrex":
 
 ```{r exchange-info}
-ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','bittrex')), finalWait=FALSE)
+ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')), finalWait=FALSE)
 ex_info
 ```
 
@@ -192,11 +206,6 @@ Then we can access information on the fee structure,
 ex_info %>% select(contains("fee"))
 ```
 
-the amount of cryptocurrencies being traded (in USD)
-
-```{r usd-vol}
-ex_info %>% select(contains("spot"))
-```
 or the fiat currencies allowed:
 
 ```{r ex-fiat}

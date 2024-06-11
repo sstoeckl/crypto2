@@ -10,17 +10,7 @@ After a major change in the api structure of coinmarketcap.com, the package had 
 - `crypto_listings()` needed to be modified, as multiple base currencies are not available any more. Also some of the fields downloaded from CMC might have changed. It still retrieves the latest listings, the new listings as well as historical listings. The fields returned have somewhat slightly changed. Also, no sorting is available any more, so if you want to download the top x CCs by market cap, you have to download all CCs and then sort them in R.
 - `crypto_info()` has been modified, as the data structure has changed. The fields returned have somewhat slightly changed.
 - `crypto_history()` has been modified. It still retrieves all the OHLC history of all the coins, but is slower due to an increased number of necessary api calls. The number of available intervals is strongly limited, but hourly and daily data is still available. Currently only USD and BTC are available as quote currencies through this library.
-
-- `crypto_quotes()` now only returns the latest quotes, as historical information is not available anymore.
-- `crypto_global_quotes()` now only returns the latest global quotes, as historical information is not available anymore.
-
-- `exchange_info()` has ben modified, as the data structure has changed. The fields returned have somewhat slightly changed.
-
-- `exchange_quotes()` now only returns the latest exchange quotes, as historical information is not available anymore.
-- `exchange_listings()` now only returns the latest exchange listings, as historical information is not available anymore.
-- `exchange_markets()` now only returns the latest exchange markets, as historical information is not available anymore.
-- `exchange_quotes()` now only returns the latest exchange quotes, as historical information is not available anymore.
-- `exchange_quotes()` now only returns the latest exchange quotes, as historical information is not available anymore.
+- `crypto_global_quotes()` has been modified. It still produces a clear picture of the global market, but the data structure has somewhat slightly changed.
 
 
 # crypto 1.4.6 

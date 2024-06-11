@@ -15,7 +15,7 @@
 #' "volume_7d", "volume_30d", "percent_change_1h", "percent_change_24h",
 #' "percent_change_7d". Especially useful if you only want to download the top x entries using "limit" (deprecated for "new")
 #' @param sort_dir (May 2024: currently not available) string used to specify the direction of the sort in "sort". Possible values are "asc" (DEFAULT) and "desc"
-#' @param sleep integer (default 60) Seconds to sleep between API requests
+#' @param sleep integer (default 0) Seconds to sleep between API requests
 #' @param wait waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
 #'
@@ -67,16 +67,19 @@
 #'
 #' # return the first 10 listings in the first week of January 2024
 #' listings_2024w1 <- crypto_listings(which="historical", quote=TRUE,
-#' start_date = "20240101", end_date="20240102", interval="day", limit=10)
+#'       start_date = "20240101", end_date="20240102", interval="day", limit=10)
 #'
 #' # only download the top 10 crypto currencies based on their market capitalization
 #' # DOES NOT WORK ANY MORE
 #'
 #' # for historically accurate snapshots (e.g. for backtesting crypto investments)
 #' # you need to download the entire history on one day including price information:
-#' listings_20200202 <- crypto_listings(which="historical", quote=TRUE, start_date="20200202", end_date="20200202")
-#' listings_20240202 <- crypto_listings(which="historical", quote=TRUE, start_date="20240202", end_date="20240202", limit=50000)
-#' # note the much larger amount in CCs in 2024, as well as the existence of many more variables in the dataset
+#' listings_20200202 <- crypto_listings(which="historical", quote=TRUE,
+#'       start_date="20200202", end_date="20200202")
+#' listings_20240202 <- crypto_listings(which="historical", quote=TRUE,
+#'       start_date="20240202", end_date="20240202", limit=50000)
+#' # note the much larger amount in CCs in 2024, as well as the existence of many
+#' more variables in the dataset
 #' }
 #'
 #' @name crypto_listings

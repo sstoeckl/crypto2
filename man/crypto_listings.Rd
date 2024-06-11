@@ -42,7 +42,7 @@ than one are selected please separate by comma (e.g. "USD,BTC"), only necessary 
 
 \item{sort_dir}{(May 2024: currently not available) string used to specify the direction of the sort in "sort". Possible values are "asc" (DEFAULT) and "desc"}
 
-\item{sleep}{integer (default 60) Seconds to sleep between API requests}
+\item{sleep}{integer (default 0) Seconds to sleep between API requests}
 
 \item{wait}{waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)}
 
@@ -95,16 +95,19 @@ latest_listings2 <- crypto_listings(which="latest", quote=TRUE, convert="BTC")
 
 # return the first 10 listings in the first week of January 2024
 listings_2024w1 <- crypto_listings(which="historical", quote=TRUE,
-start_date = "20240101", end_date="20240102", interval="day", limit=10)
+      start_date = "20240101", end_date="20240102", interval="day", limit=10)
 
 # only download the top 10 crypto currencies based on their market capitalization
 # DOES NOT WORK ANY MORE
 
 # for historically accurate snapshots (e.g. for backtesting crypto investments)
 # you need to download the entire history on one day including price information:
-listings_20200202 <- crypto_listings(which="historical", quote=TRUE, start_date="20200202", end_date="20200202")
-listings_20240202 <- crypto_listings(which="historical", quote=TRUE, start_date="20240202", end_date="20240202", limit=50000)
-# note the much larger amount in CCs in 2024, as well as the existence of many more variables in the dataset
+listings_20200202 <- crypto_listings(which="historical", quote=TRUE,
+      start_date="20200202", end_date="20200202")
+listings_20240202 <- crypto_listings(which="historical", quote=TRUE,
+      start_date="20240202", end_date="20240202", limit=50000)
+# note the much larger amount in CCs in 2024, as well as the existence of many
+more variables in the dataset
 }
 
 }
