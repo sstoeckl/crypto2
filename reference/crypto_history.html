@@ -70,10 +70,11 @@ to predict future market movements or trends.</p>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interval <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  requestLimit <span class="op">=</span> <span class="fl">400</span>,</span>
 <span>  sleep <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  wait <span class="op">=</span> <span class="fl">60</span>,</span>
 <span>  finalWait <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  single_id <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  single_id <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -85,8 +86,7 @@ or provide list of crypto currencies in the <code><a href="crypto_list.html">cry
 
 
 <dt>convert</dt>
-<dd><p>(default: USD) to one or more of available fiat or precious metals prices (<code><a href="fiat_list.html">fiat_list()</a></code>). If more
-than one are selected please separate by comma (e.g. "USD,BTC")</p></dd>
+<dd><p>(default: USD) to one of available fiat prices (<code><a href="fiat_list.html">fiat_list()</a></code>) or bitcoin 'BTC'. Be aware, that since 2024 only USD and BTC are available here!</p></dd>
 
 
 <dt>limit</dt>
@@ -94,15 +94,19 @@ than one are selected please separate by comma (e.g. "USD,BTC")</p></dd>
 
 
 <dt>start_date</dt>
-<dd><p>string Start date to retrieve data from, format 'yyyymmdd'</p></dd>
+<dd><p>date Start date to retrieve data from</p></dd>
 
 
 <dt>end_date</dt>
-<dd><p>string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed</p></dd>
+<dd><p>date End date to retrieve data from, if not provided, today will be assumed</p></dd>
 
 
 <dt>interval</dt>
 <dd><p>string Interval with which to sample data according to what <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq()</a></code> needs</p></dd>
+
+
+<dt>requestLimit</dt>
+<dd><p>limiting the length of request URLs when bundling the api calls</p></dd>
 
 
 <dt>sleep</dt>
@@ -118,7 +122,7 @@ than one are selected please separate by comma (e.g. "USD,BTC")</p></dd>
 
 
 <dt>single_id</dt>
-<dd><p>Do you want to download data individually coin by coin (default FALSE to reduce down-"load")</p></dd>
+<dd><p>Download data coin by coin (as of May 2024 this is necessary)</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -129,9 +133,6 @@ than one are selected please separate by comma (e.g. "USD,BTC")</p></dd>
 <dl><dt>timestamp</dt>
 <dd><p>Timestamp of entry in database</p></dd>
 
-<dt>slug</dt>
-<dd><p>Coin url slug</p></dd>
-
 <dt>id</dt>
 <dd><p>Coin market cap unique id</p></dd>
 
@@ -141,8 +142,11 @@ than one are selected please separate by comma (e.g. "USD,BTC")</p></dd>
 <dt>symbol</dt>
 <dd><p>Coin symbol</p></dd>
 
-<dt>ref_cur</dt>
-<dd><p>Reference currency</p></dd>
+<dt>ref_cur_id</dt>
+<dd><p>reference Currency id</p></dd>
+
+<dt>ref_cur_name</dt>
+<dd><p>reference Currency name</p></dd>
 
 <dt>open</dt>
 <dd><p>Market open</p></dd>
@@ -176,7 +180,7 @@ than one are selected please separate by comma (e.g. "USD,BTC")</p></dd>
 
 
 </dl><p>This is the main function of the crypto package. If you want to retrieve
-ALL active coins then do not pass an argument to <code>crypto_history()</code>, or pass the coin name.</p>
+ALL active coins then do not pass an argument to <code>crypto_history()</code>, alternatively pass the coin name.</p>
     </div>
 
     <div class="section level2">
@@ -185,22 +189,20 @@ ALL active coins then do not pass an argument to <code>crypto_history()</code>, 
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Retrieving market history for ALL crypto currencies</span></span></span>
 <span class="r-in"><span><span class="va">all_coins</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>limit <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">one_coin</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>limit <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">one_coin</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>limit <span class="op">=</span> <span class="fl">1</span>, convert<span class="op">=</span><span class="st">"BTC"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Retrieving market history since 2020 for ALL crypto currencies</span></span></span>
-<span class="r-in"><span><span class="va">all_coins</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>start_date <span class="op">=</span> <span class="st">'20200101'</span>,limit<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Retrieving the same coins id by id</span></span></span>
-<span class="r-in"><span><span class="va">all_coins2</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>start_date <span class="op">=</span> <span class="st">'20200101'</span>,limit<span class="op">=</span><span class="fl">10</span>, single_id<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">all_coins</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>start_date <span class="op">=</span> <span class="st">'2020-01-01'</span>,limit<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Retrieve 2015 history for all 2015 crypto currencies</span></span></span>
 <span class="r-in"><span><span class="va">coin_list_2015</span> <span class="op">&lt;-</span> <span class="fu"><a href="crypto_list.html">crypto_list</a></span><span class="op">(</span>only_active<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
 <span class="r-in"><span>              <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">first_historical_data</span><span class="op">&lt;=</span><span class="st">"2015-12-31"</span>,</span></span>
 <span class="r-in"><span>              <span class="va">last_historical_data</span><span class="op">&gt;=</span><span class="st">"2015-01-01"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">coins_2015</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>coin_list <span class="op">=</span> <span class="va">coin_list_2015</span>,</span></span>
-<span class="r-in"><span>start_date <span class="op">=</span> <span class="st">"20150101"</span>, end_date<span class="op">=</span><span class="st">"20151231"</span>, limit<span class="op">=</span><span class="fl">20</span>, interval<span class="op">=</span><span class="st">"90d"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>              start_date <span class="op">=</span> <span class="st">"2015-01-01"</span>, end_date<span class="op">=</span><span class="st">"2015-12-31"</span>, limit<span class="op">=</span><span class="fl">20</span>, interval<span class="op">=</span><span class="st">"30d"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># retrieve hourly bitcoin data for 2 days</span></span></span>
 <span class="r-in"><span><span class="va">btc_hourly</span> <span class="op">&lt;-</span> <span class="fu">crypto_history</span><span class="op">(</span>coin_list <span class="op">=</span> <span class="va">coin_list_2015</span>,</span></span>
-<span class="r-in"><span>start_date <span class="op">=</span> <span class="st">"20150101"</span>, end_date<span class="op">=</span><span class="st">"20150103"</span>, limit<span class="op">=</span><span class="fl">1</span>, interval<span class="op">=</span><span class="st">"1h"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>              start_date <span class="op">=</span> <span class="st">"2015-01-01"</span>, end_date<span class="op">=</span><span class="st">"2015-01-03"</span>, limit<span class="op">=</span><span class="fl">1</span>, interval<span class="op">=</span><span class="st">"1h"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
