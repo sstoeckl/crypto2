@@ -17,6 +17,9 @@ knitr::opts_chunk$set(
  <!-- badges: start -->
 
   [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+  [![R-CMD-check](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml)
+  [![test-coverage](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml)
+  [![pr-commands](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml)
   [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
   [![CRAN status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
   [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/crypto2)](https://cran.r-project.org/package=crypto2)
@@ -63,7 +66,7 @@ Since version 1.4.5 I have added a new function `crypto_global_quotes()` which r
 
 Since version 1.4.4 a new function `crypto_listings()` was introduced that retrieves new/latest/historical listings and listing information at CMC. Additionally some aspects of the other functions have been reworked. We noticed that `finalWait = TRUE` does not seem to be necessary at the moment, as well as `sleep` can be set to '0' seconds. If you experience strange behavior this might be due to the the api sending back strange (old) results. In this case let `sleep = 60` (the default) and `finalWait = TRUE` (the default).
 
-Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new "feature" introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again. Additionally, since version v1.4.3 the package allows for a data `interval` larger than daily (e.g. '2d' or '7d'/'weekly')
+Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new "feature" introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again. Additionally, since version v1.4.3 the package allows for a data `interval` larger than daily (e.g. '2d' or '7d' or 'weekly')
 
 ## Installation
 

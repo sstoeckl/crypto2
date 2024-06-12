@@ -7,6 +7,9 @@
 
 [![Project
 Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![R-CMD-check](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml)
+[![test-coverage](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml)
+[![pr-commands](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml)
 [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
@@ -125,7 +128,7 @@ assets as possible with one api call, as there is a new “feature”
 introduced by CMC to send back the initially requested data for each api
 call within 60 seconds. So one needs to wait 60s before calling the api
 again. Additionally, since version v1.4.3 the package allows for a data
-`interval` larger than daily (e.g. ‘2d’ or ‘7d’/‘weekly’)
+`interval` larger than daily (e.g. ‘2d’ or ‘7d’ or ‘weekly’)
 
 ## Installation
 
@@ -351,15 +354,15 @@ latest_listings
 #> # A tibble: 5,000 × 30
 #>       id name        symbol slug   cmc_rank market_pair_count circulating_supply
 #>    <int> <chr>       <chr>  <chr>     <int>             <int>              <dbl>
-#>  1     1 Bitcoin     BTC    bitco…        1             11107          19711006 
-#>  2     2 Litecoin    LTC    litec…       19              1202          74631512.
-#>  3     3 Namecoin    NMC    namec…     1348                 7          14736400 
-#>  4     5 Peercoin    PPC    peerc…     1022                41          28933715.
-#>  5     8 Feathercoin FTC    feath…     1861                11         236600238 
-#>  6    25 Goldcoin    GLC    goldc…     2153                11          43681422.
-#>  7    35 Phoenixcoin PXC    phoen…     1927                 4          90879950.
-#>  8    42 Primecoin   XPM    prime…     1725                 3          49771118.
-#>  9    45 CasinoCoin  CSC    casin…     4720                 9                 0 
+#>  1     1 Bitcoin     BTC    bitco…        1             11107          19711265 
+#>  2     2 Litecoin    LTC    litec…       20              1202          74633262.
+#>  3     3 Namecoin    NMC    namec…     1354                 7          14736400 
+#>  4     5 Peercoin    PPC    peerc…     1014                41          28934705.
+#>  5     8 Feathercoin FTC    feath…     1852                11         236600238 
+#>  6    25 Goldcoin    GLC    goldc…     2150                11          43681422.
+#>  7    35 Phoenixcoin PXC    phoen…     1921                 4          90885618.
+#>  8    42 Primecoin   XPM    prime…     1715                 3          49777212.
+#>  9    45 CasinoCoin  CSC    casin…     4361                 9                 0 
 #> 10    52 XRP         XRP    xrp           7              1340       55506158411 
 #> # ℹ 4,990 more rows
 #> # ℹ 23 more variables: self_reported_circulating_supply <dbl>,
@@ -380,26 +383,24 @@ all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
 #> ❯ Processing historical crypto data
 #> 
 all_quotes
-#> # A tibble: 4,060 × 17
+#> # A tibble: 4,398 × 11
 #>    timestamp  btc_dominance eth_dominance         score USD_total_market_cap
-#>    <date>             <dbl>         <dbl>         <dbl>                <dbl>
+#>    <date>             <dbl>         <int>         <dbl>                <dbl>
 #>  1 2013-04-29          94.2             0 1367193600000           1583440000
-#>  2 2013-04-30          94.4             0 1367280000000           1686950016
-#>  3 2013-05-01          94.4             0 1367366400000           1637389952
-#>  4 2013-05-02          94.1             0 1367452800000           1333880064
-#>  5 2013-05-03          94.2             0 1367539200000           1275410048
-#>  6 2013-05-04          93.9             0 1367625600000           1169469952
-#>  7 2013-05-05          94.0             0 1367712000000           1335379968
-#>  8 2013-05-06          94.1             0 1367798400000           1370880000
-#>  9 2013-05-07          94.4             0 1367884800000           1313900032
-#> 10 2013-05-08          94.4             0 1367971200000           1320509952
-#> # ℹ 4,050 more rows
-#> # ℹ 12 more variables: USD_total_volume24h <dbl>,
+#>  2 2013-04-29          94.2             0 1367193600000           1583440000
+#>  3 2013-04-30          94.4             0 1367280000000           1686950016
+#>  4 2013-04-30          94.4             0 1367280000000           1686950016
+#>  5 2013-05-01          94.4             0 1367366400000           1637389952
+#>  6 2013-05-01          94.4             0 1367366400000           1637389952
+#>  7 2013-05-02          94.1             0 1367452800000           1333880064
+#>  8 2013-05-02          94.1             0 1367452800000           1333880064
+#>  9 2013-05-03          94.2             0 1367539200000           1275410048
+#> 10 2013-05-03          94.2             0 1367539200000           1275410048
+#> # ℹ 4,388 more rows
+#> # ℹ 6 more variables: USD_total_volume24h <dbl>,
 #> #   USD_total_volume24h_reported <dbl>, USD_altcoin_volume24h <dbl>,
 #> #   USD_altcoin_volume24h_reported <dbl>, USD_altcoin_market_cap <dbl>,
-#> #   USD_original_score <chr>, active_cryptocurrencies <int>,
-#> #   active_market_pairs <int>, active_exchanges <int>,
-#> #   total_cryptocurrencies <int>, total_exchanges <int>, origin_id <chr>
+#> #   USD_original_score <chr>
 ```
 
 We can use those quotes to plot information on the aggregate market
@@ -425,16 +426,16 @@ exchanges
 #> # A tibble: 781 × 6
 #>       id name         slug  is_active first_historical_data last_historical_data
 #>    <int> <chr>        <chr>     <int> <date>                <date>              
-#>  1    16 Poloniex     polo…         1 2018-04-26            2024-06-11          
-#>  2    21 BTCC         btcc          1 2018-04-26            2024-06-11          
-#>  3    24 Kraken       krak…         1 2018-04-26            2024-06-11          
-#>  4    34 Bittylicious bitt…         1 2018-04-26            2024-06-11          
-#>  5    36 CEX.IO       cex-…         1 2018-04-26            2024-06-11          
-#>  6    37 Bitfinex     bitf…         1 2018-04-26            2024-06-11          
-#>  7    42 HitBTC       hitb…         1 2018-04-26            2024-06-11          
-#>  8    50 EXMO         exmo          1 2018-04-26            2024-06-11          
-#>  9    61 Okcoin       okco…         1 2018-04-26            2024-06-11          
-#> 10    68 Indodax      indo…         1 2018-04-26            2024-06-11          
+#>  1    16 Poloniex     polo…         1 2018-04-26            2024-06-12          
+#>  2    21 BTCC         btcc          1 2018-04-26            2024-06-12          
+#>  3    24 Kraken       krak…         1 2018-04-26            2024-06-12          
+#>  4    34 Bittylicious bitt…         1 2018-04-26            2024-06-12          
+#>  5    36 CEX.IO       cex-…         1 2018-04-26            2024-06-12          
+#>  6    37 Bitfinex     bitf…         1 2018-04-26            2024-06-12          
+#>  7    42 HitBTC       hitb…         1 2018-04-26            2024-06-12          
+#>  8    50 EXMO         exmo          1 2018-04-26            2024-06-12          
+#>  9    61 Okcoin       okco…         1 2018-04-26            2024-06-12          
+#> 10    68 Indodax      indo…         1 2018-04-26            2024-06-12          
 #> # ℹ 771 more rows
 ```
 

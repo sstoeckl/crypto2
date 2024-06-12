@@ -27,3 +27,4 @@ README-quotes-plot-1.png
 ^LICENSE\.md$
 ^CITATION\.cff$
 create_hidden_links.R
+^revdep$
