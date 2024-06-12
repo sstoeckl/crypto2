@@ -129,7 +129,7 @@
 <p>Since version 1.4.6 I have added the possibility to “sort” the historical <code><a href="reference/crypto_listings.html">crypto_listings()</a></code> in _asc_ending or _desc_ending order (“sort_dir”) to allow for the possibility to download only the top x crypto currencies using “limit” based on the requested sort (not available for “new” sorting). Also corrected some problems when sourcing lists that now do not have the “last_historical_data” field available any more.</p>
 <p>Since version 1.4.5 I have added a new function <code><a href="reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.</p>
 <p>Since version 1.4.4 a new function <code><a href="reference/crypto_listings.html">crypto_listings()</a></code> was introduced that retrieves new/latest/historical listings and listing information at CMC. Additionally some aspects of the other functions have been reworked. We noticed that <code>finalWait = TRUE</code> does not seem to be necessary at the moment, as well as <code>sleep</code> can be set to ‘0’ seconds. If you experience strange behavior this might be due to the the api sending back strange (old) results. In this case let <code>sleep = 60</code> (the default) and <code>finalWait = TRUE</code> (the default).</p>
-<p>Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new “feature” introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again. Additionally, since version v1.4.3 the package allows for a data <code>interval</code> larger than daily (e.g. ‘2d’ or ‘7d’/‘weekly’)</p>
+<p>Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new “feature” introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again. Additionally, since version v1.4.3 the package allows for a data <code>interval</code> larger than daily (e.g. ‘2d’ or ‘7d’ or ‘weekly’)</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -305,15 +305,15 @@
 <span><span class="co">#&gt; # A tibble: 5,000 × 30</span></span>
 <span><span class="co">#&gt;       id name        symbol slug   cmc_rank market_pair_count circulating_supply</span></span>
 <span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;     &lt;int&gt;             &lt;int&gt;              &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt;  1     1 Bitcoin     BTC    bitco…        1             11107          19711006 </span></span>
-<span><span class="co">#&gt;  2     2 Litecoin    LTC    litec…       19              1202          74631512.</span></span>
-<span><span class="co">#&gt;  3     3 Namecoin    NMC    namec…     1348                 7          14736400 </span></span>
-<span><span class="co">#&gt;  4     5 Peercoin    PPC    peerc…     1022                41          28933715.</span></span>
-<span><span class="co">#&gt;  5     8 Feathercoin FTC    feath…     1861                11         236600238 </span></span>
-<span><span class="co">#&gt;  6    25 Goldcoin    GLC    goldc…     2153                11          43681422.</span></span>
-<span><span class="co">#&gt;  7    35 Phoenixcoin PXC    phoen…     1927                 4          90879950.</span></span>
-<span><span class="co">#&gt;  8    42 Primecoin   XPM    prime…     1725                 3          49771118.</span></span>
-<span><span class="co">#&gt;  9    45 CasinoCoin  CSC    casin…     4720                 9                 0 </span></span>
+<span><span class="co">#&gt;  1     1 Bitcoin     BTC    bitco…        1             11107          19711265 </span></span>
+<span><span class="co">#&gt;  2     2 Litecoin    LTC    litec…       20              1202          74633262.</span></span>
+<span><span class="co">#&gt;  3     3 Namecoin    NMC    namec…     1354                 7          14736400 </span></span>
+<span><span class="co">#&gt;  4     5 Peercoin    PPC    peerc…     1014                41          28934705.</span></span>
+<span><span class="co">#&gt;  5     8 Feathercoin FTC    feath…     1852                11         236600238 </span></span>
+<span><span class="co">#&gt;  6    25 Goldcoin    GLC    goldc…     2150                11          43681422.</span></span>
+<span><span class="co">#&gt;  7    35 Phoenixcoin PXC    phoen…     1921                 4          90885618.</span></span>
+<span><span class="co">#&gt;  8    42 Primecoin   XPM    prime…     1715                 3          49777212.</span></span>
+<span><span class="co">#&gt;  9    45 CasinoCoin  CSC    casin…     4361                 9                 0 </span></span>
 <span><span class="co">#&gt; 10    52 XRP         XRP    xrp           7              1340       55506158411 </span></span>
 <span><span class="co">#&gt; # ℹ 4,990 more rows</span></span>
 <span><span class="co">#&gt; # ℹ 23 more variables: self_reported_circulating_supply &lt;dbl&gt;,</span></span>
@@ -330,26 +330,24 @@
 <span><span class="co">#&gt; ❯ Processing historical crypto data</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="va">all_quotes</span></span>
-<span><span class="co">#&gt; # A tibble: 4,060 × 17</span></span>
+<span><span class="co">#&gt; # A tibble: 4,398 × 11</span></span>
 <span><span class="co">#&gt;    timestamp  btc_dominance eth_dominance         score USD_total_market_cap</span></span>
-<span><span class="co">#&gt;    &lt;date&gt;             &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;                &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;    &lt;date&gt;             &lt;dbl&gt;         &lt;int&gt;         &lt;dbl&gt;                &lt;dbl&gt;</span></span>
 <span><span class="co">#&gt;  1 2013-04-29          94.2             0 1367193600000           1583440000</span></span>
-<span><span class="co">#&gt;  2 2013-04-30          94.4             0 1367280000000           1686950016</span></span>
-<span><span class="co">#&gt;  3 2013-05-01          94.4             0 1367366400000           1637389952</span></span>
-<span><span class="co">#&gt;  4 2013-05-02          94.1             0 1367452800000           1333880064</span></span>
-<span><span class="co">#&gt;  5 2013-05-03          94.2             0 1367539200000           1275410048</span></span>
-<span><span class="co">#&gt;  6 2013-05-04          93.9             0 1367625600000           1169469952</span></span>
-<span><span class="co">#&gt;  7 2013-05-05          94.0             0 1367712000000           1335379968</span></span>
-<span><span class="co">#&gt;  8 2013-05-06          94.1             0 1367798400000           1370880000</span></span>
-<span><span class="co">#&gt;  9 2013-05-07          94.4             0 1367884800000           1313900032</span></span>
-<span><span class="co">#&gt; 10 2013-05-08          94.4             0 1367971200000           1320509952</span></span>
-<span><span class="co">#&gt; # ℹ 4,050 more rows</span></span>
-<span><span class="co">#&gt; # ℹ 12 more variables: USD_total_volume24h &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt;  2 2013-04-29          94.2             0 1367193600000           1583440000</span></span>
+<span><span class="co">#&gt;  3 2013-04-30          94.4             0 1367280000000           1686950016</span></span>
+<span><span class="co">#&gt;  4 2013-04-30          94.4             0 1367280000000           1686950016</span></span>
+<span><span class="co">#&gt;  5 2013-05-01          94.4             0 1367366400000           1637389952</span></span>
+<span><span class="co">#&gt;  6 2013-05-01          94.4             0 1367366400000           1637389952</span></span>
+<span><span class="co">#&gt;  7 2013-05-02          94.1             0 1367452800000           1333880064</span></span>
+<span><span class="co">#&gt;  8 2013-05-02          94.1             0 1367452800000           1333880064</span></span>
+<span><span class="co">#&gt;  9 2013-05-03          94.2             0 1367539200000           1275410048</span></span>
+<span><span class="co">#&gt; 10 2013-05-03          94.2             0 1367539200000           1275410048</span></span>
+<span><span class="co">#&gt; # ℹ 4,388 more rows</span></span>
+<span><span class="co">#&gt; # ℹ 6 more variables: USD_total_volume24h &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   USD_total_volume24h_reported &lt;dbl&gt;, USD_altcoin_volume24h &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   USD_altcoin_volume24h_reported &lt;dbl&gt;, USD_altcoin_market_cap &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   USD_original_score &lt;chr&gt;, active_cryptocurrencies &lt;int&gt;,</span></span>
-<span><span class="co">#&gt; #   active_market_pairs &lt;int&gt;, active_exchanges &lt;int&gt;,</span></span>
-<span><span class="co">#&gt; #   total_cryptocurrencies &lt;int&gt;, total_exchanges &lt;int&gt;, origin_id &lt;chr&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; #   USD_original_score &lt;chr&gt;</span></span></code></pre></div>
 <p>We can use those quotes to plot information on the aggregate market capitalization:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_quotes</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">timestamp</span>, <span class="va">USD_total_market_cap</span>, <span class="va">USD_altcoin_market_cap</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -366,16 +364,16 @@
 <span><span class="co">#&gt; # A tibble: 781 × 6</span></span>
 <span><span class="co">#&gt;       id name         slug  is_active first_historical_data last_historical_data</span></span>
 <span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;        &lt;chr&gt;     &lt;int&gt; &lt;date&gt;                &lt;date&gt;              </span></span>
-<span><span class="co">#&gt;  1    16 Poloniex     polo…         1 2018-04-26            2024-06-11          </span></span>
-<span><span class="co">#&gt;  2    21 BTCC         btcc          1 2018-04-26            2024-06-11          </span></span>
-<span><span class="co">#&gt;  3    24 Kraken       krak…         1 2018-04-26            2024-06-11          </span></span>
-<span><span class="co">#&gt;  4    34 Bittylicious bitt…         1 2018-04-26            2024-06-11          </span></span>
-<span><span class="co">#&gt;  5    36 CEX.IO       cex-…         1 2018-04-26            2024-06-11          </span></span>
-<span><span class="co">#&gt;  6    37 Bitfinex     bitf…         1 2018-04-26            2024-06-11          </span></span>
-<span><span class="co">#&gt;  7    42 HitBTC       hitb…         1 2018-04-26            2024-06-11          </span></span>
-<span><span class="co">#&gt;  8    50 EXMO         exmo          1 2018-04-26            2024-06-11          </span></span>
-<span><span class="co">#&gt;  9    61 Okcoin       okco…         1 2018-04-26            2024-06-11          </span></span>
-<span><span class="co">#&gt; 10    68 Indodax      indo…         1 2018-04-26            2024-06-11          </span></span>
+<span><span class="co">#&gt;  1    16 Poloniex     polo…         1 2018-04-26            2024-06-12          </span></span>
+<span><span class="co">#&gt;  2    21 BTCC         btcc          1 2018-04-26            2024-06-12          </span></span>
+<span><span class="co">#&gt;  3    24 Kraken       krak…         1 2018-04-26            2024-06-12          </span></span>
+<span><span class="co">#&gt;  4    34 Bittylicious bitt…         1 2018-04-26            2024-06-12          </span></span>
+<span><span class="co">#&gt;  5    36 CEX.IO       cex-…         1 2018-04-26            2024-06-12          </span></span>
+<span><span class="co">#&gt;  6    37 Bitfinex     bitf…         1 2018-04-26            2024-06-12          </span></span>
+<span><span class="co">#&gt;  7    42 HitBTC       hitb…         1 2018-04-26            2024-06-12          </span></span>
+<span><span class="co">#&gt;  8    50 EXMO         exmo          1 2018-04-26            2024-06-12          </span></span>
+<span><span class="co">#&gt;  9    61 Okcoin       okco…         1 2018-04-26            2024-06-12          </span></span>
+<span><span class="co">#&gt; 10    68 Indodax      indo…         1 2018-04-26            2024-06-12          </span></span>
 <span><span class="co">#&gt; # ℹ 771 more rows</span></span></code></pre></div>
 <p>and then download information on “binance” and “bittrex”:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -482,6 +480,9 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://www.repostatus.org/#active" class="external-link"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status"></a></li>
+<li><a href="https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml" class="external-link"><img src="https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml/badge.svg" alt="test-coverage"></a></li>
+<li><a href="https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml" class="external-link"><img src="https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml/badge.svg" alt="pr-commands"></a></li>
 <li><a href="https://cran.r-project.org/package=crypto2" class="external-link"><img src="https://www.r-pkg.org/badges/last-release/crypto2" alt="CRAN_latest_release_date"></a></li>
 <li><a href="https://CRAN.R-project.org/package=crypto2" class="external-link"><img src="https://www.r-pkg.org/badges/version/crypto2" alt="CRAN status"></a></li>
 <li><a href="https://cran.r-project.org/package=crypto2" class="external-link"><img src="http://cranlogs.r-pkg.org/badges/grand-total/crypto2" alt="CRAN downloads"></a></li>
