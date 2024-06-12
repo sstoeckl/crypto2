@@ -1,0 +1,31 @@
+name: R-CMD-check
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  push:
+    branches: [ main ]  # or any branch you prefer
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container: rocker/r-ver:latest  # Use the latest R version
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install R package dependencies
+      run: |
+        install.packages(c("devtools", "testthat", "jsonlite", "digest"))
+        devtools::install_deps(dependencies = TRUE)
+
+    - name: Run R CMD check
+      run: R CMD check . --no-manual
+
+    - name: Upload R CMD check results
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: r-cmd-check-results
+        path: .
+        retention-days: 5
