@@ -1,8 +1,8 @@
 # Test different listing types
 test_that("Fetching different types of listings works correctly", {
-  latest_data <- crypto_listings(which="latest", quote=FALSE)
-  new_data <- crypto_listings(which="new", quote=TRUE, convert="BTC")
-  historical_data <- crypto_listings(which="historical", quote=TRUE, start_date="20240101", end_date="20240107")
+  latest_data <- crypto_listings(which="latest", quote=FALSE,limit=2)
+  new_data <- crypto_listings(which="new", quote=TRUE, convert="BTC",limit=2)
+  historical_data <- crypto_listings(which="historical", quote=TRUE, start_date="20240101", end_date="20240107",limit=2)
 
   expect_s3_class(latest_data, "tbl_df")
   expect_s3_class(new_data, "tbl_df")
@@ -23,11 +23,11 @@ test_that("Error handling for invalid parameters", {
 
 # Consistency check against reference data
 test_that("Consistency check against reference data", {
-  # reference_data <- crypto_listings(which="historical", start_date="20240101", end_date="20240107", quote=TRUE)
+  # reference_data <- crypto_listings(which="historical", start_date="20240101", end_date="20240107", quote=TRUE,limit=2)
   # saveRDS(reference_data, "tests/testthat/test_data/crypto_listings_reference.rds")
   #
   reference_data <- readRDS("test_data/crypto_listings_reference.rds")
-  test_data <- crypto_listings(which="historical", start_date="20240101", end_date="20240107", quote=TRUE)
+  test_data <- crypto_listings(which="historical", start_date="20240101", end_date="20240107", quote=TRUE,limit=2)
 
   expect_equal(test_data, reference_data)
 })

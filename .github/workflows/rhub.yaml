@@ -28,7 +28,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     env:
-      TZ: 'CET'
+      TZ: 'UTC'
     outputs:
       containers: ${{ steps.rhub-setup.outputs.containers }}
       platforms: ${{ steps.rhub-setup.outputs.platforms }}

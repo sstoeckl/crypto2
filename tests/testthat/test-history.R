@@ -30,7 +30,7 @@ test_that("Downloaded data matches previously downloaded reference data", {
   # start_date="2020-01-01",
   # end_date="2020-01-07",
   # interval="daily")
-  # saveRDS(saved_output, "test_data/crypto_history_reference.rds")
+  # saveRDS(saved_output, "tests/testthat/test_data/crypto_history_reference.rds")
   # # Load the reference data
   expected_data <- readRDS("test_data/crypto_history_reference.rds")
 

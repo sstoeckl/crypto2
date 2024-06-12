@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      TZ: 'CET'
+      TZ: 'UTC'
 
     steps:
       - uses: actions/checkout@v4
