@@ -1,5 +1,6 @@
 # Test different listing types
 test_that("Fetching different types of listings works correctly", {
+  skip_on_cran("This test requires internet access and will not be run on CRAN.")
   latest_data <- crypto_listings(which="latest", quote=FALSE,limit=2)
   new_data <- crypto_listings(which="new", quote=TRUE, convert="BTC",limit=2)
   historical_data <- crypto_listings(which="historical", quote=TRUE, start_date="20240101", end_date="20240107",limit=2)
@@ -11,6 +12,7 @@ test_that("Fetching different types of listings works correctly", {
 
 # Test output structure and content
 test_that("Output data structure is correct", {
+  skip_on_cran("This test requires internet access and will not be run on CRAN.")
   data <- crypto_listings(which="latest", quote=TRUE, convert="USD")
   required_columns <- c("id", "name", "symbol", "slug", "price", "market_cap")
   expect_true(all(required_columns %in% names(data)))
@@ -18,11 +20,13 @@ test_that("Output data structure is correct", {
 
 # Test error handling for invalid parameters
 test_that("Error handling for invalid parameters", {
+  skip_on_cran("This test requires internet access and will not be run on CRAN.")
   expect_error(crypto_listings(which="unknown"))
 })
 
 # Consistency check against reference data
 test_that("Consistency check against reference data", {
+  skip_on_cran("This test requires internet access and will not be run on CRAN.")
   # reference_data <- crypto_listings(which="historical", start_date="20240101", end_date="20240107", quote=TRUE,limit=2)
   # saveRDS(reference_data, "tests/testthat/test_data/crypto_listings_reference.rds")
   #

@@ -1,5 +1,6 @@
 # Test with valid inputs
 test_that("Valid inputs return correct data structure", {
+  skip_on_cran("This test requires internet access and will not be run on CRAN.")
   result <- crypto_global_quotes(which="latest", convert="USD", quote=TRUE)
   expect_s3_class(result, "tbl_df")
   expect_true("btc_dominance" %in% names(result))
@@ -12,6 +13,7 @@ test_that("Invalid 'convert' parameters are handled", {
 })
 
 test_that("Historical data matches expected output", {
+  skip_on_cran("This test requires internet access and will not be run on CRAN.")
   # Load the expected output
   # saved_output <- crypto_global_quotes(
   # which="historical",
