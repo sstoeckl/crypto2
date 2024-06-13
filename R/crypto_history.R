@@ -239,7 +239,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   results <-dplyr:: bind_rows(out_info) %>% tibble::as_tibble() %>%
     dplyr::left_join(coin_list %>% dplyr::select(id, slug), by ="id") %>%
     dplyr::relocate(slug, .after = id) %>%
-    dplyr::filter(timestamp>=start_date)
+    dplyr::filter(as.Date(timestamp)>=start_date)
   # wait 60s before finishing (or you might end up with the web-api 60s bug)
   if (finalWait){
     pb <- progress_bar$new(
