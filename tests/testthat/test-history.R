@@ -1,6 +1,6 @@
 # Test with valid inputs and expected outputs
 test_that("Valid parameters return correctly structured data", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   result <- crypto_history(convert = "USD", limit = 1,
                            start_date = "2020-01-01", end_date = "2020-01-07", interval = "1d")
 
@@ -16,13 +16,13 @@ test_that("Valid parameters return correctly structured data", {
 
 # Test handling of unsupported currencies
 test_that("Unsupported currencies are rejected", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   expect_error(crypto_history(convert = "EUR"),
                "convert must be one of the available currencies")
 })
 
 test_that("Downloaded data matches previously downloaded reference data", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   # Load the expected output
   # saved_output <- crypto_history(
   # convert="USD",

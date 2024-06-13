@@ -1,6 +1,6 @@
 # Test crypto_list function
 test_that("crypto_list returns correctly structured data", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   result <- crypto_list(only_active = TRUE)
   expect_s3_class(result, "tbl_df")
   expect_true(all(c("id", "name", "symbol", "slug", "is_active") %in% names(result)))
@@ -8,7 +8,7 @@ test_that("crypto_list returns correctly structured data", {
 
 # Test exchange_list function
 test_that("exchange_list returns correctly structured data", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   result <- exchange_list(only_active = TRUE)
   expect_s3_class(result, "tbl_df")
   expect_true(all(c("id", "name", "slug", "is_active") %in% names(result)))
@@ -16,7 +16,7 @@ test_that("exchange_list returns correctly structured data", {
 
 # Test fiat_list function
 test_that("fiat_list returns correctly structured data", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   result <- fiat_list()
   expect_s3_class(result, "tbl_df")
   expect_true(all(c("id", "symbol", "name", "sign") %in% names(result)))
@@ -24,7 +24,7 @@ test_that("fiat_list returns correctly structured data", {
 
 # Test handling of different parameters
 test_that("Handling of additional parameters in listing functions", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   crypto_all <- crypto_list(only_active = FALSE, add_untracked = TRUE)
   expect_true(any(crypto_all$is_active == 1))
 

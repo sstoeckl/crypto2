@@ -1,6 +1,6 @@
 # Test with valid inputs and expected outputs
 test_that("Valid parameters return correctly structured data for crypto_info()", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   result <- crypto_info(limit = 2)
 
   # Check data structure
@@ -30,7 +30,7 @@ test_that("Valid parameters return correctly structured data for crypto_info()",
 # })
 # Test with valid inputs and expected outputs
 test_that("Valid parameters return correctly structured data for exchange_info()", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   result <- exchange_info(limit = 2)
 
   # Check data structure
@@ -46,7 +46,7 @@ test_that("Valid parameters return correctly structured data for exchange_info()
 
 # Test downloaded data against earlier downloaded data
 test_that("Downloaded data matches previously downloaded reference data for exchange_info()", {
-  skip_on_cran("This test requires internet access and will not be run on CRAN.")
+  skip_on_cran()
   # ex_info <- exchange_info(limit = 2)
   # saveRDS(ex_info, file = "tests/testthat/test_data/ex_info_reference.rds")
   # Assume you've saved reference data from a previous known good state
