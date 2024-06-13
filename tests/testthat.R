@@ -8,5 +8,5 @@
 
 library(testthat)
 library(crypto2)
-
+Sys.setenv(TZ = "UTC")
 test_check("crypto2")
