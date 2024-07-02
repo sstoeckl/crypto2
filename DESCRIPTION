@@ -1,6 +1,6 @@
 Package: crypto2
 Title: Download Crypto Currency Data from 'CoinMarketCap' without 'API'
-Version: 2.0.99
+Version: 2.0.1
 Date: 2024-06-12
 Authors@R: c(person("Sebastian", "Stoeckl", email = "sebastian.stoeckl@uni.li", role = c("aut","cre"), comment = c(ORCID = "0000-0002-4196-6093", "Package commissioner and maintainer.")),person("Jesse", "Vent", email = "cryptopackage@icloud.com", role = c("ctb"), comment = c("Creator of the crypto package that provided the idea and basis for this package.")))
 Maintainer: Sebastian Stoeckl <sebastian.stoeckl@uni.li>
