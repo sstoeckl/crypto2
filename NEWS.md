@@ -1,5 +1,9 @@
 # crypto2 (development version)
 
+# crypto 2.0.1
+
+Slight change in api call outcome needed a modification in `crypto_info()`.
+
 # crypto 2.0.0
 
 After a major change in the api structure of coinmarketcap.com, the package had to be rewritten. As a result, many functions had to be rewritten, because data was not available any more in a similar format or with similar accuracy. Unfortunately, this will potentially break many users implementations. Here is a detailed list of changes:

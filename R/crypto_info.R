@@ -95,7 +95,7 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 1, sleep 
       out_list <- lout2 <- lout |>  janitor::clean_names()
       out_list[c("quotes","crypto_rating","analysis","earn_list","related_exchanges","holders","urls","related_coins","support_wallet_infos",
                  "wallets","faq_description","tags","statistics","platforms","volume","cex_volume","dex_volume","volume_change_percentage24h",
-                 "watch_count","watch_list_rating","latest_added","launch_price")] <- NULL
+                 "watch_count","watch_list_rating","latest_added","launch_price","audit_infos")] <- NULL
       out_list[sapply(out_list,is.null)] <- NA
       out_list <- out_list %>% tibble::as_tibble()
       # add
