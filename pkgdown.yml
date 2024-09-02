@@ -1,9 +1,8 @@
 pandoc: 3.1.11
-pkgdown: 2.0.9
+pkgdown: 2.1.0
 pkgdown_sha: ~
 articles: {}
-last_built: 2024-07-02T17:08Z
+last_built: 2024-09-02T13:16Z
 urls:
   reference: https://sstoeckl.github.io/crypto2/reference
   article: https://sstoeckl.github.io/crypto2/articles
-

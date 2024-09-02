@@ -5,58 +5,44 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from &lt;https://coinmarketcap.com&gt; via their web-api.">
 <title>Download Crypto Currency Data from CoinMarketCap without API • crypto2</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js" integrity="sha512-7O5pXpc0oCRrxk8RUfDYFgn0nO1t+jLuIOQdOMRp4APB7uZ4vSjspzp5y6YDtDs4VzUSTbWzBFZ/LKJhnyFOKw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Download Crypto Currency Data from CoinMarketCap without API">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Download Crypto Currency Data from CoinMarketCap without API">
+<meta name="description" content="Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from &lt;https://coinmarketcap.com&gt; via their web-api.">
 <meta property="og:description" content="Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from &lt;https://coinmarketcap.com&gt; via their web-api.">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-    
 
-    <nav class="navbar fixed-top navbar-dark navbar-expand-lg bg-primary" data-bs-theme="dark"><div class="container">
-    
+
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+
     <a class="navbar-brand me-2" href="index.html">crypto2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1.99</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.2</small>
 
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item">
-  <a class="nav-link" href="reference/index.html">Reference</a>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="news/index.html">Changelog</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
-<form class="form-inline my-2 my-lg-0" role="search">
-        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="search.json" id="search-input" placeholder="Search for" autocomplete="off">
-</form>
-
-      <ul class="navbar-nav">
-<li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/sstoeckl/crypto2/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/sstoeckl/crypto2/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
-    
+
   </div>
 </nav><div class="container template-home">
 <div class="row">
@@ -102,6 +88,11 @@
 <div class="section level1">
 <h1 id="update">Update<a class="anchor" aria-label="anchor" href="#update"></a>
 </h1>
+<div class="section level2">
+<h2 id="version-202-august-2024">Version 2.0.2 (August 2024)<a class="anchor" aria-label="anchor" href="#version-202-august-2024"></a>
+</h2>
+<p>Slight change in api output broke <code><a href="reference/crypto_info.html">crypto_info()</a></code> (new additional column). Fixed.</p>
+</div>
 <div class="section level2">
 <h2 id="version-201-july-2024">Version 2.0.1 (July 2024)<a class="anchor" aria-label="anchor" href="#version-201-july-2024"></a>
 </h2>
@@ -182,19 +173,19 @@
 <span></span>
 <span><span class="co"># and give the first two lines of information per coin</span></span>
 <span><span class="va">coin_info</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 32</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 34</span></span>
 <span><span class="co">#&gt;      id name     symbol slug     category description   date_added status notice</span></span>
 <span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;         &lt;date&gt;     &lt;chr&gt;  &lt;chr&gt; </span></span>
 <span><span class="co">#&gt; 1     1 Bitcoin  BTC    bitcoin  coin     "## What Is … 2010-07-13 active ""    </span></span>
 <span><span class="co">#&gt; 2     2 Litecoin LTC    litecoin coin     "## What Is … 2013-04-28 active ""    </span></span>
 <span><span class="co">#&gt; 3     3 Namecoin NMC    namecoin coin     "Namecoin (N… 2013-04-28 active ""    </span></span>
-<span><span class="co">#&gt; # ℹ 23 more variables: alert_type &lt;int&gt;, alert_link &lt;chr&gt;,</span></span>
+<span><span class="co">#&gt; # ℹ 25 more variables: alert_type &lt;int&gt;, alert_link &lt;chr&gt;,</span></span>
 <span><span class="co">#&gt; #   latest_update_time &lt;dttm&gt;, watch_list_ranking &lt;int&gt;, date_launched &lt;date&gt;,</span></span>
 <span><span class="co">#&gt; #   is_audited &lt;lgl&gt;, display_tv &lt;int&gt;, is_infinite_max_supply &lt;int&gt;,</span></span>
 <span><span class="co">#&gt; #   tv_coin_symbol &lt;chr&gt;, use_faq &lt;lgl&gt;, holders_flag &lt;lgl&gt;,</span></span>
 <span><span class="co">#&gt; #   ratings_flag &lt;lgl&gt;, analysis_flag &lt;lgl&gt;, socials_flag &lt;lgl&gt;,</span></span>
-<span><span class="co">#&gt; #   has_extra_info_flag &lt;lgl&gt;, upcoming &lt;named list&gt;, tags &lt;list&gt;,</span></span>
-<span><span class="co">#&gt; #   crypto_rating &lt;list&gt;, urls &lt;list&gt;, faq_description &lt;list&gt;, …</span></span></code></pre></div>
+<span><span class="co">#&gt; #   has_extra_info_flag &lt;lgl&gt;, upcoming &lt;named list&gt;, annotation_flag &lt;lgl&gt;,</span></span>
+<span><span class="co">#&gt; #   tags &lt;list&gt;, crypto_rating &lt;list&gt;, urls &lt;list&gt;, faq_description &lt;list&gt;, …</span></span></code></pre></div>
 <p>In a next step we show the logos of the three coins as provided by <a href="https://coinmarketcap.com" class="external-link uri">https://coinmarketcap.com</a>.</p>
 <p><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png" width="5%" height="5%" style="display: block; margin: auto;"><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/2.png" width="5%" height="5%" style="display: block; margin: auto;"><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/3.png" width="5%" height="5%" style="display: block; margin: auto;"></p>
 <p>In addition we show tags provided by <a href="https://coinmarketcap.com" class="external-link uri">https://coinmarketcap.com</a>.</p>
@@ -262,12 +253,12 @@
 <span><span class="co">#&gt; # Groups:   slug [3]</span></span>
 <span><span class="co">#&gt;      id slug     name     symbol timestamp           ref_cur_id ref_cur_name</span></span>
 <span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;  &lt;dttm&gt;              &lt;chr&gt;      &lt;chr&gt;       </span></span>
-<span><span class="co">#&gt; 1     1 bitcoin  Bitcoin  BTC    2021-01-01 01:59:59 2781       USD         </span></span>
-<span><span class="co">#&gt; 2     1 bitcoin  Bitcoin  BTC    2021-01-01 02:59:59 2781       USD         </span></span>
-<span><span class="co">#&gt; 3     2 litecoin Litecoin LTC    2021-01-01 01:59:59 2781       USD         </span></span>
-<span><span class="co">#&gt; 4     2 litecoin Litecoin LTC    2021-01-01 02:59:59 2781       USD         </span></span>
-<span><span class="co">#&gt; 5     3 namecoin Namecoin NMC    2021-01-01 01:59:59 2781       USD         </span></span>
-<span><span class="co">#&gt; 6     3 namecoin Namecoin NMC    2021-01-01 02:59:59 2781       USD         </span></span>
+<span><span class="co">#&gt; 1     1 bitcoin  Bitcoin  BTC    2021-01-01 00:59:59 2781       USD         </span></span>
+<span><span class="co">#&gt; 2     1 bitcoin  Bitcoin  BTC    2021-01-01 01:59:59 2781       USD         </span></span>
+<span><span class="co">#&gt; 3     2 litecoin Litecoin LTC    2021-01-01 00:59:59 2781       USD         </span></span>
+<span><span class="co">#&gt; 4     2 litecoin Litecoin LTC    2021-01-01 01:59:59 2781       USD         </span></span>
+<span><span class="co">#&gt; 5     3 namecoin Namecoin NMC    2021-01-01 00:59:59 2781       USD         </span></span>
+<span><span class="co">#&gt; 6     3 namecoin Namecoin NMC    2021-01-01 01:59:59 2781       USD         </span></span>
 <span><span class="co">#&gt; # ℹ 10 more variables: time_open &lt;dttm&gt;, time_close &lt;dttm&gt;, time_high &lt;dttm&gt;,</span></span>
 <span><span class="co">#&gt; #   time_low &lt;dttm&gt;, open &lt;dbl&gt;, high &lt;dbl&gt;, low &lt;dbl&gt;, close &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   volume &lt;dbl&gt;, market_cap &lt;dbl&gt;</span></span></code></pre></div>
@@ -308,18 +299,18 @@
 <code class="sourceCode R"><span><span class="va">latest_listings</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_listings.html">crypto_listings</a></span><span class="op">(</span>which<span class="op">=</span><span class="st">"latest"</span>, limit<span class="op">=</span><span class="fl">10</span>, quote<span class="op">=</span><span class="cn">TRUE</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">latest_listings</span></span>
 <span><span class="co">#&gt; # A tibble: 5,000 × 30</span></span>
-<span><span class="co">#&gt;       id name        symbol slug   cmc_rank market_pair_count circulating_supply</span></span>
-<span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;     &lt;int&gt;             &lt;int&gt;              &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt;  1     1 Bitcoin     BTC    bitco…        1             11491          19719287 </span></span>
-<span><span class="co">#&gt;  2     2 Litecoin    LTC    litec…       19              1206          74705744.</span></span>
-<span><span class="co">#&gt;  3     3 Namecoin    NMC    namec…     1214                 7          14736400 </span></span>
-<span><span class="co">#&gt;  4     5 Peercoin    PPC    peerc…      926                41          28978051.</span></span>
-<span><span class="co">#&gt;  5     8 Feathercoin FTC    feath…     1537                12         236600238 </span></span>
-<span><span class="co">#&gt;  6    25 Goldcoin    GLC    goldc…     2004                12          43681422.</span></span>
-<span><span class="co">#&gt;  7    35 Phoenixcoin PXC    phoen…     1824                 4          91008781.</span></span>
-<span><span class="co">#&gt;  8    42 Primecoin   XPM    prime…     1611                 3          50016494.</span></span>
-<span><span class="co">#&gt;  9    45 CasinoCoin  CSC    casin…     3969                 9                 0 </span></span>
-<span><span class="co">#&gt; 10    52 XRP         XRP    xrp           7              1346       55688327582 </span></span>
+<span><span class="co">#&gt;       id name         symbol slug  cmc_rank market_pair_count circulating_supply</span></span>
+<span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;        &lt;chr&gt;  &lt;chr&gt;    &lt;int&gt;             &lt;int&gt;              &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1     1 Bitcoin      BTC    bitc…        1             11665          19748503 </span></span>
+<span><span class="co">#&gt;  2     2 Litecoin     LTC    lite…       19              1226          74929219.</span></span>
+<span><span class="co">#&gt;  3     3 Namecoin     NMC    name…     1101                 7          14736400 </span></span>
+<span><span class="co">#&gt;  4     5 Peercoin     PPC    peer…      960                41          29110837.</span></span>
+<span><span class="co">#&gt;  5     8 Feathercoin  FTC    feat…     1696                12         236600238 </span></span>
+<span><span class="co">#&gt;  6    16 WorldCoin W… WDC    worl…     3516                 5                 0 </span></span>
+<span><span class="co">#&gt;  7    18 Digitalcoin  DGC    digi…     4616                 2                 0 </span></span>
+<span><span class="co">#&gt;  8    25 Goldcoin     GLC    gold…     1949                12          43681422.</span></span>
+<span><span class="co">#&gt;  9    35 Phoenixcoin  PXC    phoe…     1815                 4          91379993.</span></span>
+<span><span class="co">#&gt; 10    42 Primecoin    XPM    prim…     1630                 3          50753528.</span></span>
 <span><span class="co">#&gt; # ℹ 4,990 more rows</span></span>
 <span><span class="co">#&gt; # ℹ 23 more variables: self_reported_circulating_supply &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   total_supply &lt;dbl&gt;, max_supply &lt;dbl&gt;, is_active &lt;int&gt;, last_updated &lt;date&gt;,</span></span>
@@ -335,7 +326,7 @@
 <span><span class="co">#&gt; ❯ Processing historical crypto data</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="va">all_quotes</span></span>
-<span><span class="co">#&gt; # A tibble: 4,081 × 17</span></span>
+<span><span class="co">#&gt; # A tibble: 4,143 × 17</span></span>
 <span><span class="co">#&gt;    timestamp  btc_dominance eth_dominance         score USD_total_market_cap</span></span>
 <span><span class="co">#&gt;    &lt;date&gt;             &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;                &lt;dbl&gt;</span></span>
 <span><span class="co">#&gt;  1 2013-04-29          94.2             0 1367193600000           1583440000</span></span>
@@ -348,7 +339,7 @@
 <span><span class="co">#&gt;  8 2013-05-06          94.1             0 1367798400000           1370880000</span></span>
 <span><span class="co">#&gt;  9 2013-05-07          94.4             0 1367884800000           1313900032</span></span>
 <span><span class="co">#&gt; 10 2013-05-08          94.4             0 1367971200000           1320509952</span></span>
-<span><span class="co">#&gt; # ℹ 4,071 more rows</span></span>
+<span><span class="co">#&gt; # ℹ 4,133 more rows</span></span>
 <span><span class="co">#&gt; # ℹ 12 more variables: USD_total_volume24h &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   USD_total_volume24h_reported &lt;dbl&gt;, USD_altcoin_volume24h &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   USD_altcoin_volume24h_reported &lt;dbl&gt;, USD_altcoin_market_cap &lt;dbl&gt;,</span></span>
@@ -368,20 +359,20 @@
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exchanges</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exchange_list.html">exchange_list</a></span><span class="op">(</span>only_active<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">exchanges</span></span>
-<span><span class="co">#&gt; # A tibble: 787 × 6</span></span>
+<span><span class="co">#&gt; # A tibble: 790 × 6</span></span>
 <span><span class="co">#&gt;       id name         slug  is_active first_historical_data last_historical_data</span></span>
 <span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;        &lt;chr&gt;     &lt;int&gt; &lt;date&gt;                &lt;date&gt;              </span></span>
-<span><span class="co">#&gt;  1    16 Poloniex     polo…         1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt;  2    21 BTCC         btcc          1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt;  3    24 Kraken       krak…         1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt;  4    34 Bittylicious bitt…         1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt;  5    36 CEX.IO       cex-…         1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt;  6    37 Bitfinex     bitf…         1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt;  7    42 HitBTC       hitb…         1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt;  8    50 EXMO         exmo          1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt;  9    61 Okcoin       okco…         1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt; 10    68 Indodax      indo…         1 2018-04-26            2024-07-02          </span></span>
-<span><span class="co">#&gt; # ℹ 777 more rows</span></span></code></pre></div>
+<span><span class="co">#&gt;  1    16 Poloniex     polo…         1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt;  2    21 BTCC         btcc          1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt;  3    24 Kraken       krak…         1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt;  4    34 Bittylicious bitt…         1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt;  5    36 CEX.IO       cex-…         1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt;  6    37 Bitfinex     bitf…         1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt;  7    42 HitBTC       hitb…         1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt;  8    50 EXMO         exmo          1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt;  9    61 Okcoin       okco…         1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt; 10    68 Indodax      indo…         1 2018-04-26            2024-09-02          </span></span>
+<span><span class="co">#&gt; # ℹ 780 more rows</span></span></code></pre></div>
 <p>and then download information on “binance” and “bittrex”:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exchange_info.html">exchange_info</a></span><span class="op">(</span><span class="va">exchanges</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">slug</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'binance'</span>,<span class="st">'kraken'</span><span class="op">)</span><span class="op">)</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
@@ -509,15 +500,15 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
     </footer>
 </div>
 
-  
 
-  
+
+
 
   </body>
 </html>
