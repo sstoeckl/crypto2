@@ -46,6 +46,10 @@ It allows the user to retrieve
 
 # Update
 
+## Version 2.0.2 (August 2024)
+
+Slight change in api output broke `crypto_info()` (new additional column). Fixed.
+
 ## Version 2.0.1 (July 2024)
 
 Slight change in api output broke `crypto_info()`. Fixed.

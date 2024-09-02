@@ -1,5 +1,9 @@
 # crypto2 (development version)
 
+# crypto 2.0.2
+
+Slight change in api call outcome needed another modification in `crypto_info()`.
+
 # crypto 2.0.1
 
 Slight change in api call outcome needed a modification in `crypto_info()`.
