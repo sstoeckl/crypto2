@@ -16,13 +16,13 @@ test_that("Valid parameters return correctly structured data for crypto_info()",
 
 # Test downloaded data against earlier downloaded data
 test_that("Downloaded data matches previously downloaded reference data for crypto_info()", {
-  # coin_info <- crypto_info(limit = 2)
+  # coin_info <- crypto_info(limit = 2) |>  select(id,name,symbol,slug,category,date_added)
   # saveRDS(coin_info, "tests/testthat/test_data/crypto_info_reference.rds")
   # Assume you've saved reference data from a previous known good state
   expected_data <- readRDS("test_data/crypto_info_reference.rds")
 
   # Get new data using the same parameters as when the reference was created
-  new_data <- crypto_info(limit = 2)
+  new_data <- crypto_info(limit = 2)  |>  select(id,name,symbol,slug,category,date_added)
 
   # Compare the new data to the expected data
   expect_equal(new_data, expected_data, tolerance = 1e-8,
