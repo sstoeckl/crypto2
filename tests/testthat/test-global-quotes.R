@@ -9,6 +9,7 @@ test_that("Valid inputs return correct data structure", {
 
 # Test response to invalid 'convert' parameters
 test_that("Invalid 'convert' parameters are handled", {
+  skip_on_cran()
   expect_error(crypto_global_quotes(which="latest", convert="INVALID_CURRENCY"), "convert must be one of the available currencies")
 })
 
