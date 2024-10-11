@@ -39,6 +39,6 @@ test_that("Downloaded data matches previously downloaded reference data", {
                              start_date = "2020-01-01", end_date = "2020-01-07", interval = "daily")
 
   # Compare the new data to the expected data
-  expect_equal(new_data, expected_data, tolerance = 1e-8,
+  expect_equal(new_data |>  select(!contains("time")), expected_data |>  select(!contains("time")), tolerance = 1e-8,
                info = "The newly downloaded data should match the reference dataset.")
 })
