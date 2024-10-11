@@ -16,6 +16,7 @@ test_that("Valid parameters return correctly structured data for crypto_info()",
 
 # Test downloaded data against earlier downloaded data
 test_that("Downloaded data matches previously downloaded reference data for crypto_info()", {
+  skip_on_cran()
   # coin_info <- crypto_info(limit = 2) |>  select(id,name,symbol,slug,category,date_added)
   # saveRDS(coin_info, "tests/testthat/test_data/crypto_info_reference.rds")
   # Assume you've saved reference data from a previous known good state
