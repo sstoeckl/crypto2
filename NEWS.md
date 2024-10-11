@@ -1,5 +1,9 @@
 # crypto2 (development version)
 
+# crypto 2.0.3
+
+Slight change in api call outcome needed another modification in `crypto_info()`. Also corrected one failing tests to not check time zones.
+
 # crypto 2.0.2
 
 Slight change in api call outcome needed another modification in `crypto_info()`.
