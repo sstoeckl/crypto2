@@ -49,7 +49,7 @@ test_that("Valid parameters return correctly structured data for exchange_info()
 test_that("Downloaded data matches previously downloaded reference data for exchange_info()", {
   skip_on_cran()
   # ex_info <- exchange_info(limit = 2)
-  # saveRDS(ex_info, file = "tests/testthat/test_data/ex_info_reference.rds")
+  # saveRDS(ex_info, file = "test_data/ex_info_reference.rds")
   # Assume you've saved reference data from a previous known good state
   expected_data <- readRDS("test_data/ex_info_reference.rds")
 
