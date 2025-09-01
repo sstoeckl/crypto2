@@ -28,9 +28,11 @@ test_that("Error handling for invalid parameters", {
 test_that("Consistency check against reference data", {
   skip_on_cran()
   # reference_data <- crypto_listings(which="historical", start_date="20240101", end_date="20240107", quote=TRUE,limit=2)
-  # saveRDS(reference_data, "tests/testthat/test_data/crypto_listings_reference.rds")
+  expected_dir <- "test_data"
+  # expected_dir <- paste0(getwd(),"/tests/testthat/test_data")
+  # saveRDS(reference_data, paste0(expected_dir, "/crypto_listings_reference.rds"))
   #
-  reference_data <- readRDS("test_data/crypto_listings_reference.rds")
+  reference_data <- readRDS(paste0(expected_dir, "/crypto_listings_reference.rds"))
   test_data <- crypto_listings(which="historical", start_date="20240101", end_date="20240107", quote=TRUE,limit=2)
 
   expect_equal(test_data, reference_data)

@@ -26,8 +26,8 @@ test_that("API data matches expected for crypto_history()", {
   skip_on_cran()
   urls <- c(construct_url("cryptocurrency/historical?id=1&convertId=2781&timeStart=1577836800&timeEnd=1578355200&interval=daily",v="3.1"),
             construct_url("cryptocurrency/historical?id=1&convertId=2781&timeStart=1577750400&timeEnd=1578005999&interval=1h",v="3.1"))
-  #expected_dir <- "test_data"
-  expected_dir <- paste0(getwd(),"/tests/testthat/test_data")
+  expected_dir <- "test_data"
+  # expected_dir <- paste0(getwd(),"/tests/testthat/test_data")
   # Optionally download and save the latest JSON for initial setup or update
   #download_and_save_json(urls, expected_dir)
 
@@ -49,7 +49,7 @@ test_that("API data matches expected for crypto_info()", {
   skip_on_cran()
   urls <- c(construct_url("cryptocurrency/detail?id=1",v="3"))
   expected_dir <- "test_data"
-  #expected_dir <- paste0(getwd(),"/tests/testthat/test_data")
+  # expected_dir <- paste0(getwd(),"/tests/testthat/test_data")
   # Optionally download and save the latest JSON for initial setup or update
   #download_and_save_json(urls, expected_dir)
 
