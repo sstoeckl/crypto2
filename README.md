@@ -205,19 +205,19 @@ coin_info <- crypto_info(coins, limit=3, finalWait=FALSE)
 
 # and give the first two lines of information per coin
 coin_info
-#> # A tibble: 3 × 34
-#>      id name     symbol slug     category description   date_added status notice
-#>   <int> <chr>    <chr>  <chr>    <chr>    <chr>         <date>     <chr>  <chr> 
-#> 1     1 Bitcoin  BTC    bitcoin  coin     "## What Is … 2010-07-13 active ""    
-#> 2     2 Litecoin LTC    litecoin coin     "## What Is … 2013-04-28 active ""    
-#> 3     3 Namecoin NMC    namecoin coin     "Namecoin (N… 2013-04-28 active ""    
-#> # ℹ 25 more variables: alert_type <int>, alert_link <chr>,
-#> #   latest_update_time <dttm>, watch_list_ranking <int>, date_launched <date>,
-#> #   is_audited <lgl>, display_tv <int>, is_infinite_max_supply <int>,
-#> #   tv_coin_symbol <chr>, use_faq <lgl>, holders_flag <lgl>,
-#> #   ratings_flag <lgl>, analysis_flag <lgl>, socials_flag <lgl>,
-#> #   has_extra_info_flag <lgl>, upcoming <named list>, annotation_flag <lgl>,
-#> #   tags <list>, crypto_rating <list>, urls <list>, faq_description <list>, …
+#> # A tibble: 3 × 40
+#>      id name     symbol slug   category description date_added actual_time_start
+#>   <int> <chr>    <chr>  <chr>  <chr>    <chr>       <date>     <chr>            
+#> 1     1 Bitcoin  BTC    bitco… coin     "## What I… 2010-07-13 2010-07-13T00:05…
+#> 2     2 Litecoin LTC    litec… coin     "## What I… 2013-04-28 2013-04-28T18:45…
+#> 3     3 Namecoin NMC    namec… coin     "Namecoin … 2013-04-28 2013-04-28T18:45…
+#> # ℹ 32 more variables: status <chr>, is_bn <int>, notice <chr>,
+#> #   alert_type <int>, alert_link <chr>, latest_update_time <dttm>,
+#> #   watch_list_ranking <int>, date_launched <date>, is_audited <lgl>,
+#> #   display_tv <int>, is_infinite_max_supply <int>, tv_coin_symbol <chr>,
+#> #   cdp_total_holder <chr>, holder_historical_flag <lgl>,
+#> #   holder_list_flag <lgl>, holders_flag <lgl>, ratings_flag <lgl>,
+#> #   analysis_flag <lgl>, socials_flag <lgl>, …
 ```
 
 In a next step we show the logos of the three coins as provided by
@@ -231,14 +231,14 @@ In addition we show tags provided by <https://coinmarketcap.com>.
 coin_info %>% select(slug,tags) %>% tidyr::unnest(tags) %>% group_by(slug) %>% slice(1,n())
 #> # A tibble: 6 × 2
 #> # Groups:   slug [3]
-#>   slug     tags$slug             $name                    $category
-#>   <chr>    <chr>                 <chr>                    <chr>    
-#> 1 bitcoin  mineable              "Mineable"               OTHERS   
-#> 2 bitcoin  ftx-bankruptcy-estate "FTX Bankruptcy Estate " CATEGORY 
-#> 3 litecoin mineable              "Mineable"               OTHERS   
-#> 4 litecoin medium-of-exchange    "Medium of Exchange"     INDUSTRY 
-#> 5 namecoin mineable              "Mineable"               OTHERS   
-#> 6 namecoin platform              "Platform"               CATEGORY
+#>   slug     tags$slug       $name           $category $status $priority
+#>   <chr>    <chr>           <chr>           <chr>       <int>     <int>
+#> 1 bitcoin  mineable        Mineable        OTHERS          1         5
+#> 2 bitcoin  binance-listing Binance Listing CATEGORY        0         5
+#> 3 litecoin mineable        Mineable        OTHERS          1         5
+#> 4 litecoin binance-listing Binance Listing CATEGORY        0         5
+#> 5 namecoin mineable        Mineable        OTHERS          1         5
+#> 6 namecoin platform        Platform        CATEGORY        1         5
 ```
 
 Additionally: Here are some urls pertaining to these coins as provided
@@ -301,12 +301,12 @@ coin_hist_m %>% group_by(slug) %>% slice(1:2)
 #> # Groups:   slug [3]
 #>      id slug     name     symbol timestamp           ref_cur_id ref_cur_name
 #>   <int> <chr>    <chr>    <chr>  <dttm>              <chr>      <chr>       
-#> 1     1 bitcoin  Bitcoin  BTC    2021-01-01 00:59:59 2781       USD         
-#> 2     1 bitcoin  Bitcoin  BTC    2021-01-01 01:59:59 2781       USD         
-#> 3     2 litecoin Litecoin LTC    2021-01-01 00:59:59 2781       USD         
-#> 4     2 litecoin Litecoin LTC    2021-01-01 01:59:59 2781       USD         
-#> 5     3 namecoin Namecoin NMC    2021-01-01 00:59:59 2781       USD         
-#> 6     3 namecoin Namecoin NMC    2021-01-01 01:59:59 2781       USD         
+#> 1     1 bitcoin  Bitcoin  BTC    2021-01-01 01:59:59 2781       USD         
+#> 2     1 bitcoin  Bitcoin  BTC    2021-01-01 02:59:59 2781       USD         
+#> 3     2 litecoin Litecoin LTC    2021-01-01 01:59:59 2781       USD         
+#> 4     2 litecoin Litecoin LTC    2021-01-01 02:59:59 2781       USD         
+#> 5     3 namecoin Namecoin NMC    2021-01-01 01:59:59 2781       USD         
+#> 6     3 namecoin Namecoin NMC    2021-01-01 02:59:59 2781       USD         
 #> # ℹ 10 more variables: time_open <dttm>, time_close <dttm>, time_high <dttm>,
 #> #   time_low <dttm>, open <dbl>, high <dbl>, low <dbl>, close <dbl>,
 #> #   volume <dbl>, market_cap <dbl>
@@ -361,18 +361,18 @@ download historical listings and listing information (add
 latest_listings <- crypto_listings(which="latest", limit=10, quote=TRUE, finalWait=FALSE)
 latest_listings
 #> # A tibble: 5,000 × 30
-#>       id name         symbol slug  cmc_rank market_pair_count circulating_supply
-#>    <int> <chr>        <chr>  <chr>    <int>             <int>              <dbl>
-#>  1     1 Bitcoin      BTC    bitc…        1             11665          19748503 
-#>  2     2 Litecoin     LTC    lite…       19              1226          74929219.
-#>  3     3 Namecoin     NMC    name…     1101                 7          14736400 
-#>  4     5 Peercoin     PPC    peer…      960                41          29110837.
-#>  5     8 Feathercoin  FTC    feat…     1696                12         236600238 
-#>  6    16 WorldCoin W… WDC    worl…     3516                 5                 0 
-#>  7    18 Digitalcoin  DGC    digi…     4616                 2                 0 
-#>  8    25 Goldcoin     GLC    gold…     1949                12          43681422.
-#>  9    35 Phoenixcoin  PXC    phoe…     1815                 4          91379993.
-#> 10    42 Primecoin    XPM    prim…     1630                 3          50753528.
+#>       id name        symbol slug   cmc_rank market_pair_count circulating_supply
+#>    <int> <chr>       <chr>  <chr>     <int>             <int>              <dbl>
+#>  1     1 Bitcoin     BTC    bitco…        1             12329          19914834 
+#>  2     2 Litecoin    LTC    litec…       21              1420          76252358.
+#>  3     3 Namecoin    NMC    namec…      857                 7          14736400 
+#>  4     5 Peercoin    PPC    peerc…     1176                42          29754638.
+#>  5     8 Feathercoin FTC    feath…     2215                12         236600238 
+#>  6    22 Luckycoin   LKY    lucky…     1712                10          12070868 
+#>  7    25 Goldcoin    GLC    goldc…     2591                12          43681422.
+#>  8    26 Junkcoin    JKC    junkc…     2212                 4          17843261 
+#>  9    35 Phoenixcoin PXC    phoen…     2039                 4          92641800.
+#> 10    42 Primecoin   XPM    prime…     1889                 6          54996085.
 #> # ℹ 4,990 more rows
 #> # ℹ 23 more variables: self_reported_circulating_supply <dbl>,
 #> #   total_supply <dbl>, max_supply <dbl>, is_active <int>, last_updated <date>,
@@ -392,7 +392,7 @@ all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
 #> ❯ Processing historical crypto data
 #> 
 all_quotes
-#> # A tibble: 4,143 × 17
+#> # A tibble: 4,507 × 18
 #>    timestamp  btc_dominance eth_dominance         score USD_total_market_cap
 #>    <date>             <dbl>         <dbl>         <dbl>                <dbl>
 #>  1 2013-04-29          94.2             0 1367193600000           1583440000
@@ -405,13 +405,13 @@ all_quotes
 #>  8 2013-05-06          94.1             0 1367798400000           1370880000
 #>  9 2013-05-07          94.4             0 1367884800000           1313900032
 #> 10 2013-05-08          94.4             0 1367971200000           1320509952
-#> # ℹ 4,133 more rows
-#> # ℹ 12 more variables: USD_total_volume24h <dbl>,
+#> # ℹ 4,497 more rows
+#> # ℹ 13 more variables: USD_total_volume24h <dbl>,
 #> #   USD_total_volume24h_reported <dbl>, USD_altcoin_volume24h <dbl>,
 #> #   USD_altcoin_volume24h_reported <dbl>, USD_altcoin_market_cap <dbl>,
 #> #   USD_original_score <chr>, active_cryptocurrencies <int>,
 #> #   active_market_pairs <int>, active_exchanges <int>,
-#> #   total_cryptocurrencies <int>, total_exchanges <int>, origin_id <chr>
+#> #   total_cryptocurrencies <int>, total_exchanges <int>, origin_id <chr>, …
 ```
 
 We can use those quotes to plot information on the aggregate market
@@ -434,20 +434,20 @@ a list of active/inactive/untracked exchanges using `exchange_list()`:
 ``` r
 exchanges <- exchange_list(only_active=TRUE)
 exchanges
-#> # A tibble: 790 × 6
+#> # A tibble: 845 × 6
 #>       id name         slug  is_active first_historical_data last_historical_data
 #>    <int> <chr>        <chr>     <int> <date>                <date>              
-#>  1    16 Poloniex     polo…         1 2018-04-26            2024-09-02          
-#>  2    21 BTCC         btcc          1 2018-04-26            2024-09-02          
-#>  3    24 Kraken       krak…         1 2018-04-26            2024-09-02          
-#>  4    34 Bittylicious bitt…         1 2018-04-26            2024-09-02          
-#>  5    36 CEX.IO       cex-…         1 2018-04-26            2024-09-02          
-#>  6    37 Bitfinex     bitf…         1 2018-04-26            2024-09-02          
-#>  7    42 HitBTC       hitb…         1 2018-04-26            2024-09-02          
-#>  8    50 EXMO         exmo          1 2018-04-26            2024-09-02          
-#>  9    61 Okcoin       okco…         1 2018-04-26            2024-09-02          
-#> 10    68 Indodax      indo…         1 2018-04-26            2024-09-02          
-#> # ℹ 780 more rows
+#>  1    16 Poloniex     polo…         1 2018-04-26            2025-09-01          
+#>  2    21 BTCC         btcc          1 2018-04-26            2025-09-01          
+#>  3    24 Kraken       krak…         1 2018-04-26            2025-09-01          
+#>  4    34 Bittylicious bitt…         1 2018-04-26            2025-09-01          
+#>  5    36 CEX.IO       cex-…         1 2018-04-26            2025-09-01          
+#>  6    37 Bitfinex     bitf…         1 2018-04-26            2025-09-01          
+#>  7    42 HitBTC       hitb…         1 2018-04-26            2025-09-01          
+#>  8    50 EXMO         exmo          1 2018-04-26            2025-09-01          
+#>  9    61 Okcoin       okco…         1 2018-04-26            2025-06-20          
+#> 10    68 Indodax      indo…         1 2018-04-26            2025-09-01          
+#> # ℹ 835 more rows
 ```
 
 and then download information on “binance” and “bittrex”:
@@ -459,14 +459,15 @@ ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')), 
 #> ❯ Processing exchange info
 #> 
 ex_info
-#> # A tibble: 2 × 19
+#> # A tibble: 2 × 21
 #>      id name    slug    logo   description date_launched notice is_hidden status
 #>   <int> <chr>   <chr>   <chr>  <chr>       <date>        <chr>      <int> <chr> 
 #> 1    24 Kraken  kraken  https… "## What I… 2011-07-28    ""             0 active
 #> 2   270 Binance binance https… "## What I… 2017-07-14    ""             0 active
-#> # ℹ 10 more variables: type <chr>, maker_fee <dbl>, taker_fee <dbl>,
+#> # ℹ 12 more variables: type <chr>, maker_fee <dbl>, taker_fee <dbl>,
 #> #   platform_id <int>, dex_status <int>, wallet_source_status <int>,
-#> #   tags <lgl>, countries <lgl>, fiats <list>, urls <list>
+#> #   alert_type <int>, alert_link <chr>, tags <lgl>, countries <lgl>,
+#> #   fiats <list>, urls <list>
 ```
 
 Then we can access information on the fee structure,
@@ -484,27 +485,20 @@ or the fiat currencies allowed:
 
 ``` r
 ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
-#> # A tibble: 18 × 2
-#>    slug    fiats 
-#>    <chr>   <chr> 
-#>  1 kraken  "USD" 
-#>  2 kraken  "EUR" 
-#>  3 kraken  "GBP" 
-#>  4 kraken  "CAD" 
-#>  5 kraken  "JPY" 
-#>  6 kraken  "CHF" 
-#>  7 kraken  "AUD" 
-#>  8 binance "EUR" 
-#>  9 binance " GBP"
-#> 10 binance " BRL"
-#> 11 binance " AUD"
-#> 12 binance " UAH"
-#> 13 binance " RUB"
-#> 14 binance " TRY"
-#> 15 binance " ZAR"
-#> 16 binance " PLN"
-#> 17 binance " NGN"
-#> 18 binance " RON"
+#> # A tibble: 95 × 2
+#>    slug    fiats
+#>    <chr>   <chr>
+#>  1 kraken  USD  
+#>  2 kraken  EUR  
+#>  3 kraken  GBP  
+#>  4 kraken  CHF  
+#>  5 kraken  AUD  
+#>  6 kraken  CAD  
+#>  7 binance ARS  
+#>  8 binance AUD  
+#>  9 binance BRL  
+#> 10 binance CHF  
+#> # ℹ 85 more rows
 ```
 
 ### Author/License
