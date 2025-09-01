@@ -48,8 +48,8 @@ test_that("API data matches expected for crypto_history()", {
 test_that("API data matches expected for crypto_info()", {
   skip_on_cran()
   urls <- c(construct_url("cryptocurrency/detail?id=1",v="3"))
-  expected_dir <- "test_data"
-  # expected_dir <- paste0(getwd(),"/tests/testthat/test_data")
+  # expected_dir <- "test_data"
+  expected_dir <- paste0(getwd(),"/tests/testthat/test_data")
   # Optionally download and save the latest JSON for initial setup or update
   #download_and_save_json(urls, expected_dir)
 
