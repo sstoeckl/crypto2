@@ -67,7 +67,7 @@ It allows the user to retrieve
 
 # Update
 
-## Version 2.0.2 (August 2024)
+## Version 2.0.2/2.0.3/2.0.4/2.0.5 (September 2025)
 
 Slight change in api output broke `crypto_info()` (new additional
 column). Fixed.
@@ -211,11 +211,11 @@ coin_info
 #> 1     1 Bitcoin  BTC    bitco… coin     "## What I… 2010-07-13 2010-07-13T00:05…
 #> 2     2 Litecoin LTC    litec… coin     "## What I… 2013-04-28 2013-04-28T18:45…
 #> 3     3 Namecoin NMC    namec… coin     "Namecoin … 2013-04-28 2013-04-28T18:45…
-#> # ℹ 32 more variables: status <chr>, is_bn <int>, notice <chr>,
-#> #   alert_type <int>, alert_link <chr>, latest_update_time <dttm>,
-#> #   watch_list_ranking <int>, date_launched <date>, is_audited <lgl>,
-#> #   display_tv <int>, is_infinite_max_supply <int>, tv_coin_symbol <chr>,
-#> #   cdp_total_holder <chr>, holder_historical_flag <lgl>,
+#> # ℹ 32 more variables: status <chr>, is_bn <int>, sub_status <chr>,
+#> #   notice <chr>, alert_type <int>, alert_link <chr>,
+#> #   latest_update_time <dttm>, watch_list_ranking <int>, date_launched <date>,
+#> #   is_audited <lgl>, display_tv <int>, is_infinite_max_supply <int>,
+#> #   tv_coin_symbol <chr>, cdp_total_holder <chr>, holder_historical_flag <lgl>,
 #> #   holder_list_flag <lgl>, holders_flag <lgl>, ratings_flag <lgl>,
 #> #   analysis_flag <lgl>, socials_flag <lgl>, …
 ```
@@ -363,16 +363,16 @@ latest_listings
 #> # A tibble: 5,000 × 30
 #>       id name        symbol slug   cmc_rank market_pair_count circulating_supply
 #>    <int> <chr>       <chr>  <chr>     <int>             <int>              <dbl>
-#>  1     1 Bitcoin     BTC    bitco…        1             12329          19914834 
-#>  2     2 Litecoin    LTC    litec…       21              1420          76252358.
-#>  3     3 Namecoin    NMC    namec…      857                 7          14736400 
-#>  4     5 Peercoin    PPC    peerc…     1176                42          29754638.
-#>  5     8 Feathercoin FTC    feath…     2215                12         236600238 
-#>  6    22 Luckycoin   LKY    lucky…     1712                10          12070868 
-#>  7    25 Goldcoin    GLC    goldc…     2591                12          43681422.
-#>  8    26 Junkcoin    JKC    junkc…     2212                 4          17843261 
-#>  9    35 Phoenixcoin PXC    phoen…     2039                 4          92641800.
-#> 10    42 Primecoin   XPM    prime…     1889                 6          54996085.
+#>  1     1 Bitcoin     BTC    bitco…        1             12347          19919068 
+#>  2     2 Litecoin    LTC    litec…       20              1425          76284496.
+#>  3     3 Namecoin    NMC    namec…      905                 7          14736400 
+#>  4     5 Peercoin    PPC    peerc…     1198                42          29772473.
+#>  5     8 Feathercoin FTC    feath…     2435                12         236600238 
+#>  6    22 Luckycoin   LKY    lucky…     1720                10          12070868 
+#>  7    25 Goldcoin    GLC    goldc…     2699                12          43681422.
+#>  8    26 Junkcoin    JKC    junkc…     2267                 4          17843261 
+#>  9    35 Phoenixcoin PXC    phoen…     2071                 4          92674784 
+#> 10    42 Primecoin   XPM    prime…     1931                 6          54996094.
 #> # ℹ 4,990 more rows
 #> # ℹ 23 more variables: self_reported_circulating_supply <dbl>,
 #> #   total_supply <dbl>, max_supply <dbl>, is_active <int>, last_updated <date>,
@@ -392,7 +392,7 @@ all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
 #> ❯ Processing historical crypto data
 #> 
 all_quotes
-#> # A tibble: 4,507 × 18
+#> # A tibble: 4,516 × 18
 #>    timestamp  btc_dominance eth_dominance         score USD_total_market_cap
 #>    <date>             <dbl>         <dbl>         <dbl>                <dbl>
 #>  1 2013-04-29          94.2             0 1367193600000           1583440000
@@ -405,7 +405,7 @@ all_quotes
 #>  8 2013-05-06          94.1             0 1367798400000           1370880000
 #>  9 2013-05-07          94.4             0 1367884800000           1313900032
 #> 10 2013-05-08          94.4             0 1367971200000           1320509952
-#> # ℹ 4,497 more rows
+#> # ℹ 4,506 more rows
 #> # ℹ 13 more variables: USD_total_volume24h <dbl>,
 #> #   USD_total_volume24h_reported <dbl>, USD_altcoin_volume24h <dbl>,
 #> #   USD_altcoin_volume24h_reported <dbl>, USD_altcoin_market_cap <dbl>,
@@ -434,20 +434,20 @@ a list of active/inactive/untracked exchanges using `exchange_list()`:
 ``` r
 exchanges <- exchange_list(only_active=TRUE)
 exchanges
-#> # A tibble: 845 × 6
+#> # A tibble: 848 × 6
 #>       id name         slug  is_active first_historical_data last_historical_data
 #>    <int> <chr>        <chr>     <int> <date>                <date>              
-#>  1    16 Poloniex     polo…         1 2018-04-26            2025-09-01          
-#>  2    21 BTCC         btcc          1 2018-04-26            2025-09-01          
-#>  3    24 Kraken       krak…         1 2018-04-26            2025-09-01          
-#>  4    34 Bittylicious bitt…         1 2018-04-26            2025-09-01          
-#>  5    36 CEX.IO       cex-…         1 2018-04-26            2025-09-01          
-#>  6    37 Bitfinex     bitf…         1 2018-04-26            2025-09-01          
-#>  7    42 HitBTC       hitb…         1 2018-04-26            2025-09-01          
-#>  8    50 EXMO         exmo          1 2018-04-26            2025-09-01          
+#>  1    16 Poloniex     polo…         1 2018-04-26            2025-09-10          
+#>  2    21 BTCC         btcc          1 2018-04-26            2025-09-10          
+#>  3    24 Kraken       krak…         1 2018-04-26            2025-09-10          
+#>  4    34 Bittylicious bitt…         1 2018-04-26            2025-09-10          
+#>  5    36 CEX.IO       cex-…         1 2018-04-26            2025-09-10          
+#>  6    37 Bitfinex     bitf…         1 2018-04-26            2025-09-10          
+#>  7    42 HitBTC       hitb…         1 2018-04-26            2025-09-10          
+#>  8    50 EXMO         exmo          1 2018-04-26            2025-09-10          
 #>  9    61 Okcoin       okco…         1 2018-04-26            2025-06-20          
-#> 10    68 Indodax      indo…         1 2018-04-26            2025-09-01          
-#> # ℹ 835 more rows
+#> 10    68 Indodax      indo…         1 2018-04-26            2025-09-10          
+#> # ℹ 838 more rows
 ```
 
 and then download information on “binance” and “bittrex”:
@@ -504,7 +504,8 @@ ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
 ### Author/License
 
 - **Sebastian Stöckl** - Package Creator, Modifier & Maintainer -
-  [sstoeckl on github](https://github.com/sstoeckl)
+  [sstoeckl on github](https://github.com/sstoeckl) and [academic
+  website](https://www.sebastianstoeckl.com)
 
 This project is licensed under the MIT License - see the \<license.md\>
 file for details\</license.md\>
