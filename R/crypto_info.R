@@ -235,17 +235,25 @@ exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 1, 
     if (length(lout)==0){
       cat("\nThis row of the exchange vector does not have info available! Cont to next row.\n")
     } else {
-      out_list <- lout2 <- lout |>  janitor::clean_names()
-      out_list[c("tags","quote","countries","por_switch","urls","fiats","net_worth_usd")] <- NULL
-      out_list[sapply(out_list,is.null)] <- NA
+      lout2 <- lout |> janitor::clean_names()
+      # Allowlist: only retain known scalar columns that are present in the response.
+      # This makes the function robust to CMC adding/removing/renaming columns without
+      # requiring a matching denylist update.
+      scalar_cols <- c("id", "name", "slug", "description", "notice", "logo", "type",
+                       "date_launched", "is_hidden", "is_redistributable",
+                       "maker_fee", "taker_fee", "platform_id",
+                       "dex_status", "wallet_source_status", "status")
+      keep <- intersect(scalar_cols, names(lout2)[!sapply(lout2, is.list)])
+      out_list <- lout2[keep]
+      out_list[sapply(out_list, is.null)] <- NA
       out_list <- out_list %>% tibble::as_tibble()
-      # add
-      #out_list$status <- c(out$status %>% purrr::flatten() %>% as_tibble() %>% mutate(timestamp=as.POSIXlt(timestamp,format="%Y-%m-%dT%H:%M:%S")) %>% dplyr::pull(timestamp))
-      if(!length(lout2$tags)==0) {out_list$tags <- dplyr::pull(tibble(tags=lout2$`tags`) %>% tidyr::nest(tags=everything()))} else {out_list$tags <- NA}
-      if(!length(lout2$countries)==0) {out_list$countries <- dplyr::pull(tibble(countries=lout2$`countries`) %>% tidyr::nest(countries=everything()))} else {out_list$countries <- NA}
-      if(!length(lout2$fiats)==0) {out_list$fiats <- dplyr::pull(tibble(fiats=lout2$`fiats`) %>% tidyr::nest(fiats=everything()))} else {out_list$fiats <- NA}
-      if(!length(lout2$urls)==0) {out_list$urls <- dplyr::pull(tibble(urls=lout2$`urls`) %>% tidyr::nest(urls=everything()))} else {out_list$urls <- NA}
-      if(!is_null(lout2$date_launched)) {out_list$date_launched <- as.Date(lubridate::ymd_hms(lout2$date_launched))} else {out_list$date_launched <- NA}
+      # Re-add known complex columns as nested tibbles
+      if (!length(lout2$tags) == 0)      {out_list$tags      <- dplyr::pull(tibble(tags=lout2$tags)           %>% tidyr::nest(tags=everything()))}      else {out_list$tags      <- NA}
+      if (!length(lout2$countries) == 0) {out_list$countries <- dplyr::pull(tibble(countries=lout2$countries) %>% tidyr::nest(countries=everything()))} else {out_list$countries <- NA}
+      if (!length(lout2$fiats) == 0)     {out_list$fiats     <- dplyr::pull(tibble(fiats=lout2$fiats)         %>% tidyr::nest(fiats=everything()))}     else {out_list$fiats     <- NA}
+      if (!length(lout2$urls) == 0)      {out_list$urls      <- dplyr::pull(tibble(urls=lout2$urls)           %>% tidyr::nest(urls=everything()))}      else {out_list$urls      <- NA}
+      # Date conversion
+      if (!is.null(lout2$date_launched)) {out_list$date_launched <- as.Date(lubridate::ymd_hms(lout2$date_launched))} else {out_list$date_launched <- as.Date(NA)}
     }
     return(out_list)
   }
