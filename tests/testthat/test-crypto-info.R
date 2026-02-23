@@ -39,11 +39,10 @@ test_that("Valid parameters return correctly structured data for exchange_info()
   expect_s3_class(result, "tbl_df")
   expect_true(all(c("id", "name", "slug", "description", "logo") %in% names(result)))
 
-  # Check specific content for a known coin
-  poloniex_info <- result %>% filter(slug == "poloniex")
-  expect_equal(nrow(poloniex_info), 1)
-  expect_true(!is.na(poloniex_info$logo))
-  expect_true(!is.na(poloniex_info$description))
+  # Check that we got the expected number of rows and non-empty key fields
+  expect_equal(nrow(result), 2)
+  expect_true(all(!is.na(result$logo)))
+  expect_true(all(!is.na(result$description)))
 })
 
 # Test downloaded data against earlier downloaded data
