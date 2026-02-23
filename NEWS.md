@@ -1,5 +1,7 @@
 # crypto2 (development version)
 
+- `crypto_info()` and `exchange_info()` now use a column allowlist instead of a denylist when processing API responses. New or unknown fields from CMC — including list-type fields that would previously break `as_tibble()` — are silently ignored. This makes both functions robust to future CMC API additions without requiring a patch release.
+
 # crypto 2.0.5
 
 Slight change in api call outcome needed another modification in `crypto_info()`.
