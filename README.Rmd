@@ -1,0 +1,231 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-"
+)
+```
+
+# crypto2 <a href='https://github.com/sstoeckl/crypto2'><img src='man/figures/crypto2_hex.png' align="right" height="139" style="float:right; height:200px;"/></a>
+
+ <!-- badges: start -->
+
+  [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+  [![R-CMD-check](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml)
+  [![test-coverage](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml)
+  [![pr-commands](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml)
+  [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
+  [![CRAN status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
+  [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/crypto2)](https://cran.r-project.org/package=crypto2)
+  [![CRAN downloads last month](http://cranlogs.r-pkg.org/badges/crypto2)](https://cran.r-project.org/package=crypto2)
+  [![CRAN downloads last week](http://cranlogs.r-pkg.org/badges/last-week/crypto2)](https://cran.r-project.org/package=crypto2)
+  [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+  [![Website - pkgdown](https://img.shields.io/website-up-down-green-red/https/sstoeckl.github.io/crypto2.svg)](https://sstoeckl.github.io/crypto2/)
+ <!-- badges: end -->
+
+# Historical Cryptocurrency Prices for Active and Delisted Tokens!
+
+This is a modification of the original `crypto` package by [jesse vent](https://github.com/JesseVent/crypto). It is entirely set up to use means from the `tidyverse` and provides `tibble`s with all data available via the web-api of [coinmarketcap.com](https://coinmarketcap.com/). **It does not require an API key but in turn only provides information that is also available through the website of [coinmarketcap.com](https://coinmarketcap.com/).**
+
+It allows the user to retrieve
+
+- `crypto_listings()` a list of all coins that were historically listed on CMC (main dataset to avoid delisting bias) according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyListingsHistorical)
+- `crypto_list()` a list of all coins that are listed as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyMap)
+- `crypto_info()` a list of all information available for all available coins according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyInfo)
+- `crypto_history()` the **most powerful** function of this package that allows to download the entire available history for all coins covered by CMC according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyOhlcvHistorical)
+- `crypto_global_quotes()` a dataset of historical global crypto currency market metrics to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1GlobalmetricsQuotesHistorical)
+- `fiat_list()` a mapping of all fiat currencies available via the [CMC WEB API](https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap) (note: since v2.0.0 only USD is available)
+- `exchange_list()` a list of all exchanges available as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMap)
+- `exchange_info()` a list of all information available for all given exchanges according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeInfo)
+
+# Changelog
+
+## Version 2.0.5.99 (development)
+
+`crypto_info()` and `exchange_info()` have been made more robust against CMC API changes. Both functions now use a column **allowlist** instead of a denylist: only known, documented columns are retained, so any new or unknown fields added by CMC — including list-type fields that would previously break the output — are silently ignored. This should eliminate the recurring patch releases caused by CMC adding new columns.
+
+## Version 2.0.2/2.0.3/2.0.4/2.0.5 (September 2025)
+
+Slight change in api output broke `crypto_info()` (new additional column). Fixed.
+
+## Version 2.0.1 (July 2024)
+
+Slight change in api output broke `crypto_info()`. Fixed.
+
+## Version 2.0.0 (May 2024)
+
+After a major change in the api structure of coinmarketcap.com, the package had to be rewritten. As a result, many functions had to be rewritten, because data was not available any more in a similar format or with similar accuracy. Unfortunately, this will potentially break many users implementations. Here is a detailed list of changes:
+
+- `crypto_list()` has been modified and delivers the same data as before.
+- `exchange_list()` has been modified and delivers the same data as before.
+- `fiat_list()` has been modified and no longer delivers all available currencies and precious metals (therefore only USD and Bitcoin are available any more).
+- `crypto_listings()` needed to be modified, as multiple base currencies are not available any more. Also some of the fields downloaded from CMC might have changed. It still retrieves the latest listings, the new listings as well as historical listings. The fields returned have somewhat slightly changed. Also, no sorting is available any more, so if you want to download the top x CCs by market cap, you have to download all CCs and then sort them in R.
+- `crypto_info()` has been modified, as the data structure has changed. The fields returned have somewhat slightly changed.
+- `crypto_history()` has been modified. It still retrieves all the OHLC history of all the coins, but is slower due to an increased number of necessary api calls. The number of available intervals is strongly limited, but hourly and daily data is still available. Currently only USD and BTC are available as quote currencies through this library.
+- `crypto_global_quotes()` has been modified. It still produces a clear picture of the global market, but the data structure has somewhat slightly changed.
+
+## Installation
+
+You can install `crypto2` from CRAN with 
+```{r cran-installation, eval = FALSE}
+install.packages("crypto2")
+```
+or directly from github with:
+```{r gh-installation, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("sstoeckl/crypto2")
+```
+
+## Package Contribution
+
+The package provides API free and efficient access to all information from <https://coinmarketcap.com> that is also available through their website. It uses a variety of modification and web-scraping tools from the `tidyverse` (especially `purrr`).
+
+As this provides access not only to **active** coins but also to those that have now been **delisted** and also those that are categorized as **untracked**, including historical pricing information, this package provides a valid basis for any **Asset Pricing Studies** based on crypto currencies that require **survivorship-bias-free** information. In addition to that, the package maintainer is currently working on also providing **delisting returns** (similarly to CRSP for stocks) to also eliminate the **delisting bias**.
+
+## Package Usage
+
+First we load the `crypto2`-package and download the set of active coins from <https://coinmarketcap.com> (additionally one could load delisted coins with `only_active=FALSE` as well as untracked coins with `add_untracked=TRUE`).
+
+```{r example}
+library(crypto2)
+library(dplyr)
+
+# List all active coins
+coins <- crypto_list(only_active=TRUE)
+```
+
+Next we download information on the first three coins from that list.
+
+```{r example-info}
+# retrieve information for all (the first 3) of those coins
+coin_info <- crypto_info(coins, limit=3, finalWait=FALSE)
+
+# and give the first two lines of information per coin
+coin_info
+```
+
+In a next step we show the logos of the three coins as provided by <https://coinmarketcap.com>.
+
+```{r logos, echo=FALSE, fig.show='hold', fig.align='center', out.width = '5%',out.height='5%'}
+coin_info$logo %>% knitr::include_graphics(.)
+```
+
+In addition we show tags provided by <https://coinmarketcap.com>.
+
+```{r tags}
+coin_info %>% select(slug,tags) %>% tidyr::unnest(tags) %>% group_by(slug) %>% slice(1,n())
+```
+
+Additionally: Here are some urls pertaining to these coins as provided by <https://coinmarketcap.com>.
+
+```{r urls}
+coin_info |> dplyr::pull(urls) |> .[[1]] |> unlist()
+```
+
+In a next step we download time series data for these coins.
+
+```{r history}
+# retrieve historical data for all (the first 3) of them
+coin_hist <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
+
+# and give the first two times of information per coin
+coin_hist %>% group_by(slug) %>% slice(1:2)
+```
+
+Similarly, we could download data on an hourly basis.
+
+```{r historym}
+# retrieve historical data for all (the first 3) of them
+coin_hist_m <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210102", interval ="1h", finalWait=FALSE)
+
+# and give the first two times of information per coin
+coin_hist_m %>% group_by(slug) %>% slice(1:2)
+```
+
+Since v2.0.0, only USD and BTC are available as quote currencies. The available currencies can be checked with `fiat_list()`:
+
+```{r fiat}
+fiats <- fiat_list()
+fiats
+```
+
+We can download the same time series priced in Bitcoin instead of USD:
+
+```{r history2}
+# retrieve historical data for all (the first 3) of them, priced in BTC
+coin_hist2 <- crypto_history(coins, convert="BTC", limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
+
+# and give the first two times of information per coin
+coin_hist2 %>% group_by(slug,ref_cur_name) %>% slice(1:2)
+```
+
+We can also download historical listings and listing information (add `quote = TRUE`):
+
+```{r listings}
+latest_listings <- crypto_listings(which="latest", limit=10, quote=TRUE, finalWait=FALSE)
+latest_listings
+```
+
+`crypto_global_quotes()` retrieves global aggregate market statistics for CMC:
+
+```{r quotes}
+all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
+all_quotes
+```
+We can use those quotes to plot information on the aggregate market capitalization:
+
+```{r quotes-plot}
+all_quotes %>% select(timestamp, USD_total_market_cap, USD_altcoin_market_cap) %>% 
+  tidyr::pivot_longer(cols = 2:3, names_to = "Market Cap", values_to = "bn. USD") %>% 
+  tidyr::separate(`Market Cap`,into = c("Currency","Type","Market","Cap")) %>% 
+  dplyr::mutate(`bn. USD`=`bn. USD`/1000000000) %>% 
+  ggplot2::ggplot(ggplot2::aes(x=timestamp,y=`bn. USD`,color=Type)) + ggplot2::geom_line() +
+  ggplot2::labs(title="Market capitalization in bn USD", subtitle="CoinMarketCap.com")
+
+```
+
+
+Last and least, one can get information on exchanges. For this download a list of active/inactive/untracked exchanges using `exchange_list()`:
+
+```{r exchanges}
+exchanges <- exchange_list(only_active=TRUE)
+exchanges
+```
+
+and then download information on "binance" and "kraken":
+
+```{r exchange-info}
+ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')), finalWait=FALSE)
+ex_info
+```
+
+Then we can access information on the fee structure,
+
+```{r fee}
+ex_info %>% select(contains("fee"))
+```
+
+or the fiat currencies allowed:
+
+```{r ex-fiat}
+ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
+```
+
+### Author/License
+
+- **Sebastian Stöckl** - Package Creator, Modifier & Maintainer - [sstoeckl on github](https://github.com/sstoeckl) and [academic website](https://www.sebastianstoeckl.com)
+
+This project is licensed under the MIT License - see the
+<license.md> file for details</license.md>
+
+### Acknowledgments
+
+- Thanks to the team at <https://coinmarketcap.com> for the great work they do, especially to [Alice Liu (Research Lead)](https://www.linkedin.com/in/alicejingliu/) and [Aaron K.](https://www.linkedin.com/in/aaroncwk/) for their support with regard to information on delistings.
+- Thanks to Jesse Vent for providing the (not fully research compatible) [`crypto`](https://github.com/JesseVent/crypto)-package that inspired this package.
+
