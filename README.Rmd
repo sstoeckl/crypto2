@@ -125,7 +125,7 @@ coin_info %>% select(slug,tags) %>% tidyr::unnest(tags) %>% group_by(slug) %>% s
 Additionally: Here are some urls pertaining to these coins as provided by <https://coinmarketcap.com>.
 
 ```{r urls}
-coin_info |> dplyr::pull(urls) |> .[[1]] |> unlist()
+coin_info %>% dplyr::pull(urls) %>% .[[1]] %>% unlist()
 ```
 
 In a next step we download time series data for these coins.
