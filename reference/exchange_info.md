@@ -20,9 +20,9 @@ exchange_info(
 - exchange_list:
 
   string if NULL retrieve all currently active exchanges
-  ([`exchange_list()`](https://www.sebastianstoeckl.com/crypto2/reference/exchange_list.md)),
+  ([`exchange_list()`](https://sstoeckl.github.io/crypto2/reference/exchange_list.md)),
   or provide list of exchanges in the
-  [`exchange_list()`](https://www.sebastianstoeckl.com/crypto2/reference/exchange_list.md)
+  [`exchange_list()`](https://sstoeckl.github.io/crypto2/reference/exchange_list.md)
   format (e.g. current and/or delisted)
 
 - limit:

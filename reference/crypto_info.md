@@ -19,9 +19,9 @@ crypto_info(
 - coin_list:
 
   string if NULL retrieve all currently active coins
-  ([`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/reference/crypto_list.md)),
+  ([`crypto_list()`](https://sstoeckl.github.io/crypto2/reference/crypto_list.md)),
   or provide list of cryptocurrencies in the
-  [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/reference/crypto_list.md)
+  [`crypto_list()`](https://sstoeckl.github.io/crypto2/reference/crypto_list.md)
   or `cryptoi_listings()` format (e.g. current and/or dead coins since
   2015)
 

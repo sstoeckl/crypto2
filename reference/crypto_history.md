@@ -29,16 +29,16 @@ crypto_history(
 - coin_list:
 
   string if NULL retrieve all currently existing coins
-  ([`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/reference/crypto_list.md)),
+  ([`crypto_list()`](https://sstoeckl.github.io/crypto2/reference/crypto_list.md)),
   or provide list of crypto currencies in the
-  [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/reference/crypto_list.md)
+  [`crypto_list()`](https://sstoeckl.github.io/crypto2/reference/crypto_list.md)
   or `cryptoi_listings()` format (e.g. current and/or dead coins since
   2015)
 
 - convert:
 
   (default: USD) to one of available fiat prices
-  ([`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/reference/fiat_list.md))
+  ([`fiat_list()`](https://sstoeckl.github.io/crypto2/reference/fiat_list.md))
   or bitcoin 'BTC'. Be aware, that since 2024 only USD and BTC are
   available here!
 

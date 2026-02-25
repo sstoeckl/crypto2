@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">crypto2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.5.99</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,9 +34,7 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="crypto2-development-version">crypto2 (development version)<a class="anchor" aria-label="anchor" href="#crypto2-development-version"></a></h2>
-<ul><li>
-<code><a href="../reference/crypto_info.html">crypto_info()</a></code> and <code><a href="../reference/exchange_info.html">exchange_info()</a></code> now use a column allowlist instead of a denylist when processing API responses. New or unknown fields from CMC — including list-type fields that would previously break <code><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble()</a></code> — are silently ignored. This makes both functions robust to future CMC API additions without requiring a patch release.</li>
-</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.4.0" id="crypto2-140">crypto2 1.4.0<a class="anchor" aria-label="anchor" href="#crypto2-140"></a></h2><p class="text-muted">CRAN release: 2022-01-10</p>
 <p>Due to a change in the web-api of CMC we can only make one call to the api per minute (else, it will just deliver the same output as for the first call of the 60 seconds). To reduce the overhang, I have redesigned the interfaces to retrieve as many ids from one api call as possible (limited by the 2000 character limitation of the URL). We can set <code>requestLimit</code> to increase/decrease the number of simultaneous ids that are retrieved from CMC.</p>

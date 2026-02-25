@@ -2,16 +2,6 @@
 
 ## crypto2 (development version)
 
-- [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/reference/crypto_info.md)
-  and
-  [`exchange_info()`](https://www.sebastianstoeckl.com/crypto2/reference/exchange_info.md)
-  now use a column allowlist instead of a denylist when processing API
-  responses. New or unknown fields from CMC — including list-type fields
-  that would previously break
-  [`as_tibble()`](https://tibble.tidyverse.org/reference/as_tibble.html)
-  — are silently ignored. This makes both functions robust to future CMC
-  API additions without requiring a patch release.
-
 ## crypto2 1.4.0
 
 CRAN release: 2022-01-10
