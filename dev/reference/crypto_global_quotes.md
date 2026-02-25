@@ -1,0 +1,167 @@
+# Retrieves historical quotes for the global aggregate market
+
+This code retrieves global quote data (latest/historic) from
+coinmarketcap.com.
+
+## Usage
+
+``` r
+crypto_global_quotes(
+  which = "latest",
+  convert = "USD",
+  start_date = NULL,
+  end_date = NULL,
+  interval = "daily",
+  quote = FALSE,
+  requestLimit = 2200,
+  sleep = 0,
+  wait = 60,
+  finalWait = FALSE
+)
+```
+
+## Arguments
+
+- which:
+
+  string Shall the code retrieve the latest listing or a historic
+  listing?
+
+- convert:
+
+  string (default: USD) to one or more of available fiat or precious
+  metals prices
+  ([`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/fiat_list.md)).
+  If more than one are selected please separate by comma (e.g.
+  "USD,BTC"), only necessary if 'quote=TRUE'
+
+- start_date:
+
+  string Start date to retrieve data from, format 'yyyymmdd'
+
+- end_date:
+
+  string End date to retrieve data from, format 'yyyymmdd', if not
+  provided, today will be assumed
+
+- interval:
+
+  string Interval with which to sample data, default 'daily'. Must be
+  one of `"1d" "2d" "3d" "15d" "30d" "60d"`
+
+- quote:
+
+  logical set to TRUE if you want to include price data (FALSE=default)
+
+- requestLimit:
+
+  integer (default 2200) Maximum number of requests one API call can
+  handle
+
+- sleep:
+
+  integer (default 0) Seconds to sleep between API requests
+
+- wait:
+
+  waiting time before retry in case of fail (needs to be larger than 60s
+  in case the server blocks too many attempts, default=60)
+
+- finalWait:
+
+  to avoid calling the web-api again with another command before 60s are
+  over (TRUE=default)
+
+## Value
+
+List of latest/new/historic listings of crypto currencies in a tibble
+(depending on the "which"-switch and whether "quote" is requested, the
+result may only contain some of the following variables):
+
+- btc_dominance:
+
+  number Bitcoin's market dominance percentage by market cap.
+
+- eth_dominance:
+
+  number Ethereum's market dominance percentage by market cap.
+
+- active_cryptocurrencies:
+
+  number Count of active crypto currencies tracked by CMC This includes
+  all crypto currencies with a listing_status of "active" or "listed".
+
+- total_cryptocurrencies:
+
+  number Count of all crypto currencies tracked by CMC This includes
+  "inactive" listing_status crypto currencies.
+
+- active_market_pairs:
+
+  number Count of active market pairs tracked by CoinMarketCap across
+  all exchanges.
+
+\#'
+
+- active_exchanges:
+
+  number Count of active exchanges tracked by CMC This includes all
+  exchanges with a listing_status of "active" or "listed".
+
+- total_exchanges:
+
+  number Count of all exchanges tracked by CMC This includes "inactive"
+  listing_status exchanges.
+
+- last_updated:
+
+  Timestamp of when this record was last updated.
+
+- total_market_cap:
+
+  number The sum of all individual cryptocurrency market capitalizations
+  in the requested currency.
+
+- total_volume_24h:
+
+  number The sum of rolling 24 hour adjusted volume (as outlined in our
+  methodology) for all crypto currencies in the requested currency.
+
+- total_volume_24h_reported:
+
+  number The sum of rolling 24 hour reported volume for all crypto
+  currencies in the requested currency.
+
+\#'
+
+- altcoin_volume_24h:
+
+  number The sum of rolling 24 hour adjusted volume (as outlined in our
+  methodology) for all crypto currencies excluding Bitcoin in the
+  requested currency.
+
+- altcoin_volume_24h_reported:
+
+  number The sum of rolling 24 hour reported volume for all crypto
+  currencies excluding Bitcoin in the requested currency.
+
+- altcoin_market_cap :
+
+  number The sum of all individual cryptocurrency market capitalizations
+  excluding Bitcoin in the requested currency.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# return new listings from the last 30 days
+new_quotes <- crypto_global_quotes(which="latest", quote=TRUE, convert="BTC")
+# return all global quotes in the first week of January 2014
+quotes_2014w1 <- crypto_global_quotes(which="historical", quote=TRUE,
+  start_date = "20140101", end_date="20140107", interval="daily")
+
+# report in two different currencies
+listings_2014w1_USDBTC <- crypto_global_quotes(which="historical", quote=TRUE,
+  start_date = "20200101", end_date="20240530", interval="daily", convert="BTC")
+} # }
+```

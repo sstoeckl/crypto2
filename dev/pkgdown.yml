@@ -1,0 +1,8 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles: {}
+last_built: 2026-02-25T21:33Z
+urls:
+  reference: https://www.sebastianstoeckl.com/crypto2/dev/reference
+  article: https://www.sebastianstoeckl.com/crypto2/dev/articles
