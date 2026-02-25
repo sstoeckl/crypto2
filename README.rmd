@@ -46,7 +46,7 @@ It allows the user to retrieve
 
 # Update
 
-## Version 2.0.2 (August 2024)
+## Version 2.0.2/2.0.3/2.0.4/2.0.5 (September 2025)
 
 Slight change in api output broke `crypto_info()` (new additional column). Fixed.
 
@@ -225,7 +225,7 @@ ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
 
 ### Author/License
 
-- **Sebastian Stöckl** - Package Creator, Modifier & Maintainer - [sstoeckl on github](https://github.com/sstoeckl)
+- **Sebastian Stöckl** - Package Creator, Modifier & Maintainer - [sstoeckl on github](https://github.com/sstoeckl) and [academic website](https://www.sebastianstoeckl.com)
 
 This project is licensed under the MIT License - see the
 <license.md> file for details</license.md>

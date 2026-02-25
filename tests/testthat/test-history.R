@@ -30,9 +30,13 @@ test_that("Downloaded data matches previously downloaded reference data", {
   # start_date="2020-01-01",
   # end_date="2020-01-07",
   # interval="daily")
-  # saveRDS(saved_output, "tests/testthat/test_data/crypto_history_reference.rds")
+  expected_dir <- "test_data"
+  # expected_dir <- paste0(getwd(),"/tests/testthat/test_data")
+  # saveRDS(saved_output, paste0(expected_dir, "/crypto_history_reference.rds"))
   # # Load the reference data
-  expected_data <- readRDS("test_data/crypto_history_reference.rds")
+  # saveRDS(saved_output, paste0(expected_dir,"/historical_output.rds"))
+  # expected_output <- readRDS("test_data/historical_output.rds")
+  expected_data <- readRDS(paste0(expected_dir,"/crypto_history_reference.rds"))
 
   # Get new data using the same parameters
   new_data <- crypto_history(convert = "USD", limit = 1,

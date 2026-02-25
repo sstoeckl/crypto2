@@ -23,8 +23,11 @@ test_that("Historical data matches expected output", {
   # end_date="20200107",
   # interval="daily",
   # quote=TRUE)
-  # saveRDS(saved_output, "tests/testthat/test_data/historical_output.rds")
-  expected_output <- readRDS("test_data/historical_output.rds")
+  expected_dir <- "test_data"
+  # expected_dir <- paste0(getwd(),"/tests/testthat/test_data")
+  # saveRDS(saved_output, paste0(expected_dir,"/historical_output.rds"))
+  # expected_output <- readRDS("test_data/historical_output.rds")
+  expected_output <- readRDS(paste0(expected_dir,"/historical_output.rds"))
 
   # Run the function again with the same parameters
   current_output <- crypto_global_quotes(
