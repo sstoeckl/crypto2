@@ -102,10 +102,10 @@ crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_d
                                new_raw$data$recentlyAddedList %>% tibble::as_tibble() |> janitor::clean_names() %>%
                                  dplyr::rename(date_added=added_date) |>
                                  dplyr::select(-platforms) |>
-                                 dplyr::mutate(dplyr::across(c(date_added),as.Date)) %>%
-                                 dplyr::arrange(id))
+                                 dplyr::mutate(dplyr::across(c(date_added),as.Date)))
       if (nrow(new_raw$data$recentlyAddedList)<limitdl) {break}
     }
+    listing_raw <- listing_raw[1:min(limit, nrow(listing_raw)), ]
     listing <- listing_raw %>% dplyr::select(-price_change) %>% unique()
     if (quote){
       lquote <- listing_raw %>% dplyr::select(price_change) %>% tidyr::unnest(price_change) %>% tidyr::unnest(everything(), names_sep="_") |> janitor::clean_names() |>
@@ -124,10 +124,10 @@ crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_d
       listing_raw <- bind_rows(listing_raw,
                                latest_raw$data$cryptoCurrencyList %>% tibble::as_tibble() |> janitor::clean_names() %>%
                                  dplyr::mutate(dplyr::across(c(last_updated),as.Date)) %>%
-                                 dplyr::select(-any_of(c("badges","audit_info_list","is_audited","platform"))) |>
-                                 dplyr::arrange(id))
+                                 dplyr::select(-any_of(c("badges","audit_info_list","is_audited","platform"))))
       if (nrow(latest_raw$data$cryptoCurrencyList)<limitdl) {break}
     }
+    listing_raw <- listing_raw[1:min(limit, nrow(listing_raw)), ]
     listing <- listing_raw %>% dplyr::select(-quotes,-tags) %>% unique()
     if (quote){
       lquote <- listing_raw %>% dplyr::select(quotes) %>% tidyr::unnest(quotes) %>% tidyr::unnest(everything(), names_sep="_") |> janitor::clean_names() |>
@@ -154,8 +154,7 @@ crypto_listings <- function(which="latest", convert="USD", limit = 5000, start_d
         history_raw <- safeFromJSON(construct_url(history_url,v=3))
         listing_raw <- bind_rows(listing_raw,
                                  history_raw$data %>% tibble::as_tibble() |> janitor::clean_names() %>%
-                                   dplyr::mutate(dplyr::across(c(date_added,last_updated),as.Date)) %>%
-                                   dplyr::arrange(id))
+                                   dplyr::mutate(dplyr::across(c(date_added,last_updated),as.Date)))
         if (nrow(history_raw$data)<limitdl) {break}
       }
       listing <- listing_raw %>% dplyr::select(-any_of(c("tags","quotes","platform"))) %>% unique()
