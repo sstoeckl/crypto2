@@ -19,12 +19,23 @@ downstream code that already consumes a CMC tibble works on a CG tibble too.
   bound by the documented 30 req/min rate-limit.
 - `cg_info()` — per-coin metadata (description, logos, categories, contract
   addresses across chains, links) via `/coins/{slug}` on the documented host.
+- `cg_history_by_id()` — companion to `cg_history()` that addresses coins
+  by **numeric ID** instead of slug, calling
+  `www.coingecko.com/{price_charts,market_cap,ohlc}/{numeric_id}/...`. Useful
+  when accumulated snapshots have collected numeric IDs whose slugs have
+  since been removed from CoinGecko's public routing: the numeric ID still
+  serves the historical data (at least for the dense early-ID range). The
+  function defaults to the active universe from `cg_list()` — blind
+  `1:N` iteration does **not** work because the numeric-ID space is
+  sparse (max ~102M but only ~15k populated as of mid 2026).
 
 **Survivorship bias caveat.** CoinGecko's free tier exposes active coins only
 — delisted coins return 404 on both `/coins/list` and `/coins/{slug}`. To
 build a survivorship-bias-corrected dataset on CoinGecko, snapshot
-periodically (daily/weekly) and accumulate over time in an external
-database; coins that get delisted later remain in the archive.
+periodically (daily/weekly) and accumulate the *union of numeric IDs ever
+observed* in an external database, then feed that union to
+`cg_history_by_id()` for refresh. Coins delisted after your first
+snapshot are then preserved via their numeric ID.
 
 Endpoints reverse-engineered from the `data-url`/`data-chart-urls`
 attributes embedded in `https://www.coingecko.com/en/coins/{slug}` page HTML
