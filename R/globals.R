@@ -3,4 +3,7 @@ utils::globalVariables(c("id","name","symbol","slug","rank","is_active","first_h
                          "name","name_main","platform_locale","slug","slug_main","symbol","value","volume",".","code","sign",
                          "date_added", "last_updated","tags","platform","out","total_market_cap","total_volume_24h_yesterday_percentage_change","VAR",
                          "ref_cur_id","ref_cur_name","sleep","wait","added_date","endDate","last_update","startDate","platforms","price_change","quotes",
-                         "search_interval"))
+                         "search_interval",
+                         # CoinGecko branch additions
+                         "id_num","image","market_cap_rank","market_cap","open","high","low","close","close_o",
+                         "time_open","time_high","time_low","time_close","date","numeric_id"))
