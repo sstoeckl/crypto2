@@ -1,5 +1,24 @@
 # crypto2 [![](reference/figures/crypto2_hex.png)](https://github.com/sstoeckl/crypto2)
 
+> **Experimental:** A CoinGecko integration is currently in testing on
+> branch
+> [`coingecko-integration`](https://github.com/sstoeckl/crypto2/tree/coingecko-integration).
+> It adds `cg_list()`, `cg_listings()`, `cg_history()`, and `cg_info()`
+> — CMC-column-compatible companions that pull from CoinGecko, **no API
+> key required**. Please install and play around with it, and open an
+> issue if anything breaks. Install with:
+>
+> ``` r
+>
+> # install.packages("remotes")
+> remotes::install_github("sstoeckl/crypto2@coingecko-integration")
+> ```
+>
+> CoinGecko’s free tier exposes only **active** coins; the package warns
+> when delisted-coin retrieval is impossible. Build a
+> survivorship-bias-free archive by snapshotting periodically
+> (daily/weekly) from your own cronjob.
+
 # Historical Cryptocurrency Prices for Active and Delisted Tokens!
 
 This is a modification of the original `crypto` package by [jesse
@@ -136,12 +155,14 @@ again. Additionally, since version v1.4.3 the package allows for a data
 You can install `crypto2` from CRAN with
 
 ``` r
+
 install.packages("crypto2")
 ```
 
 or directly from github with:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("sstoeckl/crypto2")
 ```
@@ -170,6 +191,7 @@ coins with `only_Active=FALSE` as well as untracked coins with
 `add_untracked=TRUE`).
 
 ``` r
+
 library(crypto2)
 library(dplyr)
 #> 
@@ -188,6 +210,7 @@ coins <- crypto_list(only_active=TRUE)
 Next we download information on the first three coins from that list.
 
 ``` r
+
 # retrieve information for all (the first 3) of those coins
 coin_info <- crypto_info(coins, limit=3, finalWait=FALSE)
 #> ❯ Scraping crypto info
@@ -220,6 +243,7 @@ In a next step we show the logos of the three coins as provided by
 In addition we show tags provided by <https://coinmarketcap.com>.
 
 ``` r
+
 coin_info %>% select(slug,tags) %>% tidyr::unnest(tags) %>% group_by(slug) %>% slice(1,n())
 #> # A tibble: 6 × 2
 #> # Groups:   slug [3]
@@ -237,6 +261,7 @@ Additionally: Here are some urls pertaining to these coins as provided
 by <https://coinmarketcap.com>.
 
 ``` r
+
 coin_info %>% pull(urls) %>% .[[1]] |> unlist()
 #>                            urls.website                      urls.technical_doc 
 #>                  "https://bitcoin.org/"       "https://bitcoin.org/bitcoin.pdf" 
@@ -253,6 +278,7 @@ coin_info %>% pull(urls) %>% .[[1]] |> unlist()
 In a next step we download time series data for these coins.
 
 ``` r
+
 # retrieve historical data for all (the first 3) of them
 coin_hist <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
 #> ❯ Scraping historical crypto data
@@ -280,6 +306,7 @@ coin_hist %>% group_by(slug) %>% slice(1:2)
 Similarly, we could download data on an hourly basis.
 
 ``` r
+
 # retrieve historical data for all (the first 3) of them
 coin_hist_m <- crypto_history(coins, limit=3, start_date="20210101", end_date="20210102", interval ="1h", finalWait=FALSE)
 #> ❯ Scraping historical crypto data
@@ -309,6 +336,7 @@ currencies. A list of such currencies is available as
 [`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/reference/fiat_list.md)
 
 ``` r
+
 fiats <- fiat_list()
 fiats
 #> # A tibble: 1 × 4
@@ -322,6 +350,7 @@ Bitcoin and Euro (note that multiple currencies can be given to
 `convert`, separated by “,”).
 
 ``` r
+
 # retrieve historical data for all (the first 3) of them
 coin_hist2 <- crypto_history(coins, convert="USD", limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
 #> ❯ Scraping historical crypto data
@@ -351,6 +380,7 @@ download historical listings and listing information (add
 `quote = TRUE`).
 
 ``` r
+
 latest_listings <- crypto_listings(which="latest", limit=10, quote=TRUE, finalWait=FALSE)
 latest_listings
 #> # A tibble: 5,000 × 30
@@ -379,6 +409,7 @@ An additional feature that was added in version 1.4.5 retrieves global
 aggregate market statistics for CMC.
 
 ``` r
+
 all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
 #> ❯ Scraping historical global data
 #> 
@@ -411,6 +442,7 @@ We can use those quotes to plot information on the aggregate market
 capitalization:
 
 ``` r
+
 all_quotes %>% select(timestamp, USD_total_market_cap, USD_altcoin_market_cap) %>% 
   tidyr::pivot_longer(cols = 2:3, names_to = "Market Cap", values_to = "bn. USD") %>% 
   tidyr::separate(`Market Cap`,into = c("Currency","Type","Market","Cap")) %>% 
@@ -426,6 +458,7 @@ a list of active/inactive/untracked exchanges using
 [`exchange_list()`](https://www.sebastianstoeckl.com/crypto2/reference/exchange_list.md):
 
 ``` r
+
 exchanges <- exchange_list(only_active=TRUE)
 exchanges
 #> # A tibble: 848 × 6
@@ -447,6 +480,7 @@ exchanges
 and then download information on “binance” and “bittrex”:
 
 ``` r
+
 ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')), finalWait=FALSE)
 #> ❯ Scraping crypto info
 #> 
@@ -467,6 +501,7 @@ ex_info
 Then we can access information on the fee structure,
 
 ``` r
+
 ex_info %>% select(contains("fee"))
 #> # A tibble: 2 × 2
 #>   maker_fee taker_fee
@@ -478,6 +513,7 @@ ex_info %>% select(contains("fee"))
 or the fiat currencies allowed:
 
 ``` r
+
 ex_info %>% select(slug,fiats) %>% tidyr::unnest(fiats)
 #> # A tibble: 95 × 2
 #>    slug    fiats

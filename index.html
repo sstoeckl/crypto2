@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Download Crypto Currency Data from CoinMarketCap without API">
-<meta name="description" content="Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from &lt;https://coinmarketcap.com&gt; via their web-api.">
-<meta property="og:description" content="Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from &lt;https://coinmarketcap.com&gt; via their web-api.">
+<meta name="description" content='Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from &lt;https://coinmarketcap.com&gt; via their web-api. A CoinGecko integration (cg_list(), cg_listings(), cg_history(), cg_info()) is currently being tested on the coingecko-integration branch on GitHub — install via remotes::install_github("sstoeckl/crypto2@coingecko-integration") to try it.'>
+<meta property="og:description" content='Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from &lt;https://coinmarketcap.com&gt; via their web-api. A CoinGecko integration (cg_list(), cg_listings(), cg_history(), cg_info()) is currently being tested on the coingecko-integration branch on GitHub — install via remotes::install_github("sstoeckl/crypto2@coingecko-integration") to try it.'>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -52,6 +52,13 @@
 </h1></div>
 <!-- badges: start -->
 
+<blockquote>
+<p><strong>Experimental:</strong> A CoinGecko integration is currently in testing on branch <a href="https://github.com/sstoeckl/crypto2/tree/coingecko-integration" class="external-link"><code>coingecko-integration</code></a>. It adds <code>cg_list()</code>, <code>cg_listings()</code>, <code>cg_history()</code>, and <code>cg_info()</code> — CMC-column-compatible companions that pull from CoinGecko, <strong>no API key required</strong>. Please install and play around with it, and open an issue if anything breaks. Install with:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"sstoeckl/crypto2@coingecko-integration"</span><span class="op">)</span></span></code></pre></div>
+<p>CoinGecko’s free tier exposes only <strong>active</strong> coins; the package warns when delisted-coin retrieval is impossible. Build a survivorship-bias-free archive by snapshotting periodically (daily/weekly) from your own cronjob.</p>
+</blockquote>
 </div>
 <div class="section level1">
 <h1 id="historical-cryptocurrency-prices-for-active-and-delisted-tokens">Historical Cryptocurrency Prices for Active and Delisted Tokens!<a class="anchor" aria-label="anchor" href="#historical-cryptocurrency-prices-for-active-and-delisted-tokens"></a>
@@ -131,10 +138,10 @@
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install <code>crypto2</code> from CRAN with</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"crypto2"</span><span class="op">)</span></span></code></pre></div>
 <p>or directly from github with:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"sstoeckl/crypto2"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -148,7 +155,7 @@
 <h2 id="package-usage">Package Usage<a class="anchor" aria-label="anchor" href="#package-usage"></a>
 </h2>
 <p>First we load the <code>crypto2</code>-package and download the set of active coins from <a href="https://coinmarketcap.com" class="external-link uri">https://coinmarketcap.com</a> (additionally one could load delisted coins with <code>only_Active=FALSE</code> as well as untracked coins with <code>add_untracked=TRUE</code>).</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sstoeckl/crypto2" class="external-link">crypto2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -163,7 +170,7 @@
 <span><span class="co"># List all active coins</span></span>
 <span><span class="va">coins</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_list.html">crypto_list</a></span><span class="op">(</span>only_active<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Next we download information on the first three coins from that list.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># retrieve information for all (the first 3) of those coins</span></span>
 <span><span class="va">coin_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_info.html">crypto_info</a></span><span class="op">(</span><span class="va">coins</span>, limit<span class="op">=</span><span class="fl">3</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ❯ Scraping crypto info</span></span>
@@ -189,7 +196,7 @@
 <p>In a next step we show the logos of the three coins as provided by <a href="https://coinmarketcap.com" class="external-link uri">https://coinmarketcap.com</a>.</p>
 <p><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png" width="5%" height="5%" style="display: block; margin: auto;"><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/2.png" width="5%" height="5%" style="display: block; margin: auto;"><img src="https://s2.coinmarketcap.com/static/img/coins/64x64/3.png" width="5%" height="5%" style="display: block; margin: auto;"></p>
 <p>In addition we show tags provided by <a href="https://coinmarketcap.com" class="external-link uri">https://coinmarketcap.com</a>.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">coin_info</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">slug</span>,<span class="va">tags</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html" class="external-link">unnest</a></span><span class="op">(</span><span class="va">tags</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">slug</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 2</span></span>
 <span><span class="co">#&gt; # Groups:   slug [3]</span></span>
@@ -202,7 +209,7 @@
 <span><span class="co">#&gt; 5 namecoin mineable        Mineable        OTHERS          1         5</span></span>
 <span><span class="co">#&gt; 6 namecoin platform        Platform        CATEGORY        1         5</span></span></code></pre></div>
 <p>Additionally: Here are some urls pertaining to these coins as provided by <a href="https://coinmarketcap.com" class="external-link uri">https://coinmarketcap.com</a>.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">coin_info</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">urls</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">.</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                            urls.website                      urls.technical_doc </span></span>
 <span><span class="co">#&gt;                  "https://bitcoin.org/"       "https://bitcoin.org/bitcoin.pdf" </span></span>
@@ -215,7 +222,7 @@
 <span><span class="co">#&gt;                      urls.message_board                             urls.reddit </span></span>
 <span><span class="co">#&gt;               "https://bitcointalk.org"          "https://reddit.com/r/bitcoin"</span></span></code></pre></div>
 <p>In a next step we download time series data for these coins.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># retrieve historical data for all (the first 3) of them</span></span>
 <span><span class="va">coin_hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_history.html">crypto_history</a></span><span class="op">(</span><span class="va">coins</span>, limit<span class="op">=</span><span class="fl">3</span>, start_date<span class="op">=</span><span class="st">"20210101"</span>, end_date<span class="op">=</span><span class="st">"20210105"</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ❯ Scraping historical crypto data</span></span>
@@ -239,7 +246,7 @@
 <span><span class="co">#&gt; #   time_low &lt;dttm&gt;, open &lt;dbl&gt;, high &lt;dbl&gt;, low &lt;dbl&gt;, close &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   volume &lt;dbl&gt;, market_cap &lt;dbl&gt;</span></span></code></pre></div>
 <p>Similarly, we could download data on an hourly basis.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># retrieve historical data for all (the first 3) of them</span></span>
 <span><span class="va">coin_hist_m</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_history.html">crypto_history</a></span><span class="op">(</span><span class="va">coins</span>, limit<span class="op">=</span><span class="fl">3</span>, start_date<span class="op">=</span><span class="st">"20210101"</span>, end_date<span class="op">=</span><span class="st">"20210102"</span>, interval <span class="op">=</span><span class="st">"1h"</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ❯ Scraping historical crypto data</span></span>
@@ -263,7 +270,7 @@
 <span><span class="co">#&gt; #   time_low &lt;dttm&gt;, open &lt;dbl&gt;, high &lt;dbl&gt;, low &lt;dbl&gt;, close &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   volume &lt;dbl&gt;, market_cap &lt;dbl&gt;</span></span></code></pre></div>
 <p>Alternatively, we could determine the price of these coins in other currencies. A list of such currencies is available as <code><a href="reference/fiat_list.html">fiat_list()</a></code></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fiats</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fiat_list.html">fiat_list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">fiats</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 4</span></span>
@@ -271,7 +278,7 @@
 <span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt;                &lt;chr&gt; &lt;chr&gt; </span></span>
 <span><span class="co">#&gt; 1  2781 United States Dollar $     USD</span></span></code></pre></div>
 <p>So we download the time series again depicting prices in terms of Bitcoin and Euro (note that multiple currencies can be given to <code>convert</code>, separated by “,”).</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># retrieve historical data for all (the first 3) of them</span></span>
 <span><span class="va">coin_hist2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_history.html">crypto_history</a></span><span class="op">(</span><span class="va">coins</span>, convert<span class="op">=</span><span class="st">"USD"</span>, limit<span class="op">=</span><span class="fl">3</span>, start_date<span class="op">=</span><span class="st">"20210101"</span>, end_date<span class="op">=</span><span class="st">"20210105"</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ❯ Scraping historical crypto data</span></span>
@@ -295,7 +302,7 @@
 <span><span class="co">#&gt; #   time_low &lt;dttm&gt;, open &lt;dbl&gt;, high &lt;dbl&gt;, low &lt;dbl&gt;, close &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   volume &lt;dbl&gt;, market_cap &lt;dbl&gt;</span></span></code></pre></div>
 <p>As a new features in version 1.4.4. we introduced the possibility to download historical listings and listing information (add <code>quote = TRUE</code>).</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">latest_listings</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_listings.html">crypto_listings</a></span><span class="op">(</span>which<span class="op">=</span><span class="st">"latest"</span>, limit<span class="op">=</span><span class="fl">10</span>, quote<span class="op">=</span><span class="cn">TRUE</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">latest_listings</span></span>
 <span><span class="co">#&gt; # A tibble: 5,000 × 30</span></span>
@@ -319,7 +326,7 @@
 <span><span class="co">#&gt; #   percent_change7d &lt;dbl&gt;, percent_change30d &lt;dbl&gt;, percent_change60d &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   percent_change90d &lt;dbl&gt;, fully_dillutted_market_cap &lt;dbl&gt;, …</span></span></code></pre></div>
 <p>An additional feature that was added in version 1.4.5 retrieves global aggregate market statistics for CMC.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_quotes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/crypto_global_quotes.html">crypto_global_quotes</a></span><span class="op">(</span>which<span class="op">=</span><span class="st">"historical"</span>, quote<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ❯ Scraping historical global data</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -347,7 +354,7 @@
 <span><span class="co">#&gt; #   active_market_pairs &lt;int&gt;, active_exchanges &lt;int&gt;,</span></span>
 <span><span class="co">#&gt; #   total_cryptocurrencies &lt;int&gt;, total_exchanges &lt;int&gt;, origin_id &lt;chr&gt;, …</span></span></code></pre></div>
 <p>We can use those quotes to plot information on the aggregate market capitalization:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_quotes</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">timestamp</span>, <span class="va">USD_total_market_cap</span>, <span class="va">USD_altcoin_market_cap</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">3</span>, names_to <span class="op">=</span> <span class="st">"Market Cap"</span>, values_to <span class="op">=</span> <span class="st">"bn. USD"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/separate.html" class="external-link">separate</a></span><span class="op">(</span><span class="va">`Market Cap`</span>,into <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Currency"</span>,<span class="st">"Type"</span>,<span class="st">"Market"</span>,<span class="st">"Cap"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -356,7 +363,7 @@
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu">labs</span><span class="op">(</span>title<span class="op">=</span><span class="st">"Market capitalization in bn USD"</span>, subtitle<span class="op">=</span><span class="st">"CoinMarketCap.com"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-quotes-plot-1.png"><!-- --></p>
 <p>Last and least, one can get information on exchanges. For this download a list of active/inactive/untracked exchanges using <code><a href="reference/exchange_list.html">exchange_list()</a></code>:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exchanges</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exchange_list.html">exchange_list</a></span><span class="op">(</span>only_active<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">exchanges</span></span>
 <span><span class="co">#&gt; # A tibble: 848 × 6</span></span>
@@ -374,7 +381,7 @@
 <span><span class="co">#&gt; 10    68 Indodax      indo…         1 2018-04-26            2025-09-10          </span></span>
 <span><span class="co">#&gt; # ℹ 838 more rows</span></span></code></pre></div>
 <p>and then download information on “binance” and “bittrex”:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exchange_info.html">exchange_info</a></span><span class="op">(</span><span class="va">exchanges</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">slug</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'binance'</span>,<span class="st">'kraken'</span><span class="op">)</span><span class="op">)</span>, finalWait<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ❯ Scraping crypto info</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -391,7 +398,7 @@
 <span><span class="co">#&gt; #   alert_type &lt;int&gt;, alert_link &lt;chr&gt;, tags &lt;lgl&gt;, countries &lt;lgl&gt;,</span></span>
 <span><span class="co">#&gt; #   fiats &lt;list&gt;, urls &lt;list&gt;</span></span></code></pre></div>
 <p>Then we can access information on the fee structure,</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex_info</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">contains</a></span><span class="op">(</span><span class="st">"fee"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 2 × 2</span></span>
 <span><span class="co">#&gt;   maker_fee taker_fee</span></span>
@@ -399,7 +406,7 @@
 <span><span class="co">#&gt; 1      0.02      0.05</span></span>
 <span><span class="co">#&gt; 2      0.02      0.04</span></span></code></pre></div>
 <p>or the fiat currencies allowed:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex_info</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">slug</span>,<span class="va">fiats</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html" class="external-link">unnest</a></span><span class="op">(</span><span class="va">fiats</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 95 × 2</span></span>
 <span><span class="co">#&gt;    slug    fiats</span></span>
