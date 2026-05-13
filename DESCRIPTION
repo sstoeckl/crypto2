@@ -6,7 +6,7 @@ Authors@R: c(person("Sebastian", "Stoeckl", email = "sebastian.stoeckl@uni.li", 
 Maintainer: Sebastian Stoeckl <sebastian.stoeckl@uni.li>
 URL: https://github.com/sstoeckl/crypto2,
     https://www.sebastianstoeckl.com/crypto2/
-Description: Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from <https://coinmarketcap.com> via their 'web-api'.
+Description: Retrieves crypto currency information and historical prices as well as information on the exchanges they are listed on. Historical data contains daily open, high, low and close values for all crypto currencies. All data is scraped from <https://coinmarketcap.com> via their 'web-api'. A 'CoinGecko' integration ('cg_list()', 'cg_listings()', 'cg_history()', 'cg_info()') is currently being tested on the 'coingecko-integration' branch on GitHub — install via 'remotes::install_github("sstoeckl/crypto2@coingecko-integration")' to try it.
 License: MIT + file LICENSE
 Depends: R (>= 4.1.0)
 Imports: 

@@ -25,6 +25,24 @@ stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://
 pkgdown](https://img.shields.io/website-up-down-green-red/https/sstoeckl.github.io/crypto2.svg)](https://sstoeckl.github.io/crypto2/)
 <!-- badges: end -->
 
+> **Experimental:** A CoinGecko integration is currently in testing on
+> branch
+> [`coingecko-integration`](https://github.com/sstoeckl/crypto2/tree/coingecko-integration).
+> It adds `cg_list()`, `cg_listings()`, `cg_history()`, and `cg_info()`
+> — CMC-column-compatible companions that pull from CoinGecko, **no API
+> key required**. Please install and play around with it, and open an
+> issue if anything breaks. Install with:
+>
+> ``` r
+> # install.packages("remotes")
+> remotes::install_github("sstoeckl/crypto2@coingecko-integration")
+> ```
+>
+> CoinGecko's free tier exposes only **active** coins; the package
+> warns when delisted-coin retrieval is impossible. Build a
+> survivorship-bias-free archive by snapshotting periodically
+> (daily/weekly) from your own cronjob.
+
 # Historical Cryptocurrency Prices for Active and Delisted Tokens!
 
 This is a modification of the original `crypto` package by [jesse

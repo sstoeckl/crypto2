@@ -29,6 +29,22 @@ knitr::opts_chunk$set(
   [![Website - pkgdown](https://img.shields.io/website-up-down-green-red/https/sstoeckl.github.io/crypto2.svg)](https://sstoeckl.github.io/crypto2/)
  <!-- badges: end -->
 
+> **Experimental:** A CoinGecko integration is currently in testing on branch
+> [`coingecko-integration`](https://github.com/sstoeckl/crypto2/tree/coingecko-integration).
+> It adds `cg_list()`, `cg_listings()`, `cg_history()`, and `cg_info()` —
+> CMC-column-compatible companions that pull from CoinGecko, **no API key
+> required**. Please install and play around with it, and open an issue if
+> anything breaks. Install with:
+>
+> ```r
+> # install.packages("remotes")
+> remotes::install_github("sstoeckl/crypto2@coingecko-integration")
+> ```
+>
+> CoinGecko's free tier exposes only **active** coins; the package warns
+> when delisted-coin retrieval is impossible. Build a survivorship-bias-free
+> archive by snapshotting periodically (daily/weekly) from your own cronjob.
+
 # Historical Cryptocurrency Prices for Active and Delisted Tokens!
 
 This is a modification of the original `crypto` package by [jesse vent](https://github.com/JesseVent/crypto). It is entirely set up to use means from the `tidyverse` and provides `tibble`s with all data available via the web-api of [coinmarketcap.com](https://coinmarketcap.com/). **It does not require an API key but in turn only provides information that is also available through the website of [coinmarketcap.com](https://coinmarketcap.com/).**
