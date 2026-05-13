@@ -91,9 +91,24 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   # now create convertId from convert
   convertId <- ifelse(convert=="USD",2781,1)
   # only if no coins are provided use crypto_list() to provide all actively traded coins
-  if (is.null(coin_list)) coin_list <- crypto_list()
-  # limit amount of coins downloaded
-  if (!is.null(limit)) coin_list <- coin_list[1:limit, ]
+  if (is.null(coin_list)) {
+    # Use crypto_listings to get coins with rank, then join with crypto_list for full details
+    coin_listings <- crypto_listings(limit = ifelse(is.null(limit), 5000, limit))
+    coin_list <- crypto_list() %>%
+      dplyr::inner_join(coin_listings %>% dplyr::select(id, cmc_rank), by = "id") %>%
+      dplyr::arrange(cmc_rank) %>%
+      dplyr::select(-cmc_rank)
+  } else if (!is.null(limit)) {
+    # If coin_list provided but no rank column, get rank from crypto_listings
+    if (!"cmc_rank" %in% names(coin_list)) {
+      coin_listings <- crypto_listings(limit = max(nrow(coin_list), limit))
+      coin_list <- coin_list %>%
+        dplyr::inner_join(coin_listings %>% dplyr::select(id, cmc_rank), by = "id") %>%
+        dplyr::arrange(cmc_rank) %>%
+        dplyr::select(-cmc_rank)
+    }
+    coin_list <- coin_list[1:min(limit, nrow(coin_list)), ]
+  }
   # create dates
   if (is.null(start_date)) { start_date <- as.Date("2013-04-28") }
   if (is.null(end_date)) { end_date <- lubridate::today() }
