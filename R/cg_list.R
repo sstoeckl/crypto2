@@ -26,7 +26,12 @@
 #'   with `rank` and `numeric_id` (faster). Default `NULL` = enrich all coins
 #'   that appear in `/coins/markets`.
 #' @param sleep Seconds between consecutive `/coins/markets` page calls
-#'   (default `2.1` to stay under the documented 30 req/min cap).
+#'   (default `2.5` → 24 req/min, ~80% of the Demo-tier 30 req/min cap,
+#'   leaving headroom for CoinGecko's sliding-window enforcement).
+#' @param wait Seconds to wait before retrying after an HTTP 429 / network
+#'   error (default `60`, matching CoinGecko's rate-limit window).
+#' @param max_retries Maximum number of retry attempts on rate-limit /
+#'   network failures (default `3`).
 #' @param vs_currency Quote currency for the market snapshot, default `"usd"`.
 #'
 #' @return Tibble with one row per coin currently tracked by CoinGecko.
@@ -58,7 +63,9 @@
 #' @importFrom dplyr left_join select arrange mutate distinct
 #' @export
 cg_list <- function(only_active = TRUE, add_untracked = FALSE,
-                    top_n = NULL, sleep = 2.1, vs_currency = "usd") {
+                    top_n = NULL,
+                    sleep = 2.5, wait = 60, max_retries = 3,
+                    vs_currency = "usd") {
   if (!only_active) {
     warning("CoinGecko's free tier does not expose delisted/inactive coins. ",
             "`only_active=FALSE` is ignored; consider using `cg_snapshot()` ",
@@ -69,7 +76,8 @@ cg_list <- function(only_active = TRUE, add_untracked = FALSE,
             call. = FALSE)
   }
 
-  client <- cg_make_client(sleep = sleep)
+  client <- cg_make_client(sleep = sleep, wait = wait,
+                           max_retries = max_retries)
 
   # 1. Full universe (slug/symbol/name) in one call
   raw <- cg_parse_json(client(cg_url("coins/list", host = "api")))

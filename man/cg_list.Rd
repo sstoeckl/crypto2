@@ -8,7 +8,9 @@ cg_list(
   only_active = TRUE,
   add_untracked = FALSE,
   top_n = NULL,
-  sleep = 2.1,
+  sleep = 2.5,
+  wait = 60,
+  max_retries = 3,
   vs_currency = "usd"
 )
 }
@@ -24,7 +26,14 @@ with \code{rank} and \code{numeric_id} (faster). Default \code{NULL} = enrich al
 that appear in \verb{/coins/markets}.}
 
 \item{sleep}{Seconds between consecutive \verb{/coins/markets} page calls
-(default \code{2.1} to stay under the documented 30 req/min cap).}
+(default \code{2.5} → 24 req/min, ~80\% of the Demo-tier 30 req/min cap,
+leaving headroom for CoinGecko's sliding-window enforcement).}
+
+\item{wait}{Seconds to wait before retrying after an HTTP 429 / network
+error (default \code{60}, matching CoinGecko's rate-limit window).}
+
+\item{max_retries}{Maximum number of retry attempts on rate-limit /
+network failures (default \code{3}).}
 
 \item{vs_currency}{Quote currency for the market snapshot, default \code{"usd"}.}
 }

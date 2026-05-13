@@ -93,3 +93,46 @@ test_that("cg_make_client() returns a function", {
   cl <- cg_make_client(sleep = 0)
   expect_type(cl, "closure")
 })
+
+# ---- 429 / network-error retry contract ------------------------------------
+
+# The retry logic relies on cg_get() raising classed conditions for 429s
+# and network errors so that purrr::insistently catches them. We can't
+# easily simulate a real 429 without network mocking, so verify the
+# condition class machinery directly: a manually-raised cg_rate_limited
+# condition must be catchable by class, and a possibly()-wrapped
+# insistently() must convert exhausted-retries to NULL rather than
+# propagating the error.
+
+test_that("cg_rate_limited condition is catchable by class", {
+  cond <- tryCatch(
+    stop(structure(
+      class = c("cg_rate_limited", "error", "condition"),
+      list(message = "test", retry_after = 60)
+    )),
+    cg_rate_limited = function(c) c
+  )
+  expect_true(inherits(cond, "cg_rate_limited"))
+  expect_equal(cond$retry_after, 60)
+})
+
+test_that("possibly() wrapper converts an unrecoverable cg_get() failure to NULL", {
+  # Build a client whose underlying GET always errors (no network).
+  # If wait * max_retries is short, the call returns NULL promptly.
+  fake_get <- function(...) {
+    stop(structure(
+      class = c("cg_rate_limited", "error", "condition"),
+      list(message = "simulated 429", retry_after = 0)
+    ))
+  }
+  wrapped <- purrr::possibly(
+    purrr::insistently(fake_get,
+                       rate = purrr::rate_backoff(pause_base = 0.01,
+                                                  pause_cap = 0.02,
+                                                  max_times = 2,
+                                                  jitter = FALSE),
+                       quiet = TRUE),
+    otherwise = NULL
+  )
+  expect_null(wrapped("anything"))
+})

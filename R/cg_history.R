@@ -39,7 +39,10 @@
 #' @param sleep Seconds between consecutive endpoint calls on the website
 #'   host (default `0.6` → ~100 req/min, polite). Cloudflare may issue a 403
 #'   challenge at higher rates from less reputable IPs.
-#' @param wait,max_retries Retry parameters (see [cg_make_client()]).
+#' @param wait Seconds to wait before retrying after a 429 / network error
+#'   (default `60`). See [cg_make_client()].
+#' @param max_retries Maximum retry attempts (default `3`). See
+#'   [cg_make_client()].
 #' @param finalWait Sleep 60s after the last call (mirrors `crypto_history()`).
 #'
 #' @return Tibble with one row per (coin, date) using crypto2-compatible
@@ -78,7 +81,7 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
                        start_date = NULL, end_date = NULL,
                        interval = "daily",
                        what = c("price", "market_cap", "ohlc"),
-                       sleep = 0.6, wait = 30, max_retries = 3,
+                       sleep = 0.6, wait = 60, max_retries = 3,
                        finalWait = FALSE) {
   if (!identical(interval, "daily")) {
     warning("CoinGecko free-tier website endpoints return daily granularity ",

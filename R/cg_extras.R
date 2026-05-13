@@ -45,18 +45,32 @@ cg_user_agent <- function() {
 #'
 #' Wraps `httr::GET` with a Chrome User-Agent (defeats Cloudflare's cheapest
 #' bot heuristic), follows redirects, and returns the response body as text.
-#' Errors are swallowed and converted into `NULL` so callers can keep going
-#' through batch loops without one bad request killing the whole pipeline.
+#'
+#' Failure semantics — designed to interact correctly with the
+#' [cg_make_client()] retry wrapper:
+#' \itemize{
+#'   \item **Network / connection errors** raise a classed condition
+#'     (`"cg_network_error"`) — retryable by `purrr::insistently`.
+#'   \item **HTTP 429** (rate-limited) raises a classed condition
+#'     (`"cg_rate_limited"`) carrying the `Retry-After` header in seconds
+#'     (defaulting to 60 if absent) — retryable by `purrr::insistently`,
+#'     which will pause `wait` seconds before retrying.
+#'   \item **Other non-2xx responses** (404, 410, 5xx, …) return `NULL`
+#'     **without** raising, so a missing coin or a stale endpoint does not
+#'     consume retry budget — the caller decides what to do with `NULL`.
+#'   \item **2xx** returns the response body as a length-1 character vector.
+#' }
 #'
 #' @param url Full URL to GET.
 #' @param query Optional named list of query parameters.
 #' @param accept Default `"application/json, text/plain, */*"`. Override to
 #'   `"text/html"` etc. as needed.
-#' @return Raw response body as a length-1 character vector, or `NULL` on
-#'   any error / non-2xx status.
+#' @return Raw response body as a length-1 character vector on 2xx, or
+#'   `NULL` for non-retryable non-2xx (404 etc.). Raises a classed condition
+#'   on retryable failures (429, network errors).
 #' @keywords internal
 #'
-#' @importFrom httr GET status_code content user_agent add_headers timeout
+#' @importFrom httr GET status_code content user_agent add_headers timeout headers
 #'
 cg_get <- function(url, query = NULL,
                    accept = "application/json, text/plain, */*") {
@@ -72,11 +86,40 @@ cg_get <- function(url, query = NULL,
       ),
       httr::timeout(60)
     ),
-    error = function(e) NULL
+    error = function(e) {
+      # Network failure (DNS, TLS, connection refused, timeout, etc.) →
+      # raise a classed condition so insistently() retries.
+      stop(structure(
+        class = c("cg_network_error", "error", "condition"),
+        list(
+          message = sprintf("CoinGecko network error: %s",
+                            conditionMessage(e)),
+          call = sys.call(-1)
+        )
+      ))
+    }
   )
-  if (is.null(resp)) return(NULL)
   sc <- httr::status_code(resp)
-  if (sc < 200 || sc >= 300) return(NULL)
+  if (sc == 429) {
+    # Rate-limited. Surface as a retryable classed condition with the
+    # Retry-After value preserved on the condition so the caller can
+    # inspect it if desired.
+    retry_after <- suppressWarnings(
+      as.numeric(httr::headers(resp)[["retry-after"]])
+    )
+    if (is.na(retry_after) || retry_after <= 0) retry_after <- 60
+    stop(structure(
+      class = c("cg_rate_limited", "error", "condition"),
+      list(
+        message = sprintf(
+          "CoinGecko 429 rate-limited; Retry-After: %ds (url: %s)",
+          retry_after, url),
+        call = sys.call(),
+        retry_after = retry_after
+      )
+    ))
+  }
+  if (sc < 200 || sc >= 300) return(NULL)  # 404, 410, 5xx — non-retryable
   httr::content(resp, as = "text", encoding = "UTF-8")
 }
 
@@ -99,17 +142,33 @@ cg_parse_json <- function(txt, ...) {
 
 #' Build a slow + insistent wrapper around `cg_get`
 #'
-#' Combines `purrr::slowly` (rate limiting) and `purrr::insistently` (retry
-#' with backoff) to produce an HTTP client suitable for batch jobs.
+#' Combines `purrr::slowly` (rate limiting between successful calls) and
+#' `purrr::insistently` (retry with exponential backoff on retryable
+#' errors) to produce an HTTP client suitable for batch jobs.
+#'
+#' Retry behaviour: `cg_get()` raises a classed condition for HTTP 429
+#' (rate-limited) and network failures. The `insistently` wrapper catches
+#' these and retries up to `max_retries` times, waiting `wait` seconds
+#' before the first retry and up to `wait * 4` seconds before later
+#' retries (with jitter). Non-retryable HTTP errors (404, 410, 5xx) still
+#' return `NULL` immediately and do not consume retry budget.
 #'
 #' @param sleep Seconds between successive successful calls (default 0.6 →
-#'   roughly 100 req/min, polite for the website host; the documented host
-#'   needs `sleep = 2.1` to stay under the 30 req/min cap).
-#' @param wait Seconds to wait before retry on failure (default 30).
-#' @param max_retries Max retry attempts on failure (default 3).
+#'   ~100 req/min, polite for the website host; the documented
+#'   `api.coingecko.com` host needs `sleep >= 2.5` to stay safely below
+#'   the 30 req/min Demo-tier cap).
+#' @param wait Seconds to wait before the first retry after a 429 / network
+#'   error. Defaults to 60 so the CoinGecko 60-second rate-limit window
+#'   fully resets before the retry fires. Exponential backoff applies for
+#'   subsequent retries, up to `pause_cap = wait * 4`.
+#' @param max_retries Max retry attempts on failure (default 3, giving up to
+#'   ~ 60 + 120 + 240 = 420 s of additional waiting in the worst case).
+#' @param quiet If `FALSE`, `purrr::insistently` emits a message on every
+#'   retry so the caller sees the back-off in progress. Default `TRUE`.
 #' @keywords internal
 #' @importFrom purrr slowly insistently rate_delay rate_backoff possibly
-cg_make_client <- function(sleep = 0.6, wait = 30, max_retries = 3) {
+cg_make_client <- function(sleep = 0.6, wait = 60, max_retries = 3,
+                           quiet = TRUE) {
   rate_slow  <- purrr::rate_delay(sleep)
   rate_retry <- purrr::rate_backoff(pause_base = wait,
                                     pause_cap = wait * 4,
@@ -118,7 +177,7 @@ cg_make_client <- function(sleep = 0.6, wait = 30, max_retries = 3) {
   purrr::possibly(
     purrr::insistently(
       purrr::slowly(cg_get, rate = rate_slow, quiet = TRUE),
-      rate = rate_retry, quiet = TRUE
+      rate = rate_retry, quiet = quiet
     ),
     otherwise = NULL
   )

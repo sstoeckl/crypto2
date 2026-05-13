@@ -11,9 +11,13 @@
 #' @param coin_list Tibble in [cg_list()] / [cg_listings()] format (must have
 #'   a `slug` column). If `NULL`, calls `cg_list()`.
 #' @param limit Optional cap on number of coins (top of the tibble).
-#' @param sleep Seconds between calls (default `2.1` → under 30 req/min on
-#'   the documented API host).
-#' @param wait,max_retries Retry parameters (see [cg_make_client()]).
+#' @param sleep Seconds between calls (default `2.5` → 24 req/min,
+#'   ~80% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
+#'   sliding-window enforcement).
+#' @param wait Seconds to wait before retrying after a 429 (default `60`,
+#'   matching CoinGecko's rate-limit window). See [cg_make_client()].
+#' @param max_retries Maximum retry attempts on 429 / network failures
+#'   (default `3`). See [cg_make_client()].
 #' @param finalWait Sleep 60s after the last call (mirrors `crypto_info()`).
 #'
 #' @return Tibble with one row per coin:
@@ -50,7 +54,7 @@
 #' @importFrom cli cat_bullet
 #' @export
 cg_info <- function(coin_list = NULL, limit = NULL,
-                    sleep = 2.1, wait = 30, max_retries = 3,
+                    sleep = 2.5, wait = 60, max_retries = 3,
                     finalWait = FALSE) {
   if (is.null(coin_list)) coin_list <- cg_list()
   if (!"slug" %in% names(coin_list)) {

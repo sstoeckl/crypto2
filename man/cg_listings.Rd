@@ -9,8 +9,8 @@ cg_listings(
   convert = "USD",
   limit = NULL,
   quote = TRUE,
-  sleep = 2.1,
-  wait = 30,
+  sleep = 2.5,
+  wait = 60,
   max_retries = 3,
   ...
 )
@@ -28,9 +28,15 @@ with a market cap; CoinGecko currently lists ~17 000).}
 \item{quote}{Kept for API parity. Always treated as \code{TRUE} because the
 \verb{/coins/markets} endpoint always returns prices.}
 
-\item{sleep}{Seconds between page calls (default \code{2.1} → under 30 req/min).}
+\item{sleep}{Seconds between page calls (default \code{2.5} → 24 req/min,
+~80\% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
+sliding-window enforcement).}
 
-\item{wait, max_retries}{Retry parameters (see \code{\link[=cg_make_client]{cg_make_client()}}).}
+\item{wait}{Seconds to wait before retrying after a 429 (default \code{60},
+matching CoinGecko's rate-limit window). See \code{\link[=cg_make_client]{cg_make_client()}}.}
+
+\item{max_retries}{Maximum retry attempts on 429 / network failures
+(default \code{3}). See \code{\link[=cg_make_client]{cg_make_client()}}.}
 
 \item{...}{Other args (e.g. \code{sort}, \code{sort_dir}) ignored — kept for parity
 with \code{crypto_listings()}.}

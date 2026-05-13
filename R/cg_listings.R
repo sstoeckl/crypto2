@@ -28,8 +28,13 @@
 #'   with a market cap; CoinGecko currently lists ~17 000).
 #' @param quote Kept for API parity. Always treated as `TRUE` because the
 #'   `/coins/markets` endpoint always returns prices.
-#' @param sleep Seconds between page calls (default `2.1` → under 30 req/min).
-#' @param wait,max_retries Retry parameters (see [cg_make_client()]).
+#' @param sleep Seconds between page calls (default `2.5` → 24 req/min,
+#'   ~80% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
+#'   sliding-window enforcement).
+#' @param wait Seconds to wait before retrying after a 429 (default `60`,
+#'   matching CoinGecko's rate-limit window). See [cg_make_client()].
+#' @param max_retries Maximum retry attempts on 429 / network failures
+#'   (default `3`). See [cg_make_client()].
 #' @param ... Other args (e.g. `sort`, `sort_dir`) ignored — kept for parity
 #'   with `crypto_listings()`.
 #'
@@ -65,7 +70,8 @@
 #' @importFrom tibble as_tibble
 #' @export
 cg_listings <- function(which = "latest", convert = "USD", limit = NULL,
-                        quote = TRUE, sleep = 2.1, wait = 30, max_retries = 3,
+                        quote = TRUE,
+                        sleep = 2.5, wait = 60, max_retries = 3,
                         ...) {
   if (!identical(which, "latest")) {
     warning(sprintf(

@@ -13,7 +13,7 @@ cg_history(
   interval = "daily",
   what = c("price", "market_cap", "ohlc"),
   sleep = 0.6,
-  wait = 30,
+  wait = 60,
   max_retries = 3,
   finalWait = FALSE
 )
@@ -44,7 +44,11 @@ Drop \code{"ohlc"} if you don't need candles (saves one call per coin).}
 host (default \code{0.6} → ~100 req/min, polite). Cloudflare may issue a 403
 challenge at higher rates from less reputable IPs.}
 
-\item{wait, max_retries}{Retry parameters (see \code{\link[=cg_make_client]{cg_make_client()}}).}
+\item{wait}{Seconds to wait before retrying after a 429 / network error
+(default \code{60}). See \code{\link[=cg_make_client]{cg_make_client()}}.}
+
+\item{max_retries}{Maximum retry attempts (default \code{3}). See
+\code{\link[=cg_make_client]{cg_make_client()}}.}
 
 \item{finalWait}{Sleep 60s after the last call (mirrors \code{crypto_history()}).}
 }

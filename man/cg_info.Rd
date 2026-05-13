@@ -7,8 +7,8 @@
 cg_info(
   coin_list = NULL,
   limit = NULL,
-  sleep = 2.1,
-  wait = 30,
+  sleep = 2.5,
+  wait = 60,
   max_retries = 3,
   finalWait = FALSE
 )
@@ -19,10 +19,15 @@ a \code{slug} column). If \code{NULL}, calls \code{cg_list()}.}
 
 \item{limit}{Optional cap on number of coins (top of the tibble).}
 
-\item{sleep}{Seconds between calls (default \code{2.1} → under 30 req/min on
-the documented API host).}
+\item{sleep}{Seconds between calls (default \code{2.5} → 24 req/min,
+~80\% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
+sliding-window enforcement).}
 
-\item{wait, max_retries}{Retry parameters (see \code{\link[=cg_make_client]{cg_make_client()}}).}
+\item{wait}{Seconds to wait before retrying after a 429 (default \code{60},
+matching CoinGecko's rate-limit window). See \code{\link[=cg_make_client]{cg_make_client()}}.}
+
+\item{max_retries}{Maximum retry attempts on 429 / network failures
+(default \code{3}). See \code{\link[=cg_make_client]{cg_make_client()}}.}
 
 \item{finalWait}{Sleep 60s after the last call (mirrors \code{crypto_info()}).}
 }
