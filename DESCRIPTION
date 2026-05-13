@@ -27,9 +27,12 @@ Imports:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Suggests: 
+Suggests:
     spelling,
     testthat (>= 3.0.0),
-    digest
+    digest,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
 Language: en-US
 Config/testthat/edition: 3
