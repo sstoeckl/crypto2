@@ -11,8 +11,8 @@
 #' \describe{
 #'   \item{`/price_charts/{slug}/{vs}/max.json`}{price + total volume (daily)}
 #'   \item{`/market_cap/{slug}/{vs}/max.json`}{market cap (daily)}
-#'   \item{`/ohlc/{numeric_id}/series/{vs}/max.json`}{OHLC — daily where the
-#'     period covers ≥91 days, 4-day candles for older history per CoinGecko's
+#'   \item{`/ohlc/{numeric_id}/series/{vs}/max.json`}{OHLC -- daily where the
+#'     period covers >=91 days, 4-day candles for older history per CoinGecko's
 #'     OHLC granularity policy. Sparse on short date windows.}
 #' }
 #' The three series are joined on date. If a coin's numeric id is missing
@@ -30,14 +30,14 @@
 #' @param start_date,end_date Filter the returned timeseries to this date
 #'   window after fetching (the upstream endpoints always return full history
 #'   in one call, so this is a client-side filter).
-#' @param interval Always `"daily"` — CoinGecko's website endpoints return
+#' @param interval Always `"daily"` -- CoinGecko's website endpoints return
 #'   daily granularity for `max` periods. Hourly is not available without an
 #'   API key.
-#' @param what Subset of timeseries to fetch — character vector with any of
+#' @param what Subset of timeseries to fetch -- character vector with any of
 #'   `"price"`, `"market_cap"`, `"ohlc"`. Default `c("price","market_cap","ohlc")`.
 #'   Drop `"ohlc"` if you don't need candles (saves one call per coin).
 #' @param sleep Seconds between consecutive endpoint calls on the website
-#'   host (default `0.6` → ~100 req/min, polite). Cloudflare may issue a 403
+#'   host (default `0.6` -> ~100 req/min, polite). Cloudflare may issue a 403
 #'   challenge at higher rates from less reputable IPs.
 #' @param wait Seconds to wait before retrying after a 429 / network error
 #'   (default `60`). See [cg_make_client()].
@@ -54,11 +54,11 @@
 #'   \item{ref_cur_name}{Upper-cased quote currency.}
 #'   \item{open, high, low, close}{Daily OHLC, `NA` if `"ohlc"` not requested
 #'     or numeric id missing. `close` is back-filled from the price endpoint
-#'     when OHLC is missing — the price-charts series records the last spot
+#'     when OHLC is missing -- the price-charts series records the last spot
 #'     price of the day, which is a reasonable close proxy.}
 #'   \item{volume}{Daily total volume.}
 #'   \item{market_cap}{Daily market cap.}
-#'   \item{time_open, time_high, time_low, time_close}{`NA` — CoinGecko does
+#'   \item{time_open, time_high, time_low, time_close}{`NA` -- CoinGecko does
 #'     not expose intra-day OHLC timestamps in these endpoints.}
 #'
 #' @examples

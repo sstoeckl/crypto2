@@ -46,18 +46,18 @@ cg_user_agent <- function() {
 #' Wraps `httr::GET` with a Chrome User-Agent (defeats Cloudflare's cheapest
 #' bot heuristic), follows redirects, and returns the response body as text.
 #'
-#' Failure semantics — designed to interact correctly with the
+#' Failure semantics -- designed to interact correctly with the
 #' [cg_make_client()] retry wrapper:
 #' \itemize{
 #'   \item **Network / connection errors** raise a classed condition
-#'     (`"cg_network_error"`) — retryable by `purrr::insistently`.
+#'     (`"cg_network_error"`) -- retryable by `purrr::insistently`.
 #'   \item **HTTP 429** (rate-limited) raises a classed condition
 #'     (`"cg_rate_limited"`) carrying the `Retry-After` header in seconds
-#'     (defaulting to 60 if absent) — retryable by `purrr::insistently`,
+#'     (defaulting to 60 if absent) -- retryable by `purrr::insistently`,
 #'     which will pause `wait` seconds before retrying.
-#'   \item **Other non-2xx responses** (404, 410, 5xx, …) return `NULL`
+#'   \item **Other non-2xx responses** (404, 410, 5xx, ...) return `NULL`
 #'     **without** raising, so a missing coin or a stale endpoint does not
-#'     consume retry budget — the caller decides what to do with `NULL`.
+#'     consume retry budget -- the caller decides what to do with `NULL`.
 #'   \item **2xx** returns the response body as a length-1 character vector.
 #' }
 #'
@@ -87,7 +87,7 @@ cg_get <- function(url, query = NULL,
       httr::timeout(60)
     ),
     error = function(e) {
-      # Network failure (DNS, TLS, connection refused, timeout, etc.) →
+      # Network failure (DNS, TLS, connection refused, timeout, etc.) ->
       # raise a classed condition so insistently() retries.
       stop(structure(
         class = c("cg_network_error", "error", "condition"),
@@ -119,14 +119,14 @@ cg_get <- function(url, query = NULL,
       )
     ))
   }
-  if (sc < 200 || sc >= 300) return(NULL)  # 404, 410, 5xx — non-retryable
+  if (sc < 200 || sc >= 300) return(NULL)  # 404, 410, 5xx -- non-retryable
   httr::content(resp, as = "text", encoding = "UTF-8")
 }
 
 #' Parse JSON or return NULL on failure
 #'
 #' Convenience wrapper around `jsonlite::fromJSON` that returns `NULL` instead
-#' of erroring out — matches the failure semantics of `cg_get()`.
+#' of erroring out -- matches the failure semantics of `cg_get()`.
 #'
 #' @param txt JSON text (length-1 character).
 #' @param ... Passed to `jsonlite::fromJSON`.
@@ -153,7 +153,7 @@ cg_parse_json <- function(txt, ...) {
 #' retries (with jitter). Non-retryable HTTP errors (404, 410, 5xx) still
 #' return `NULL` immediately and do not consume retry budget.
 #'
-#' @param sleep Seconds between successive successful calls (default 0.6 →
+#' @param sleep Seconds between successive successful calls (default 0.6 ->
 #'   ~100 req/min, polite for the website host; the documented
 #'   `api.coingecko.com` host needs `sleep >= 2.5` to stay safely below
 #'   the 30 req/min Demo-tier cap).

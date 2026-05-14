@@ -4,7 +4,7 @@
 #' as a tibble using the same column conventions as `crypto_list()`, so
 #' downstream code that consumes a CMC coin list also consumes this one.
 #'
-#' Important caveat — survivorship bias: CoinGecko actively prunes delisted
+#' Important caveat -- survivorship bias: CoinGecko actively prunes delisted
 #' and inactive coins from its public database. The free-tier API only returns
 #' coins currently active on the platform. To build a survivorship-bias-free
 #' dataset from CoinGecko, snapshot this list **periodically** (daily/weekly,
@@ -12,21 +12,21 @@
 #' later remain in your accumulated archive.
 #'
 #' Data sources (no API key required):
-#' * `api.coingecko.com/api/v3/coins/list` — the full slug/symbol/name universe
+#' * `api.coingecko.com/api/v3/coins/list` -- the full slug/symbol/name universe
 #'   in a single HTTP call (free, key-less, but limited to active coins).
-#' * `api.coingecko.com/api/v3/coins/markets?per_page=250&page=N` — paginated
+#' * `api.coingecko.com/api/v3/coins/markets?per_page=250&page=N` -- paginated
 #'   market snapshot, which provides `market_cap_rank` and the `image` URL
 #'   from which the internal numeric ID is extracted.
 #'
 #' @param only_active Always `TRUE` for CoinGecko free-tier (kept for API
 #'   parity with `crypto_list()`). The argument is ignored with a warning if
 #'   set to `FALSE`.
-#' @param add_untracked Same — ignored on CoinGecko free-tier. Kept for parity.
+#' @param add_untracked Same -- ignored on CoinGecko free-tier. Kept for parity.
 #' @param top_n If non-NULL, only enrich the top `top_n` coins by market cap
 #'   with `rank` and `numeric_id` (faster). Default `NULL` = enrich all coins
 #'   that appear in `/coins/markets`.
 #' @param sleep Seconds between consecutive `/coins/markets` page calls
-#'   (default `2.5` → 24 req/min, ~80% of the Demo-tier 30 req/min cap,
+#'   (default `2.5` -> 24 req/min, ~80% of the Demo-tier 30 req/min cap,
 #'   leaving headroom for CoinGecko's sliding-window enforcement).
 #' @param wait Seconds to wait before retrying after an HTTP 429 / network
 #'   error (default `60`, matching CoinGecko's rate-limit window).
@@ -45,7 +45,7 @@
 #'   \item{rank}{Current market-cap rank, `NA` for coins outside the top
 #'     `top_n` or without a market cap.}
 #'   \item{is_active}{Always `1L` on CoinGecko free-tier.}
-#'   \item{first_historical_data}{`NA_Date_` — not exposed by the free tier.
+#'   \item{first_historical_data}{`NA_Date_` -- not exposed by the free tier.
 #'     Backfill via [cg_history()] if needed.}
 #'   \item{last_historical_data}{Today's date, in line with `crypto_list()`'s
 #'     convention for active coins.}

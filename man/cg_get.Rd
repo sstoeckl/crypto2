@@ -24,18 +24,18 @@ Wraps \code{httr::GET} with a Chrome User-Agent (defeats Cloudflare's cheapest
 bot heuristic), follows redirects, and returns the response body as text.
 }
 \details{
-Failure semantics — designed to interact correctly with the
+Failure semantics -- designed to interact correctly with the
 \code{\link[=cg_make_client]{cg_make_client()}} retry wrapper:
 \itemize{
 \item \strong{Network / connection errors} raise a classed condition
-(\code{"cg_network_error"}) — retryable by \code{purrr::insistently}.
+(\code{"cg_network_error"}) -- retryable by \code{purrr::insistently}.
 \item \strong{HTTP 429} (rate-limited) raises a classed condition
 (\code{"cg_rate_limited"}) carrying the \code{Retry-After} header in seconds
-(defaulting to 60 if absent) — retryable by \code{purrr::insistently},
+(defaulting to 60 if absent) -- retryable by \code{purrr::insistently},
 which will pause \code{wait} seconds before retrying.
-\item \strong{Other non-2xx responses} (404, 410, 5xx, …) return \code{NULL}
+\item \strong{Other non-2xx responses} (404, 410, 5xx, ...) return \code{NULL}
 \strong{without} raising, so a missing coin or a stale endpoint does not
-consume retry budget — the caller decides what to do with \code{NULL}.
+consume retry budget -- the caller decides what to do with \code{NULL}.
 \item \strong{2xx} returns the response body as a length-1 character vector.
 }
 }

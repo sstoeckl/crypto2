@@ -7,7 +7,7 @@
 cg_make_client(sleep = 0.6, wait = 60, max_retries = 3, quiet = TRUE)
 }
 \arguments{
-\item{sleep}{Seconds between successive successful calls (default 0.6 →
+\item{sleep}{Seconds between successive successful calls (default 0.6 ->
 ~100 req/min, polite for the website host; the documented
 \code{api.coingecko.com} host needs \code{sleep >= 2.5} to stay safely below
 the 30 req/min Demo-tier cap).}

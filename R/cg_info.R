@@ -11,7 +11,7 @@
 #' @param coin_list Tibble in [cg_list()] / [cg_listings()] format (must have
 #'   a `slug` column). If `NULL`, calls `cg_list()`.
 #' @param limit Optional cap on number of coins (top of the tibble).
-#' @param sleep Seconds between calls (default `2.5` → 24 req/min,
+#' @param sleep Seconds between calls (default `2.5` -> 24 req/min,
 #'   ~80% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
 #'   sliding-window enforcement).
 #' @param wait Seconds to wait before retrying after a 429 (default `60`,
@@ -76,7 +76,7 @@ cg_info <- function(coin_list = NULL, limit = NULL,
     )))
     if (is.null(raw)) return(NULL)
 
-    # Defensive accessors — never assume a field exists
+    # Defensive accessors -- never assume a field exists
     pick <- function(x, ..., default = NA) {
       keys <- c(...)
       for (k in keys) {

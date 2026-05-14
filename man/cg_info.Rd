@@ -19,7 +19,7 @@ a \code{slug} column). If \code{NULL}, calls \code{cg_list()}.}
 
 \item{limit}{Optional cap on number of coins (top of the tibble).}
 
-\item{sleep}{Seconds between calls (default \code{2.5} → 24 req/min,
+\item{sleep}{Seconds between calls (default \code{2.5} -> 24 req/min,
 ~80\% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
 sliding-window enforcement).}
 

@@ -32,16 +32,16 @@ tibble after sorting by \code{rank}).}
 window after fetching (the upstream endpoints always return full history
 in one call, so this is a client-side filter).}
 
-\item{interval}{Always \code{"daily"} — CoinGecko's website endpoints return
+\item{interval}{Always \code{"daily"} -- CoinGecko's website endpoints return
 daily granularity for \code{max} periods. Hourly is not available without an
 API key.}
 
-\item{what}{Subset of timeseries to fetch — character vector with any of
+\item{what}{Subset of timeseries to fetch -- character vector with any of
 \code{"price"}, \code{"market_cap"}, \code{"ohlc"}. Default \code{c("price","market_cap","ohlc")}.
 Drop \code{"ohlc"} if you don't need candles (saves one call per coin).}
 
 \item{sleep}{Seconds between consecutive endpoint calls on the website
-host (default \code{0.6} → ~100 req/min, polite). Cloudflare may issue a 403
+host (default \code{0.6} -> ~100 req/min, polite). Cloudflare may issue a 403
 challenge at higher rates from less reputable IPs.}
 
 \item{wait}{Seconds to wait before retrying after a 429 / network error
@@ -62,11 +62,11 @@ column names:
 \item{ref_cur_name}{Upper-cased quote currency.}
 \item{open, high, low, close}{Daily OHLC, \code{NA} if \code{"ohlc"} not requested
 or numeric id missing. \code{close} is back-filled from the price endpoint
-when OHLC is missing — the price-charts series records the last spot
+when OHLC is missing -- the price-charts series records the last spot
 price of the day, which is a reasonable close proxy.}
 \item{volume}{Daily total volume.}
 \item{market_cap}{Daily market cap.}
-\item{time_open, time_high, time_low, time_close}{\code{NA} — CoinGecko does
+\item{time_open, time_high, time_low, time_close}{\code{NA} -- CoinGecko does
 not expose intra-day OHLC timestamps in these endpoints.}
 }
 \description{
@@ -82,8 +82,8 @@ Per coin, up to three HTTP calls are made (each returning the coin's
 \describe{
 \item{\verb{/price_charts/\{slug\}/\{vs\}/max.json}}{price + total volume (daily)}
 \item{\verb{/market_cap/\{slug\}/\{vs\}/max.json}}{market cap (daily)}
-\item{\verb{/ohlc/\{numeric_id\}/series/\{vs\}/max.json}}{OHLC — daily where the
-period covers ≥91 days, 4-day candles for older history per CoinGecko's
+\item{\verb{/ohlc/\{numeric_id\}/series/\{vs\}/max.json}}{OHLC -- daily where the
+period covers >=91 days, 4-day candles for older history per CoinGecko's
 OHLC granularity policy. Sparse on short date windows.}
 }
 The three series are joined on date. If a coin's numeric id is missing

@@ -7,13 +7,13 @@
 #' listings tibble works on this tibble too.
 #'
 #' Data sources (no API key required):
-#' * `api.coingecko.com/api/v3/coins/markets?vs_currency=...&per_page=250&page=N` —
+#' * `api.coingecko.com/api/v3/coins/markets?vs_currency=...&per_page=250&page=N` --
 #'   paginated. The `price_change_percentage` query param is set to
 #'   `"1h,24h,7d,14d,30d,200d,1y"` so all CMC-equivalent return windows are
 #'   present.
 #'
 #' CoinGecko free-tier limitations
-#' * Snapshot only — `which = "historical"` is **not supported** because
+#' * Snapshot only -- `which = "historical"` is **not supported** because
 #'   CoinGecko's free tier does not expose the historical cross-section of
 #'   the universe. Use this function periodically (daily/weekly) and persist
 #'   each snapshot yourself to accumulate a survivorship-bias-corrected
@@ -28,21 +28,21 @@
 #'   with a market cap; CoinGecko currently lists ~17 000).
 #' @param quote Kept for API parity. Always treated as `TRUE` because the
 #'   `/coins/markets` endpoint always returns prices.
-#' @param sleep Seconds between page calls (default `2.5` → 24 req/min,
+#' @param sleep Seconds between page calls (default `2.5` -> 24 req/min,
 #'   ~80% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
 #'   sliding-window enforcement).
 #' @param wait Seconds to wait before retrying after a 429 (default `60`,
 #'   matching CoinGecko's rate-limit window). See [cg_make_client()].
 #' @param max_retries Maximum retry attempts on 429 / network failures
 #'   (default `3`). See [cg_make_client()].
-#' @param ... Other args (e.g. `sort`, `sort_dir`) ignored — kept for parity
+#' @param ... Other args (e.g. `sort`, `sort_dir`) ignored -- kept for parity
 #'   with `crypto_listings()`.
 #'
 #' @return Tibble with columns matching `crypto_listings(quote = TRUE)` where
 #'   the corresponding CoinGecko field exists. Mapping:
 #'   \item{id}{CoinGecko internal numeric id (from image URL).}
 #'   \item{name, symbol, slug}{Coin identifiers (slug = CG's API id).}
-#'   \item{date_added}{`NA_Date_` — not available from `/coins/markets`.
+#'   \item{date_added}{`NA_Date_` -- not available from `/coins/markets`.
 #'     Pull via [cg_info()] for these.}
 #'   \item{last_updated}{Date of the last update reported by CoinGecko.}
 #'   \item{rank}{Market-cap rank (= CG `market_cap_rank`).}
@@ -121,7 +121,7 @@ cg_listings <- function(which = "latest", convert = "USD", limit = NULL,
   if (!is.null(limit)) raw <- raw[seq_len(min(limit, nrow(raw))), , drop = FALSE]
 
   # Allowlist of source columns so unexpected new CG fields are silently
-  # ignored — same defensive pattern recommended for crypto_info().
+  # ignored -- same defensive pattern recommended for crypto_info().
   pick <- function(df, col, default = NA) {
     if (col %in% names(df)) df[[col]] else rep(default, nrow(df))
   }

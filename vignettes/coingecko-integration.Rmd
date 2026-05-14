@@ -7,11 +7,14 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r, eval = FALSE, purl = FALSE, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment  = "#>",
-  eval     = FALSE     # All code chunks hit the live API. Don't run on CRAN.
+  eval     = FALSE,    # Don't run at vignette-build time
+  purl     = FALSE     # Don't include in tangled .R either - R CMD check
+                       # runs the tangled script and would otherwise try
+                       # to install remotes / hit the live CoinGecko API.
 )
 ```
 
@@ -34,7 +37,7 @@ against any one platform changing its policies.
 
 The branch is experimental. Install with:
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 # install.packages("remotes")
 remotes::install_github("sstoeckl/crypto2@coingecko-integration")
 library(crypto2)
@@ -67,7 +70,7 @@ counterparts.
 
 ## `cg_list()` — the active coin universe
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 universe <- cg_list(top_n = NULL)        # ≈ 17 000 coins (active only)
 head(universe)
 #> # A tibble: 6 × 8
@@ -95,7 +98,7 @@ numeric IDs); `top_n = NULL` paginates the full universe.
 
 ## `cg_listings()` — current cross-sectional snapshot
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 snapshot <- cg_listings(limit = 1000)     # top 1000 by market cap, with returns
 head(snapshot)
 ```
@@ -118,7 +121,7 @@ available** on CG's free tier — see the next section.
 
 ## `cg_history()` — daily OHLC + volume + market cap per coin
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 # Pass a tibble in cg_list()/cg_listings() format
 top10 <- cg_list(top_n = 10)
 hist  <- cg_history(coin_list = top10,
@@ -147,7 +150,7 @@ from the OHLC join. Price / Volume / Market-cap remain perfectly daily.
 
 ## `cg_info()` — per-coin metadata
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 info <- cg_info(coin_list = data.frame(slug = "bitcoin"))
 ```
 
@@ -184,7 +187,7 @@ that point) and persist it. Coins that get delisted **after** you start
 snapshotting remain in your archive. The union of all snapshots grows
 into a survivorship-bias-corrected universe over time.
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 # inside your cronjob (separate package):
 weekly_universe <- cg_list(top_n = NULL)
 arrow::write_parquet(
@@ -225,7 +228,7 @@ The Pro tier gives you:
 Subscribe to the [Analyst tier](https://www.coingecko.com/en/api/pricing).
 Copy your API key. Set it as an environment variable:
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 Sys.setenv(CG_PRO_KEY = "your-key-here")
 ```
 
@@ -235,7 +238,7 @@ The package does not ship a Pro-tier harvest function (those endpoints
 require a paid key, which is out of scope for the free package). Use
 this self-contained script (adapt as needed):
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 # Run once with an Analyst-tier key. Writes cg_universe_master.parquet
 # with all the slug ↔ numeric_id ↔ name ↔ symbol mappings.
 library(httr)
@@ -312,7 +315,7 @@ finishes, cancel your Analyst subscription.
 
 ## Step 3 — use the free `cg_history_by_id()` going forward
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 mapping <- arrow::read_parquet("cg_universe_master.parquet")
 
 # Refresh history for the entire historical universe — free, no key.
@@ -331,7 +334,7 @@ Run weekly: pull `cg_list()` (free), append any **new** (slug,
 numeric_id) pairs to the master mapping. The mapping grows organically
 as CoinGecko lists new coins.
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 weekly <- cg_list(top_n = NULL)
 new_pairs <- weekly %>%
   filter(!is.na(id), !id %in% mapping$numeric_id) %>%
@@ -371,7 +374,7 @@ gives you:
 * Cross-validation of market-cap / volume figures (within the limits of
   exchange aggregation differences).
 
-```{r}
+```{r, eval = FALSE, purl = FALSE}
 cmc_full <- crypto_list(only_active = FALSE, add_untracked = TRUE)
 cg_full  <- arrow::read_parquet("cg_universe_master.parquet")
 

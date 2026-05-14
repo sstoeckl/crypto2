@@ -28,7 +28,7 @@ with a market cap; CoinGecko currently lists ~17 000).}
 \item{quote}{Kept for API parity. Always treated as \code{TRUE} because the
 \verb{/coins/markets} endpoint always returns prices.}
 
-\item{sleep}{Seconds between page calls (default \code{2.5} → 24 req/min,
+\item{sleep}{Seconds between page calls (default \code{2.5} -> 24 req/min,
 ~80\% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
 sliding-window enforcement).}
 
@@ -38,7 +38,7 @@ matching CoinGecko's rate-limit window). See \code{\link[=cg_make_client]{cg_mak
 \item{max_retries}{Maximum retry attempts on 429 / network failures
 (default \code{3}). See \code{\link[=cg_make_client]{cg_make_client()}}.}
 
-\item{...}{Other args (e.g. \code{sort}, \code{sort_dir}) ignored — kept for parity
+\item{...}{Other args (e.g. \code{sort}, \code{sort_dir}) ignored -- kept for parity
 with \code{crypto_listings()}.}
 }
 \value{
@@ -46,7 +46,7 @@ Tibble with columns matching \code{crypto_listings(quote = TRUE)} where
 the corresponding CoinGecko field exists. Mapping:
 \item{id}{CoinGecko internal numeric id (from image URL).}
 \item{name, symbol, slug}{Coin identifiers (slug = CG's API id).}
-\item{date_added}{\code{NA_Date_} — not available from \verb{/coins/markets}.
+\item{date_added}{\code{NA_Date_} -- not available from \verb{/coins/markets}.
 Pull via \code{\link[=cg_info]{cg_info()}} for these.}
 \item{last_updated}{Date of the last update reported by CoinGecko.}
 \item{rank}{Market-cap rank (= CG \code{market_cap_rank}).}
@@ -71,7 +71,7 @@ listings tibble works on this tibble too.
 \details{
 Data sources (no API key required):
 \itemize{
-\item \code{api.coingecko.com/api/v3/coins/markets?vs_currency=...&per_page=250&page=N} —
+\item \code{api.coingecko.com/api/v3/coins/markets?vs_currency=...&per_page=250&page=N} --
 paginated. The \code{price_change_percentage} query param is set to
 \code{"1h,24h,7d,14d,30d,200d,1y"} so all CMC-equivalent return windows are
 present.
@@ -79,7 +79,7 @@ present.
 
 CoinGecko free-tier limitations
 \itemize{
-\item Snapshot only — \code{which = "historical"} is \strong{not supported} because
+\item Snapshot only -- \code{which = "historical"} is \strong{not supported} because
 CoinGecko's free tier does not expose the historical cross-section of
 the universe. Use this function periodically (daily/weekly) and persist
 each snapshot yourself to accumulate a survivorship-bias-corrected

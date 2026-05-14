@@ -14,11 +14,11 @@
 #'    refetch each historical ID directly without needing its current
 #'    slug to still resolve.
 #'
-#' Important caveats — please read:
+#' Important caveats -- please read:
 #' * **The numeric-ID space is sparse, not dense.** CoinGecko's
 #'   auto-increment counter has been allocated up to ~102 million, but
 #'   only ~15 000 IDs are actually populated as of mid 2026.
-#'   **Blind iteration over `1:N` does NOT recover the full universe** —
+#'   **Blind iteration over `1:N` does NOT recover the full universe** --
 #'   most numeric IDs in that range return 404. The default `ids = NULL`
 #'   therefore uses the active universe from `cg_list()`, NOT a numeric
 #'   range. To recover delisted coins you must supply the IDs explicitly
@@ -33,7 +33,7 @@
 #'   the public API. The exact coverage policy is undocumented and may
 #'   change without notice.
 #'
-#' @param ids Integer vector of numeric IDs to fetch. Default `NULL` →
+#' @param ids Integer vector of numeric IDs to fetch. Default `NULL` ->
 #'   uses `cg_list()$id` (active universe). To extend coverage to
 #'   delisted coins, supply the union of historically-observed IDs from
 #'   your accumulated snapshots.
@@ -55,7 +55,7 @@
 #' @return Tibble with one row per (id, date) using crypto2-compatible
 #'   column names. Columns:
 #'   \item{id}{CoinGecko numeric id (always populated).}
-#'   \item{slug, name, symbol}{Coin identifiers — `NA` for ids no longer
+#'   \item{slug, name, symbol}{Coin identifiers -- `NA` for ids no longer
 #'     in the active universe (i.e. delisted on the slug side).}
 #'   \item{timestamp}{POSIXct UTC midnight of the trading day.}
 #'   \item{ref_cur_id, ref_cur_name}{Quote currency.}
@@ -66,7 +66,7 @@
 #' # Scan first 200 numeric IDs (will include both active and delisted coins)
 #' h <- cg_history_by_id(ids = 1:200, what = c("price", "market_cap"))
 #'
-#' # Full sweep — survivorship-bias-free price history of the entire
+#' # Full sweep -- survivorship-bias-free price history of the entire
 #' # CoinGecko universe. Slow (10+ hours). Run via cronjob package.
 #' h_all <- cg_history_by_id()
 #' }
@@ -90,7 +90,7 @@ cg_history_by_id <- function(ids = NULL,
   if (is.null(ids)) {
     if (is.null(coin_list) || isFALSE(coin_list)) {
       message(cli::cat_bullet(
-        "ids = NULL → pulling cg_list() to define the universe",
+        "ids = NULL -> pulling cg_list() to define the universe",
         bullet = "pointer", bullet_col = "cyan"))
       coin_list <- cg_list(top_n = 0)
     }
@@ -264,7 +264,7 @@ cg_history_by_id <- function(ids = NULL,
 }
 
 # Internal: collapse a (timestamp, value...) tibble to daily bars on the
-# UTC calendar. Shared between cg_history() and cg_history_by_id() — the
+# UTC calendar. Shared between cg_history() and cg_history_by_id() -- the
 # CoinGecko website endpoints intermix daily bars with a final rolling
 # "now" point in the same series, so we floor to date and keep the last
 # observation per day for each value column.

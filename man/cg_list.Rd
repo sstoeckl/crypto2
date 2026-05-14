@@ -19,14 +19,14 @@ cg_list(
 parity with \code{crypto_list()}). The argument is ignored with a warning if
 set to \code{FALSE}.}
 
-\item{add_untracked}{Same — ignored on CoinGecko free-tier. Kept for parity.}
+\item{add_untracked}{Same -- ignored on CoinGecko free-tier. Kept for parity.}
 
 \item{top_n}{If non-NULL, only enrich the top \code{top_n} coins by market cap
 with \code{rank} and \code{numeric_id} (faster). Default \code{NULL} = enrich all coins
 that appear in \verb{/coins/markets}.}
 
 \item{sleep}{Seconds between consecutive \verb{/coins/markets} page calls
-(default \code{2.5} → 24 req/min, ~80\% of the Demo-tier 30 req/min cap,
+(default \code{2.5} -> 24 req/min, ~80\% of the Demo-tier 30 req/min cap,
 leaving headroom for CoinGecko's sliding-window enforcement).}
 
 \item{wait}{Seconds to wait before retrying after an HTTP 429 / network
@@ -49,7 +49,7 @@ documented API).}
 \item{rank}{Current market-cap rank, \code{NA} for coins outside the top
 \code{top_n} or without a market cap.}
 \item{is_active}{Always \code{1L} on CoinGecko free-tier.}
-\item{first_historical_data}{\code{NA_Date_} — not exposed by the free tier.
+\item{first_historical_data}{\code{NA_Date_} -- not exposed by the free tier.
 Backfill via \code{\link[=cg_history]{cg_history()}} if needed.}
 \item{last_historical_data}{Today's date, in line with \code{crypto_list()}'s
 convention for active coins.}
@@ -60,7 +60,7 @@ as a tibble using the same column conventions as \code{crypto_list()}, so
 downstream code that consumes a CMC coin list also consumes this one.
 }
 \details{
-Important caveat — survivorship bias: CoinGecko actively prunes delisted
+Important caveat -- survivorship bias: CoinGecko actively prunes delisted
 and inactive coins from its public database. The free-tier API only returns
 coins currently active on the platform. To build a survivorship-bias-free
 dataset from CoinGecko, snapshot this list \strong{periodically} (daily/weekly,
@@ -69,9 +69,9 @@ later remain in your accumulated archive.
 
 Data sources (no API key required):
 \itemize{
-\item \code{api.coingecko.com/api/v3/coins/list} — the full slug/symbol/name universe
+\item \code{api.coingecko.com/api/v3/coins/list} -- the full slug/symbol/name universe
 in a single HTTP call (free, key-less, but limited to active coins).
-\item \code{api.coingecko.com/api/v3/coins/markets?per_page=250&page=N} — paginated
+\item \code{api.coingecko.com/api/v3/coins/markets?per_page=250&page=N} -- paginated
 market snapshot, which provides \code{market_cap_rank} and the \code{image} URL
 from which the internal numeric ID is extracted.
 }

@@ -13,6 +13,6 @@ cg_parse_json(txt, ...)
 }
 \description{
 Convenience wrapper around \code{jsonlite::fromJSON} that returns \code{NULL} instead
-of erroring out — matches the failure semantics of \code{cg_get()}.
+of erroring out -- matches the failure semantics of \code{cg_get()}.
 }
 \keyword{internal}
