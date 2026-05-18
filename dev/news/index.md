@@ -1,78 +1,76 @@
 # Changelog
 
-## crypto2 (development version)
+## crypto2 2.1.0.9000 (development version)
+
+### CoinGecko integration
+
+Added a CoinGecko-side counterpart to the CMC API as a second,
+independent source. Column names mirror the `crypto_*` functions, so
+downstream code that already consumes a CMC tibble works on a CG tibble
+too.
+
+- [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
+  – active coin universe; signature matches
+  [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md).
+  With `only_active = FALSE`, transparently extends the universe with
+  the historic mapping from
+  [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
+  and prints one line indicating how current that mapping is.
+- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+  – current cross-sectional snapshot; signature matches
+  [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md).
+  Only `which = "latest"` is supported on the free tier; `"new"` /
+  `"historical"` warn and coerce.
+- [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  – daily OHLC + volume + market-cap history; signature matches
+  [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md).
+  Missing numeric ids are silently backfilled from the historic mapping.
+- [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md)
+  – per-coin metadata; signature matches
+  [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+- [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+  – companion to
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  that addresses coins by their numeric CoinGecko id rather than slug,
+  useful for refreshing coins whose slug no longer resolves.
+- [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
+  – reads a periodically-refreshed
+  `(id, slug, symbol, name, harvested_at)` archive (cached in
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html), with a small
+  bundled fallback in `inst/extdata/`). Used internally by
+  `cg_list(only_active = FALSE)` and
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md);
+  can also be called directly.
+
+CG-specific knobs that have no CMC counterpart (rate-limit floor, retry
+budget, OHLC-stream selection) move to package options:
+`crypto2.cg_sleep`, `crypto2.cg_wait`, `crypto2.cg_max_retries`,
+`crypto2.cg_top_n`, `crypto2.cg_what`, `crypto2.cg_vs_currency`. This
+keeps the public signatures aligned with the CMC functions.
+
+### Vignettes
+
+- New `coingecko-integration.Rmd` – the user-facing walkthrough.
+- New `coingecko-pro-backfill.Rmd` – recipes for the optional one-shot
+  Pro-tier bootstrap of a complete historic universe. Functions are kept
+  inline in the vignette rather than exported from the package.
+
+### Other
 
 - [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
   and
   [`exchange_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_info.md)
   now use a column allowlist instead of a denylist when processing API
-  responses. New or unknown fields from CMC — including list-type fields
+  responses. New or unknown fields from CMC – including list-type fields
   that would previously break
   [`as_tibble()`](https://tibble.tidyverse.org/reference/as_tibble.html)
-  — are silently ignored. This makes both functions robust to future CMC
-  API additions without requiring a patch release.
-
-### CoinGecko integration (branch: `coingecko-integration`)
-
-Added four functions that mirror the CMC-side API but pull from
-CoinGecko, no API key required. Column names match
-[`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md)
-/
-[`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
-/
-[`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
-/
-[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
-where there is a direct equivalent, so downstream code that already
-consumes a CMC tibble works on a CG tibble too.
-
-- [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
-  — active coin universe via the documented `/coins/list` (one HTTP
-  call) and enriched with market-cap rank + internal numeric id via the
-  paginated `/coins/markets`.
-- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
-  — current snapshot for all active coins (paginated `/coins/markets`
-  with `price_change_percentage=1h,24h,7d,14d,30d,200d,1y`).
-- [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-  — full daily OHLC + volume + market-cap history. Uses the
-  **undocumented** website-host endpoints
-  (`price_charts/{slug}/{vs}/max.json`,
-  `market_cap/{slug}/{vs}/max.json`,
-  `ohlc/{numeric_id}/series/{vs}/max.json`) which return one coin’s
-  entire history in one HTTP call and are not bound by the documented 30
-  req/min rate-limit.
-- [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md)
-  — per-coin metadata (description, logos, categories, contract
-  addresses across chains, links) via `/coins/{slug}` on the documented
-  host.
-- [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-  — companion to
+  – are silently ignored, making both functions robust to future CMC
+  additions without a patch release.
+- Behaviour change:
   [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-  that addresses coins by **numeric ID** instead of slug, calling
-  `www.coingecko.com/{price_charts,market_cap,ohlc}/{numeric_id}/...`.
-  Useful when accumulated snapshots have collected numeric IDs whose
-  slugs have since been removed from CoinGecko’s public routing: the
-  numeric ID still serves the historical data (at least for the dense
-  early-ID range). The function defaults to the active universe from
-  [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
-  — blind `1:N` iteration does **not** work because the numeric-ID space
-  is sparse (max ~102M but only ~15k populated as of mid 2026).
-
-**Survivorship bias caveat.** CoinGecko’s free tier exposes active coins
-only — delisted coins return 404 on both `/coins/list` and
-`/coins/{slug}`. To build a survivorship-bias-corrected dataset on
-CoinGecko, snapshot periodically (daily/weekly) and accumulate the
-*union of numeric IDs ever observed* in an external database, then feed
-that union to
-[`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-for refresh. Coins delisted after your first snapshot are then preserved
-via their numeric ID.
-
-Endpoints reverse-engineered from the `data-url`/`data-chart-urls`
-attributes embedded in `https://www.coingecko.com/en/coins/{slug}` page
-HTML (the website’s own JS calls these). No API key, no signup. All
-requests use a browser-like `User-Agent` to defeat Cloudflare’s cheapest
-bot heuristics; override via `options(crypto2.cg_user_agent = "...")`.
+  emits a one-time warning when `start_date` is more than 365 days in
+  the past and the full backfill cannot be served, then returns the most
+  recent 365 days.
 
 ## crypto2 1.4.0
 
