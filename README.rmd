@@ -24,7 +24,9 @@ knitr::opts_chunk$set(
   [![CRAN downloads last month](http://cranlogs.r-pkg.org/badges/crypto2)](https://cran.r-project.org/package=crypto2)
   [![CRAN downloads last week](http://cranlogs.r-pkg.org/badges/last-week/crypto2)](https://cran.r-project.org/package=crypto2)
   [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
-  [![Website - pkgdown](https://img.shields.io/website-up-down-green-red/https/sstoeckl.github.io/crypto2.svg)](https://sstoeckl.github.io/crypto2/)
+  [![Website - pkgdown](https://img.shields.io/website-up-down-green-red/https/www.sebastianstoeckl.com/crypto2.svg)](https://www.sebastianstoeckl.com/crypto2/)
+  [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+  [![Codestyle: tidyverse](https://img.shields.io/badge/code%20style-tidyverse-blue.svg)](https://style.tidyverse.org)
  <!-- badges: end -->
 
 > **Experimental:** A CoinGecko integration is currently in testing on branch
