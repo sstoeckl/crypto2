@@ -1,17 +1,17 @@
 # crypto2 [![](reference/figures/crypto2_hex.png)](https://github.com/sstoeckl/crypto2)
 
-> **Experimental:** A CoinGecko integration is currently in testing on
-> branch
-> [`coingecko-integration`](https://github.com/sstoeckl/crypto2/tree/coingecko-integration).
-> It adds `cg_list()`, `cg_listings()`, `cg_history()`, and `cg_info()`
-> — CMC-column-compatible companions that pull from CoinGecko, **no API
-> key required**. Please install and play around with it, and open an
-> issue if anything breaks. Install with:
+> **Experimental:** A CoinGecko integration is in active testing on the
+> [`dev`](https://github.com/sstoeckl/crypto2/tree/dev) branch. It adds
+> `cg_list()`, `cg_listings()`, `cg_history()`, `cg_info()`, and
+> `cg_history_by_id()` — CMC-column-compatible companions that pull from
+> CoinGecko, **no API key required**. Browse the dev docs at
+> <https://www.sebastianstoeckl.com/crypto2/dev/> (use the navbar
+> Release / Devel switcher) or install the dev branch directly:
 >
 > ``` r
 >
 > # install.packages("remotes")
-> remotes::install_github("sstoeckl/crypto2@coingecko-integration")
+> remotes::install_github("sstoeckl/crypto2@dev")
 > ```
 >
 > CoinGecko’s free tier exposes only **active** coins; the package warns
