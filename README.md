@@ -8,8 +8,6 @@
 [![Project
 Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![R-CMD-check](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml)
-[![test-coverage](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml)
-[![pr-commands](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml)
 [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
