@@ -18,6 +18,8 @@
 [![Codestyle: tidyverse](https://img.shields.io/badge/code%20style-tidyverse-blue.svg)](https://style.tidyverse.org)
 <!-- badges: end -->
 
+# Historical Cryptocurrency Prices for Active and Delisted Tokens!
+
 > **Experimental:** A CoinGecko integration is in active testing on the
 > [`dev`](https://github.com/sstoeckl/crypto2/tree/dev) branch.
 > It adds `cg_list()`, `cg_listings()`, `cg_history()`, `cg_info()`, and
@@ -35,8 +37,6 @@
 > warns when delisted-coin retrieval is impossible. Build a
 > survivorship-bias-free archive by snapshotting periodically
 > (daily/weekly) from your own cronjob.
-
-# Historical Cryptocurrency Prices for Active and Delisted Tokens!
 
 This is a modification of the original `crypto` package by [jesse
 vent](https://github.com/JesseVent/crypto). It is entirely set up to use
