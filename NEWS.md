@@ -75,9 +75,13 @@ hourly intraday CG data; see `tools/check_cg_midnight_convention.R`).
   including list-type fields that would previously break `as_tibble()` --
   are silently ignored, making both functions robust to future CMC
   additions without a patch release.
-* Behaviour change: `cg_history()` emits a one-time warning when
-  `start_date` is more than 365 days in the past and the full backfill
-  cannot be served, then returns the most recent 365 days.
+* Coverage clarification (and tightened warning in `cg_history()`):
+  close, volume and market cap are returned for the full lifetime of
+  each coin on the free tier. The OHLC quartet (open / high / low) is
+  capped at the most recent 365 days; for older windows those three
+  columns come back `NA` while close remains populated from the price
+  stream. The one-time warning now only fires when OHLC is actually
+  requested over a window that exceeds the cap.
 
 # crypto 2.0.5
 

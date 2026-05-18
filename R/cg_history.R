@@ -8,11 +8,13 @@
 #' in `coin_list`, [cg_id_mapping()] is consulted to recover it. If a coin
 #' cannot be resolved at all, it is silently skipped.
 #'
-#' Free-tier caveat: in some environments only the most recent 365 days of
-#' OHLC per coin are available. When `start_date` is further back and the
-#' full backfill cannot be served, the most recent 365 days are returned
-#' with a single one-line warning. For a one-shot complete bootstrap of the
-#' full historic universe, see `vignette("coingecko-pro-backfill")`.
+#' Free-tier coverage: **close, volume and market cap are returned for the
+#' full lifetime of each coin** -- typically from the coin's listing date
+#' forward. The OHLC quartet (`open` / `high` / `low`) is capped at the
+#' **most recent 365 days** on the free tier; for older windows those three
+#' columns come back `NA` while `close` remains populated from the price
+#' stream. For a one-shot complete backfill of OHLC over the full history
+#' see `vignette("coingecko-pro-backfill")`.
 #'
 #' @param coin_list string if NULL retrieve all currently existing coins
 #'   ([cg_list()]), or provide list of crypto currencies in the [cg_list()] /
@@ -119,14 +121,17 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
     }
   }
 
-  # 365-day-window pre-flight warning
-  if (!is.null(start_date) &&
+  # 365-day-window pre-flight warning -- only relevant when OHLC is being
+  # requested. Close / volume / market_cap are returned in full regardless.
+  if ("ohlc" %in% what &&
+      !is.null(start_date) &&
       as.Date(start_date) < Sys.Date() - 365L) {
     if (!isTRUE(getOption("crypto2.cg_long_window_warned", FALSE))) {
-      warning("CoinGecko free-tier OHLC is limited to the most recent ",
-              "365 days per coin in some environments. For a one-shot ",
-              "bootstrap of the full historic universe, see ",
-              "vignette('coingecko-pro-backfill').",
+      warning("CoinGecko free-tier OHLC (open / high / low) is capped at ",
+              "the most recent 365 days. For dates older than that, ",
+              "those three columns will be NA; close, volume and ",
+              "market cap are returned in full. For a one-shot complete ",
+              "OHLC backfill see vignette('coingecko-pro-backfill').",
               call. = FALSE)
       options(crypto2.cg_long_window_warned = TRUE)
     }

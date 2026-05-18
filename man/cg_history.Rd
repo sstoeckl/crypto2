@@ -87,11 +87,13 @@ No API key is required. When the requested coin's numeric id is missing
 in \code{coin_list}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted to recover it. If a coin
 cannot be resolved at all, it is silently skipped.
 
-Free-tier caveat: in some environments only the most recent 365 days of
-OHLC per coin are available. When \code{start_date} is further back and the
-full backfill cannot be served, the most recent 365 days are returned
-with a single one-line warning. For a one-shot complete bootstrap of the
-full historic universe, see \code{vignette("coingecko-pro-backfill")}.
+Free-tier coverage: \strong{close, volume and market cap are returned for the
+full lifetime of each coin} -- typically from the coin's listing date
+forward. The OHLC quartet (\code{open} / \code{high} / \code{low}) is capped at the
+\strong{most recent 365 days} on the free tier; for older windows those three
+columns come back \code{NA} while \code{close} remains populated from the price
+stream. For a one-shot complete backfill of OHLC over the full history
+see \code{vignette("coingecko-pro-backfill")}.
 }
 \examples{
 \dontrun{
