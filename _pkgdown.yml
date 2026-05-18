@@ -1,6 +1,12 @@
-url: https://www.sebastianstoeckl.com/crypto2/dev/
+url: https://www.sebastianstoeckl.com/crypto2/
 template:
   bootstrap: 5
   bootswatch: spacelab
 navbar:
   bg: primary
+development:
+  # 'devel' = always treat this branch's site as the in-development version.
+  # pkgdown writes the build to /dev/ (the default for devel mode) and adds a
+  # Release/Devel switcher to the navbar so visitors can jump back to the
+  # production site at https://www.sebastianstoeckl.com/crypto2/.
+  mode: devel
