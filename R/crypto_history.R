@@ -90,10 +90,31 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   }
   # now create convertId from convert
   convertId <- ifelse(convert=="USD",2781,1)
-  # only if no coins are provided use crypto_list() to provide all actively traded coins
-  if (is.null(coin_list)) coin_list <- crypto_list()
-  # limit amount of coins downloaded
-  if (!is.null(limit)) coin_list <- coin_list[1:limit, ]
+  # only if no coins are provided use crypto_list() to provide all actively
+  # traded coins. We fetch enough listings to filter out non-ranked rows
+  # (index products etc. that CMC returns at the top of /listing with
+  # cmc_rank = NA but have no historical price data) before applying limit.
+  listing_fetch <- max(if (is.null(limit)) 5000L else as.integer(limit) * 4L,
+                       100L)
+  if (is.null(coin_list)) {
+    coin_listings <- crypto_listings(limit = listing_fetch)
+    coin_list <- crypto_list() %>%
+      dplyr::inner_join(coin_listings %>% dplyr::select(id, cmc_rank), by = "id") %>%
+      dplyr::filter(!is.na(cmc_rank)) %>%
+      dplyr::arrange(cmc_rank) %>%
+      dplyr::select(-cmc_rank)
+    if (!is.null(limit)) coin_list <- coin_list[seq_len(min(limit, nrow(coin_list))), ]
+  } else if (!is.null(limit)) {
+    if (!"cmc_rank" %in% names(coin_list)) {
+      coin_listings <- crypto_listings(limit = max(listing_fetch, nrow(coin_list)))
+      coin_list <- coin_list %>%
+        dplyr::inner_join(coin_listings %>% dplyr::select(id, cmc_rank), by = "id") %>%
+        dplyr::filter(!is.na(cmc_rank)) %>%
+        dplyr::arrange(cmc_rank) %>%
+        dplyr::select(-cmc_rank)
+    }
+    coin_list <- coin_list[seq_len(min(limit, nrow(coin_list))), ]
+  }
   # create dates
   if (is.null(start_date)) { start_date <- as.Date("2013-04-28") }
   if (is.null(end_date)) { end_date <- lubridate::today() }
@@ -214,16 +235,16 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     pb2$tick()
     if (length(lout$quotes)==0){
       cat("\nCoin",lout$name,"does not have data available! Cont to next coin.\n")
-    } else {
-      suppressWarnings(
-        # only one currency possible at this time
-        outall <- lout$quotes |>  tibble::as_tibble() |>  tidyr::unnest(quote) |>
-          dplyr::mutate(across(contains("time"),~as.POSIXlt(.,format="%Y-%m-%dT%H:%M:%S"))) |>
-          janitor::clean_names() |>
-          dplyr::mutate(id=lout$id,name=lout$name,symbol=lout$symbol,ref_cur_id=lout$quotes$quote$name,ref_cur_name=convert) |>
-          dplyr::select(id,name,symbol,timestamp,ref_cur_id,ref_cur_name,everything())
-      )
+      return(NULL)
     }
+    suppressWarnings(
+      # only one currency possible at this time
+      outall <- lout$quotes |>  tibble::as_tibble() |>  tidyr::unnest(quote) |>
+        dplyr::mutate(across(contains("time"),~as.POSIXlt(.,format="%Y-%m-%dT%H:%M:%S"))) |>
+        janitor::clean_names() |>
+        dplyr::mutate(id=lout$id,name=lout$name,symbol=lout$symbol,ref_cur_id=lout$quotes$quote$name,ref_cur_name=convert) |>
+        dplyr::select(id,name,symbol,timestamp,ref_cur_id,ref_cur_name,everything())
+    )
     return(outall)
   }
   # Modify function to run insistently.
@@ -235,8 +256,23 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   out_info <- purrr::map(data2,.f = ~ insistent_map(.x))
   #filter
 
-  # results
-  results <-dplyr:: bind_rows(out_info) %>% tibble::as_tibble() %>%
+  # results — guard against the case where every coin in the limited set
+  # has no historical data (e.g., a slice that hits only index DTFs); the
+  # final left_join would otherwise error with "Join columns in x must
+  # be present in the data" because bind_rows returned an empty tibble.
+  raw_results <- dplyr::bind_rows(out_info)
+  if (!nrow(raw_results)) {
+    warning("crypto_history(): no coins in this batch returned historical data. ",
+            "Returning an empty tibble. Consider widening `limit` or passing a ",
+            "`coin_list` that excludes index / non-tradeable products.",
+            call. = FALSE)
+    return(tibble::tibble(
+      id = integer(0), slug = character(0), name = character(0),
+      symbol = character(0), timestamp = as.POSIXct(character(0)),
+      ref_cur_id = integer(0), ref_cur_name = character(0)
+    ))
+  }
+  results <- raw_results %>% tibble::as_tibble() %>%
     dplyr::left_join(coin_list %>% dplyr::select(id, slug), by ="id") %>%
     dplyr::relocate(slug, .after = id) %>%
     dplyr::filter(as.Date(timestamp)>=start_date)

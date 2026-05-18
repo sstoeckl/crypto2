@@ -28,3 +28,7 @@ README-quotes-plot-1.png
 ^CITATION\.cff$
 create_hidden_links.R
 ^revdep$
+^HANDOFF-.*\.md$
+^CLAUDE\.md$
+^\.claude$
+^smoke_test\..*$
