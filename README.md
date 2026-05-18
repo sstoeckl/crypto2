@@ -5,39 +5,30 @@
 
 <!-- badges: start -->
 
-[![Project
-Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![R-CMD-check](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml)
 [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
-[![CRAN
-status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
-[![CRAN
-downloads](http://cranlogs.r-pkg.org/badges/grand-total/crypto2)](https://cran.r-project.org/package=crypto2)
-[![CRAN downloads last
-month](http://cranlogs.r-pkg.org/badges/crypto2)](https://cran.r-project.org/package=crypto2)
-[![CRAN downloads last
-week](http://cranlogs.r-pkg.org/badges/last-week/crypto2)](https://cran.r-project.org/package=crypto2)
-[![Lifecycle:
-stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
-[![Website -
-pkgdown](https://img.shields.io/website-up-down-green-red/https/www.sebastianstoeckl.com/crypto2.svg)](https://www.sebastianstoeckl.com/crypto2/)
-[![License:
-MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Codestyle:
-tidyverse](https://img.shields.io/badge/code%20style-tidyverse-blue.svg)](https://style.tidyverse.org)
+[![CRAN status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
+[![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/crypto2)](https://cran.r-project.org/package=crypto2)
+[![CRAN downloads last month](http://cranlogs.r-pkg.org/badges/crypto2)](https://cran.r-project.org/package=crypto2)
+[![CRAN downloads last week](http://cranlogs.r-pkg.org/badges/last-week/crypto2)](https://cran.r-project.org/package=crypto2)
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+[![Website - pkgdown](https://img.shields.io/website-up-down-green-red/https/www.sebastianstoeckl.com/crypto2.svg)](https://www.sebastianstoeckl.com/crypto2/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Codestyle: tidyverse](https://img.shields.io/badge/code%20style-tidyverse-blue.svg)](https://style.tidyverse.org)
 <!-- badges: end -->
 
-> **Experimental:** A CoinGecko integration is currently in testing on
-> branch
-> [`coingecko-integration`](https://github.com/sstoeckl/crypto2/tree/coingecko-integration).
-> It adds `cg_list()`, `cg_listings()`, `cg_history()`, and `cg_info()`
-> — CMC-column-compatible companions that pull from CoinGecko, **no API
-> key required**. Please install and play around with it, and open an
-> issue if anything breaks. Install with:
+> **Experimental:** A CoinGecko integration is in active testing on the
+> [`dev`](https://github.com/sstoeckl/crypto2/tree/dev) branch.
+> It adds `cg_list()`, `cg_listings()`, `cg_history()`, `cg_info()`, and
+> `cg_history_by_id()` — CMC-column-compatible companions that pull from
+> CoinGecko, **no API key required**. Browse the dev docs at
+> <https://www.sebastianstoeckl.com/crypto2/dev/> (use the navbar
+> Release / Devel switcher) or install the dev branch directly:
 >
 > ``` r
 > # install.packages("remotes")
-> remotes::install_github("sstoeckl/crypto2@coingecko-integration")
+> remotes::install_github("sstoeckl/crypto2@dev")
 > ```
 >
 > CoinGecko's free tier exposes only **active** coins; the package
