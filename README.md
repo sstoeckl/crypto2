@@ -20,7 +20,11 @@ week](http://cranlogs.r-pkg.org/badges/last-week/crypto2)](https://cran.r-projec
 [![Lifecycle:
 stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![Website -
-pkgdown](https://img.shields.io/website-up-down-green-red/https/sstoeckl.github.io/crypto2.svg)](https://sstoeckl.github.io/crypto2/)
+pkgdown](https://img.shields.io/website-up-down-green-red/https/www.sebastianstoeckl.com/crypto2.svg)](https://www.sebastianstoeckl.com/crypto2/)
+[![License:
+MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Codestyle:
+tidyverse](https://img.shields.io/badge/code%20style-tidyverse-blue.svg)](https://style.tidyverse.org)
 <!-- badges: end -->
 
 # Historical Cryptocurrency Prices for Active and Delisted Tokens!
