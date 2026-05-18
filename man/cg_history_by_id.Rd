@@ -38,8 +38,8 @@ your accumulated snapshots.}
 universe. If \code{NULL}, calls \code{cg_list()} automatically. Set
 to \code{FALSE} to skip the join (rows then have only \code{id}).}
 
-\item{sleep, wait, max_retries}{Passed to \code{\link[=cg_make_client]{cg_make_client()}}. Defaults
-\code{0.6 / 60 / 3} match \code{cg_history()}.}
+\item{sleep, wait, max_retries}{Rate-limit knobs. Defaults \code{0.6 / 60 / 3}
+match \code{cg_history()}.}
 
 \item{quiet}{If \code{FALSE}, prints a progress bar.}
 
@@ -57,15 +57,12 @@ in the active universe (i.e. delisted on the slug side).}
 \item{open, high, low, close, volume, market_cap}{Daily values.}
 }
 \description{
-Companion to \code{\link[=cg_history]{cg_history()}} that addresses coins by their internal
-\strong{numeric ID} instead of their slug. Useful in two scenarios:
+Companion to \code{\link[=cg_history]{cg_history()}} that addresses coins by their \strong{numeric
+CoinGecko ID} instead of their slug. Useful in two scenarios:
 }
 \details{
 \enumerate{
-\item Coins that have been \strong{delisted} from CoinGecko's slug routing
-(i.e., \code{api.coingecko.com/api/v3/coins/{slug}} now returns 404) but
-whose numeric ID still serves data on the website-host endpoints.
-This holds at least for low/early IDs.
+\item Coins that have been \strong{delisted} and whose slug no longer resolves.
 \item Cronjob-style accumulation: when you persist \code{cg_list()} snapshots
 over time, the \strong{union of all numeric IDs ever observed} is the
 survivorship-bias-corrected universe. \code{cg_history_by_id()} lets you
@@ -75,23 +72,19 @@ slug to still resolve.
 
 Important caveats -- please read:
 \itemize{
-\item \strong{The numeric-ID space is sparse, not dense.} CoinGecko's
-auto-increment counter has been allocated up to ~102 million, but
-only ~15 000 IDs are actually populated as of mid 2026.
-\strong{Blind iteration over \code{1:N} does NOT recover the full universe} --
-most numeric IDs in that range return 404. The default \code{ids = NULL}
-therefore uses the active universe from \code{cg_list()}, NOT a numeric
-range. To recover delisted coins you must supply the IDs explicitly
-(e.g., the union of accumulated \code{cg_list()} snapshots).
-\item \strong{Slug recovery for delisted coins is not available} through any
-free-tier endpoint. Active coins get their slug/name joined back in
-from \code{cg_list()}; rows whose numeric ID is no longer in the active
-universe come back with \code{slug = NA} and \code{name = NA}. Use the \code{id}
-column as the join key in downstream code.
-\item \strong{It is empirically true} that some low/early numeric IDs continue
-to serve historical data even when their slug has been removed from
-the public API. The exact coverage policy is undocumented and may
-change without notice.
+\item \strong{The numeric-ID space is sparse, not dense.} Blind iteration over
+\code{1:N} does NOT recover the full universe -- most numeric IDs in that
+range have no data. The default \code{ids = NULL} therefore uses the
+active universe from \code{cg_list()}, not a numeric range. To recover
+delisted coins you must supply the IDs explicitly (e.g., the union
+of accumulated \code{cg_list()} snapshots, or the historic mapping from
+\code{\link[=cg_id_mapping]{cg_id_mapping()}}).
+\item \strong{Slug recovery for delisted coins is not generally available on the
+free tier.} Active coins get their slug/name joined back in from
+\code{cg_list()}; rows whose numeric ID is no longer in the active universe
+come back with \code{slug = NA} and \code{name = NA}. Use the \code{id} column as
+the join key in downstream code. For a one-shot complete recovery of
+the full historic universe see \code{vignette("coingecko-pro-backfill")}.
 }
 }
 \examples{

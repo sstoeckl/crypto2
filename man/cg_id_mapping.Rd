@@ -29,11 +29,10 @@ function downloads and caches it so callers (e.g. \code{\link[=cg_list]{cg_list(
 without ceremony.
 }
 \details{
-The mapping is fetched once per session and cached in
-\code{tempdir()/crypto2_cg_mapping.parquet}. If the network is unavailable, a
-small bundled sample (top 100 coins, shipped in \verb{inst/extdata/}) is used
-as a fallback. When \code{quiet = FALSE} (default), a single one-line message
-is emitted on first successful download stating the harvest date.
+The mapping is fetched once per session and cached in \code{tempdir()}. If
+the network is unavailable, a small bundled sample of reference coins
+is used as a fallback. When \code{quiet = FALSE} (default), a single one-line
+message is emitted on first successful download stating the harvest date.
 }
 \examples{
 \dontrun{

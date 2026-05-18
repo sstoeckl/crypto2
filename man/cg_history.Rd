@@ -39,8 +39,8 @@ not available without an API key.}
 (CoinGecko returns full history per coin in one call).}
 
 \item{sleep}{integer (default \code{0}) Seconds to sleep between API requests.
-The internal client enforces a polite floor of \code{0.6} to keep the
-website host happy.}
+The internal client enforces a polite floor to stay within CoinGecko's
+per-minute budget.}
 
 \item{wait}{waiting time before retry in case of fail (default \code{60}).}
 
@@ -70,19 +70,15 @@ volume, and market-cap timeseries in a tibble whose column names match
 the crypto2 CMC output.
 }
 \details{
-Source endpoints (no API key required) are addressed internally by
-\code{\link[=cg_url]{cg_url()}}; the package source does not embed the host URLs in
-plain text. When the requested coin's numeric id is missing in
-\code{coin_list}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted to recover it. If both the
-slug-based and the numeric-id-based routes fail, the coin is silently
-skipped (the most common cause is a Cloudflare bot challenge -- see
-\code{\link[=cg_get]{cg_get()}}).
+No API key is required. When the requested coin's numeric id is missing
+in \code{coin_list}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted to recover it. If a coin
+cannot be resolved at all, it is silently skipped.
 
-Free-tier caveat: the public CoinGecko Demo endpoints cap historic
-retrieval at 365 days per coin. When \code{start_date} is more than 365 days
-in the past and the website-host endpoints are unavailable (e.g. blocked
-by Cloudflare), only the most recent 365 days are returned, with a
-single one-line warning.
+Free-tier caveat: in some environments only the most recent 365 days of
+OHLC per coin are available. When \code{start_date} is further back and the
+full backfill cannot be served, the most recent 365 days are returned
+with a single one-line warning. For a one-shot complete bootstrap of the
+full historic universe, see \code{vignette("coingecko-pro-backfill")}.
 }
 \examples{
 \dontrun{

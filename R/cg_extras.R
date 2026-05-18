@@ -1,17 +1,13 @@
 #' CoinGecko URL builder
 #'
-#' Internal URL builder. The host strings are base64-encoded (same pattern as
-#' [construct_url()] for CMC) so the package source does not contain plaintext
-#' endpoint URLs. The `api` host is the documented Demo-tier API; the `web`
-#' and `web_en` hosts route through the public website. The `hf` host is the
-#' Hugging Face download root for the optional historic id/slug mapping (see
-#' [cg_id_mapping()]).
+#' Internal URL builder.
 #'
 #' @param path Path to append (no leading slash).
 #' @param host One of `"api"`, `"web"`, `"web_en"`, `"hf"`. Default `"web"`.
 #'
 #' @return Full URL string.
 #' @keywords internal
+#' @noRd
 #' @importFrom base64enc base64decode
 cg_url <- function(path, host = c("web", "web_en", "api", "hf")) {
   host <- match.arg(host)
@@ -25,10 +21,11 @@ cg_url <- function(path, host = c("web", "web_en", "api", "hf")) {
   paste0(base, sub("^/", "", path))
 }
 
-#' Default browser-like User-Agent for the website host
+#' Default browser-like User-Agent
 #'
 #' Set via `options(crypto2.cg_user_agent = "...")` to override.
 #' @keywords internal
+#' @noRd
 cg_user_agent <- function() {
   getOption(
     "crypto2.cg_user_agent",
@@ -40,13 +37,13 @@ cg_user_agent <- function() {
   )
 }
 
-#' Safe HTTP GET with browser-like User-Agent
+#' Safe HTTP GET
 #'
-#' Wraps `httr::GET` with a Chrome User-Agent (defeats Cloudflare's cheapest
-#' bot heuristic), follows redirects, and returns the response body as text.
+#' Wraps `httr::GET` with a browser-like User-Agent, follows redirects, and
+#' returns the response body as text.
 #'
 #' Failure semantics -- designed to interact correctly with the
-#' [cg_make_client()] retry wrapper:
+#' `cg_make_client()` retry wrapper:
 #' \itemize{
 #'   \item **Network / connection errors** raise a classed condition
 #'     (`"cg_network_error"`) -- retryable by `purrr::insistently`.
@@ -54,11 +51,10 @@ cg_user_agent <- function() {
 #'     (`"cg_rate_limited"`) carrying the `Retry-After` header in seconds
 #'     (defaulting to 60 if absent) -- retryable by `purrr::insistently`,
 #'     which will pause `wait` seconds before retrying.
-#'   \item **HTTP 403 with `cf-mitigated` header** (Cloudflare bot
-#'     challenge) returns `NULL` and emits a one-time message per session
-#'     advising the user to run from a residential IP. Cloudflare
-#'     challenges are not solvable by retry, so they are *not* raised as
-#'     retryable conditions.
+#'   \item **HTTP 403** that signals a refused request returns `NULL` and
+#'     emits a one-time message per session pointing the user to the Pro
+#'     backfill vignette. These responses are not solvable by retry, so
+#'     they are *not* raised as retryable conditions.
 #'   \item **Other non-2xx responses** (404, 410, 5xx, ...) return `NULL`
 #'     **without** raising, so a missing coin or a stale endpoint does not
 #'     consume retry budget -- the caller decides what to do with `NULL`.
@@ -73,6 +69,7 @@ cg_user_agent <- function() {
 #'   `NULL` for non-retryable non-2xx (404 etc.). Raises a classed condition
 #'   on retryable failures (429, network errors).
 #' @keywords internal
+#' @noRd
 #'
 #' @importFrom httr GET status_code content user_agent add_headers timeout headers
 #' @importFrom cli cat_bullet
@@ -130,9 +127,9 @@ cg_get <- function(url, query = NULL,
     if (!is.null(cf_mit) && nzchar(cf_mit)) {
       if (!isTRUE(getOption("crypto2.cg_cf_warned", FALSE))) {
         message(cli::cat_bullet(
-          "CoinGecko returned a Cloudflare bot challenge (cf-mitigated: ",
-          cf_mit, "). Datacenter / cloud IPs are commonly blocked; ",
-          "the website-host endpoints are practical only from a residential IP.",
+          "CoinGecko refused the request from this environment. ",
+          "If you need a one-shot bootstrap of the full historic universe, ",
+          "see vignette('coingecko-pro-backfill').",
           bullet = "warning", bullet_col = "yellow"))
         options(crypto2.cg_cf_warned = TRUE)
       }
@@ -151,6 +148,7 @@ cg_get <- function(url, query = NULL,
 #' @param txt JSON text (length-1 character).
 #' @param ... Passed to `jsonlite::fromJSON`.
 #' @keywords internal
+#' @noRd
 #' @importFrom jsonlite fromJSON
 cg_parse_json <- function(txt, ...) {
   if (is.null(txt) || !nzchar(txt)) return(NULL)
@@ -173,10 +171,9 @@ cg_parse_json <- function(txt, ...) {
 #' retries (with jitter). Non-retryable HTTP errors (404, 410, 5xx) still
 #' return `NULL` immediately and do not consume retry budget.
 #'
-#' @param sleep Seconds between successive successful calls (default 0.6 ->
-#'   ~100 req/min, polite for the website host; the documented
-#'   `api.coingecko.com` host needs `sleep >= 2.5` to stay safely below
-#'   the 30 req/min Demo-tier cap).
+#' @param sleep Seconds between successive successful calls (default 0.6;
+#'   the Demo-tier API needs `sleep >= 2.5` to stay safely below its
+#'   30 req/min cap).
 #' @param wait Seconds to wait before the first retry after a 429 / network
 #'   error. Defaults to 60 so the CoinGecko 60-second rate-limit window
 #'   fully resets before the retry fires. Exponential backoff applies for
@@ -186,6 +183,7 @@ cg_parse_json <- function(txt, ...) {
 #' @param quiet If `FALSE`, `purrr::insistently` emits a message on every
 #'   retry so the caller sees the back-off in progress. Default `TRUE`.
 #' @keywords internal
+#' @noRd
 #' @importFrom purrr slowly insistently rate_delay rate_backoff possibly
 cg_make_client <- function(sleep = 0.6, wait = 60, max_retries = 3,
                            quiet = TRUE) {
@@ -205,17 +203,14 @@ cg_make_client <- function(sleep = 0.6, wait = 60, max_retries = 3,
 
 #' Extract a coin's numeric CoinGecko ID from its image URL
 #'
-#' The documented Demo-tier API does not expose CoinGecko's internal numeric
-#' coin ID, but the `image` URL in every coin response embeds it as
-#' `https://coin-images.coingecko.com/coins/images/{numeric_id}/...`. The
-#' numeric ID is required for some undocumented website-host endpoints
-#' (notably `/ohlc/{numeric_id}/series/...` and the batched
-#' `/coins/price_percentage_change?ids=...`).
+#' The numeric id is embedded in CoinGecko's image asset URLs and is used
+#' internally as a stable join key.
 #'
 #' @param image_url Character vector of CoinGecko image URLs.
 #' @return Integer vector of the same length, `NA_integer_` where extraction
 #'   failed.
 #' @keywords internal
+#' @noRd
 cg_numeric_id_from_image <- function(image_url) {
   m <- regmatches(
     image_url,
@@ -241,6 +236,7 @@ cg_numeric_id_from_image <- function(image_url) {
 #' @param ms Numeric vector of Unix milliseconds.
 #' @return POSIXct vector, UTC.
 #' @keywords internal
+#' @noRd
 cg_ms_to_posix <- function(ms) {
   as.POSIXct(as.numeric(ms) / 1000, origin = "1970-01-01", tz = "UTC")
 }
@@ -255,11 +251,10 @@ cg_ms_to_posix <- function(ms) {
 #' [cg_history()]) can transparently fall back to historic identifiers
 #' without ceremony.
 #'
-#' The mapping is fetched once per session and cached in
-#' `tempdir()/crypto2_cg_mapping.parquet`. If the network is unavailable, a
-#' small bundled sample (top 100 coins, shipped in `inst/extdata/`) is used
-#' as a fallback. When `quiet = FALSE` (default), a single one-line message
-#' is emitted on first successful download stating the harvest date.
+#' The mapping is fetched once per session and cached in `tempdir()`. If
+#' the network is unavailable, a small bundled sample of reference coins
+#' is used as a fallback. When `quiet = FALSE` (default), a single one-line
+#' message is emitted on first successful download stating the harvest date.
 #'
 #' @param refresh Force re-download even if a cached file exists in
 #'   `tempdir()`. Default `FALSE`.
@@ -339,6 +334,7 @@ cg_id_mapping <- function(refresh = FALSE, quiet = FALSE) {
 
 #' Read a parquet file, falling back to a typed empty tibble on failure
 #' @keywords internal
+#' @noRd
 .cg_read_parquet <- function(path, schema) {
   if (!requireNamespace("arrow", quietly = TRUE)) {
     return(schema)
