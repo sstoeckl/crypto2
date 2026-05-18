@@ -16,7 +16,8 @@ cg_history_by_id(
   wait = 60,
   max_retries = 3,
   quiet = FALSE,
-  finalWait = FALSE
+  finalWait = FALSE,
+  date_convention = c("end_of_day", "raw")
 )
 }
 \arguments{
@@ -45,6 +46,11 @@ match \code{cg_history()}.}
 
 \item{finalWait}{Sleep 60 s after the last call (mirrors
 \code{crypto_history()}).}
+
+\item{date_convention}{Either \code{"end_of_day"} (the default) or \code{"raw"}.
+See \code{\link[=cg_history]{cg_history()}} for the explanation -- this argument applies the
+same -1 day shift to midnight-UTC ticks so dates align with the
+CMC / CRSP / Compustat end-of-day convention.}
 }
 \value{
 Tibble with one row per (id, date) using crypto2-compatible

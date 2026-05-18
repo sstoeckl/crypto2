@@ -35,6 +35,17 @@
 #'   [crypto_history()]).
 #' @param single_id Kept for parity with [crypto_history()] -- ignored;
 #'   CoinGecko endpoints are always single-coin per call.
+#' @param date_convention Either `"end_of_day"` (the default) or `"raw"`.
+#'   CoinGecko's native daily series timestamps each point at 00:00:00 UTC
+#'   of date X, which is the same physical instant as 23:59:59 UTC of date
+#'   X-1 -- i.e. CG labels it as the start-of-day rather than the
+#'   close-of-day. CMC (and `crypto_history()`) label that instant as
+#'   date X-1 (the day that just ended), which is also the standard
+#'   asset-pricing convention used by CRSP/Compustat and major academic
+#'   datasets. With `"end_of_day"` (default) `cg_history()` shifts CG's
+#'   midnight ticks by -1 day so `close[X] / close[X-1] - 1` is the return
+#'   earned during date X, matching CMC. Pass `"raw"` to keep CG's native
+#'   start-of-day labelling.
 #'
 #' @return Crypto currency historic OHLC market data in a tibble:
 #'   \item{id}{CoinGecko internal numeric id (NA if unknown).}
@@ -72,7 +83,9 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
                        start_date = NULL, end_date = NULL,
                        interval = NULL,
                        requestLimit = 400, sleep = 0, wait = 60,
-                       finalWait = FALSE, single_id = TRUE) {
+                       finalWait = FALSE, single_id = TRUE,
+                       date_convention = c("end_of_day", "raw")) {
+  date_convention <- match.arg(date_convention)
   if (!is.null(interval) && !identical(interval, "daily")) {
     warning("CoinGecko free-tier returns daily granularity only; ",
             "`interval` argument is ignored.", call. = FALSE)
@@ -123,10 +136,21 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
                            max_retries = max_retries)
 
   # Helper: collapse a (timestamp, value...) tibble to daily bars on the UTC
-  # calendar.
+  # calendar. Under date_convention = "end_of_day" (the default) midnight
+  # UTC ticks are attributed to the *previous* date (so they line up with
+  # CMC's close-of-day labelling). Non-midnight points (the running "now"
+  # snapshot CoinGecko appends to its series) are attributed to their own
+  # UTC date in both conventions.
   floor_daily <- function(df, value_cols) {
     if (is.null(df) || !nrow(df)) return(df)
-    df$date <- as.Date(df$timestamp, tz = "UTC")
+    raw_date <- as.Date(df$timestamp, tz = "UTC")
+    if (date_convention == "end_of_day") {
+      is_midnight <- (as.numeric(df$timestamp) %% 86400) == 0
+      df$date <- as.Date(ifelse(is_midnight, raw_date - 1L, raw_date),
+                         origin = "1970-01-01")
+    } else {
+      df$date <- raw_date
+    }
     df <- df[order(df$date, df$timestamp), , drop = FALSE]
     df <- df[!duplicated(df$date, fromLast = TRUE), , drop = FALSE]
     df[, c("date", value_cols), drop = FALSE]

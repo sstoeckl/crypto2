@@ -31,12 +31,42 @@ budget, OHLC-stream selection) move to package options:
 `crypto2.cg_top_n`, `crypto2.cg_what`, `crypto2.cg_vs_currency`. This keeps
 the public signatures aligned with the CMC functions.
 
+## Date convention (behavioural change in `cg_history()`)
+
+`cg_history()` and `cg_history_by_id()` now harmonize their date labels
+with `crypto_history()` by default. CoinGecko's native daily series
+timestamps each point at 00:00:00 UTC of date X, which is the same
+physical instant as 23:59:59 UTC of date X-1 -- but CMC (and the
+standard asset-pricing convention used by CRSP / Compustat / Liu,
+Tsyvinski & Wu 2022) labels that instant as date X-1, while CG labels it
+as date X. Empirically, CG's row labelled date X agrees with CMC's row
+labelled date X-1 to within sub-dollar precision (verified against
+hourly intraday CG data; see `tools/check_cg_midnight_convention.R`).
+
+* New argument `date_convention = c("end_of_day", "raw")` on both
+  `cg_history()` and `cg_history_by_id()`, defaulting to
+  `"end_of_day"`. Under the default, midnight-UTC ticks are attributed
+  to the previous date so `close[X] / close[X-1] - 1` is the return
+  earned during date X, matching CMC.
+* Pass `date_convention = "raw"` to keep CG's native start-of-day labels.
+
 ## Vignettes
 
 * New `coingecko-integration.Rmd` -- the user-facing walkthrough.
 * New `coingecko-pro-backfill.Rmd` -- recipes for the optional one-shot
   Pro-tier bootstrap of a complete historic universe. Functions are kept
   inline in the vignette rather than exported from the package.
+* New `cg-vs-cmc.Rmd` -- cross-source reconciliation, the date-convention
+  story in detail, and guidance on which fields are expected to agree
+  vs. expected to differ between the two providers.
+
+## Tests
+
+* New `test-cg-vs-cmc.R` -- reconciles `cg_history(BTC)` against
+  `crypto_history(BTC)` over a 7-day window, asserts |pct diff| < 1%
+  per day. Will fail loudly if the date conventions ever drift out of
+  alignment again or if either provider switches its underlying
+  exchange basket enough to break the tolerance.
 
 ## Other
 

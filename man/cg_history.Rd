@@ -15,7 +15,8 @@ cg_history(
   sleep = 0,
   wait = 60,
   finalWait = FALSE,
-  single_id = TRUE
+  single_id = TRUE,
+  date_convention = c("end_of_day", "raw")
 )
 }
 \arguments{
@@ -49,6 +50,18 @@ per-minute budget.}
 
 \item{single_id}{Kept for parity with \code{\link[=crypto_history]{crypto_history()}} -- ignored;
 CoinGecko endpoints are always single-coin per call.}
+
+\item{date_convention}{Either \code{"end_of_day"} (the default) or \code{"raw"}.
+CoinGecko's native daily series timestamps each point at 00:00:00 UTC
+of date X, which is the same physical instant as 23:59:59 UTC of date
+X-1 -- i.e. CG labels it as the start-of-day rather than the
+close-of-day. CMC (and \code{crypto_history()}) label that instant as
+date X-1 (the day that just ended), which is also the standard
+asset-pricing convention used by CRSP/Compustat and major academic
+datasets. With \code{"end_of_day"} (default) \code{cg_history()} shifts CG's
+midnight ticks by -1 day so \code{close[X] / close[X-1] - 1} is the return
+earned during date X, matching CMC. Pass \code{"raw"} to keep CG's native
+start-of-day labelling.}
 }
 \value{
 Crypto currency historic OHLC market data in a tibble:

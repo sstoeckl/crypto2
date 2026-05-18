@@ -41,6 +41,10 @@
 #'   to `FALSE` to skip the join (rows then have only `id`).
 #' @param sleep,wait,max_retries Rate-limit knobs. Defaults `0.6 / 60 / 3`
 #'   match `cg_history()`.
+#' @param date_convention Either `"end_of_day"` (the default) or `"raw"`.
+#'   See [cg_history()] for the explanation -- this argument applies the
+#'   same -1 day shift to midnight-UTC ticks so dates align with the
+#'   CMC / CRSP / Compustat end-of-day convention.
 #' @param quiet If `FALSE`, prints a progress bar.
 #' @param finalWait Sleep 60 s after the last call (mirrors
 #'   `crypto_history()`).
@@ -75,9 +79,11 @@ cg_history_by_id <- function(ids = NULL,
                              start_date = NULL, end_date = NULL,
                              coin_list = NULL,
                              sleep = 0.6, wait = 60, max_retries = 3,
-                             quiet = FALSE, finalWait = FALSE) {
+                             quiet = FALSE, finalWait = FALSE,
+                             date_convention = c("end_of_day", "raw")) {
   what <- match.arg(what, choices = c("price", "market_cap", "ohlc"),
                     several.ok = TRUE)
+  date_convention <- match.arg(date_convention)
   vs <- tolower(vs_currency)
 
   if (is.null(ids)) {
@@ -114,13 +120,13 @@ cg_history_by_id <- function(ids = NULL,
           timestamp = cg_ms_to_posix(pj$stats[, 1]),
           close     = as.numeric(pj$stats[, 2])
         )
-        pr <- floor_daily_(pr, "close")
+        pr <- floor_daily_(pr, "close", date_convention)
         if (!is.null(pj$total_volumes) && length(pj$total_volumes)) {
           vol <- tibble::tibble(
             timestamp = cg_ms_to_posix(pj$total_volumes[, 1]),
             volume    = as.numeric(pj$total_volumes[, 2])
           )
-          vol <- floor_daily_(vol, "volume")
+          vol <- floor_daily_(vol, "volume", date_convention)
           pr <- dplyr::full_join(pr, vol, by = "date")
         } else {
           pr$volume <- NA_real_
@@ -137,7 +143,7 @@ cg_history_by_id <- function(ids = NULL,
           timestamp  = cg_ms_to_posix(mj$stats[, 1]),
           market_cap = as.numeric(mj$stats[, 2])
         )
-        mc <- floor_daily_(mc, "market_cap")
+        mc <- floor_daily_(mc, "market_cap", date_convention)
         out <- if (is.null(out)) mc else dplyr::full_join(out, mc, by = "date")
       }
     }
@@ -153,7 +159,7 @@ cg_history_by_id <- function(ids = NULL,
           low       = as.numeric(oj$ohlc[, 4]),
           close_o   = as.numeric(oj$ohlc[, 5])
         )
-        ohlc <- floor_daily_(ohlc, c("open","high","low","close_o"))
+        ohlc <- floor_daily_(ohlc, c("open","high","low","close_o"), date_convention)
         if (is.null(out)) {
           out <- ohlc %>% dplyr::mutate(close = close_o) %>% dplyr::select(-close_o)
         } else {
@@ -260,14 +266,21 @@ cg_history_by_id <- function(ids = NULL,
 # UTC calendar. Shared between cg_history() and cg_history_by_id() -- the
 # CoinGecko website endpoints intermix daily bars with a final rolling
 # "now" point in the same series, so we floor to date and keep the last
-# observation per day for each value column.
-#
-# (Exposed only inside the package as floor_daily_; cg_history's local
-# floor_daily() variant predates this helper and remains for now to keep
-# that file self-contained.)
-floor_daily_ <- function(df, value_cols) {
+# observation per day for each value column. Under
+# `date_convention = "end_of_day"` (the default), midnight-UTC ticks
+# are attributed to the previous date to match CMC's close-of-day
+# labelling; non-midnight points (the "now" snapshot) keep their own date.
+floor_daily_ <- function(df, value_cols,
+                         date_convention = "end_of_day") {
   if (is.null(df) || !nrow(df)) return(df)
-  df$date <- as.Date(df$timestamp, tz = "UTC")
+  raw_date <- as.Date(df$timestamp, tz = "UTC")
+  if (date_convention == "end_of_day") {
+    is_midnight <- (as.numeric(df$timestamp) %% 86400) == 0
+    df$date <- as.Date(ifelse(is_midnight, raw_date - 1L, raw_date),
+                       origin = "1970-01-01")
+  } else {
+    df$date <- raw_date
+  }
   df <- df[order(df$date, df$timestamp), , drop = FALSE]
   df <- df[!duplicated(df$date, fromLast = TRUE), , drop = FALSE]
   df[, c("date", value_cols), drop = FALSE]
