@@ -1,0 +1,190 @@
+# CoinGecko Pro backfill: one-shot survivorship-bias archive
+
+## Scope
+
+The free-tier `cg_*` functions are the right primary entry point for
+almost all `crypto2` users — they require no key and accept the same
+arguments as their CMC counterparts.
+
+For one specific scenario — bootstrapping a
+**survivorship-bias-corrected archive from scratch in a single batch
+run** — the Pro tier (`pro-api.coingecko.com`) is the cheapest path: a
+one-shot subscription gets you per-coin OHLC and listing snapshots for
+every coin CoinGecko has ever tracked, in a few hours rather than the
+months of accumulated snapshots that the free tier requires.
+
+This vignette holds the **recipes**. The functions are written inline
+rather than exported by `crypto2` — they are deliberately kept out of
+the package namespace so that:
+
+- there is **no encouragement** of paid-API patterns inside a key-free
+  package, and
+- the recipes can be adapted to any change in the Pro endpoints without
+  bumping the package version.
+
+To use the recipes: copy the function definitions below into a script,
+provide your Pro API key, and run.
+
+## Setup
+
+``` r
+
+library(crypto2)         # only for the column conventions we mirror
+library(dplyr)
+library(tibble)
+library(purrr)
+library(jsonlite)
+library(httr)
+library(arrow)
+
+# Your Pro key. Store in .Renviron as COINGECKO_PRO_KEY and read here.
+CG_PRO_KEY <- Sys.getenv("COINGECKO_PRO_KEY", unset = NA)
+stopifnot(!is.na(CG_PRO_KEY))
+```
+
+## A polite Pro client
+
+``` r
+
+# Pro tier nominal cap: 500 req / min. Stay below ~ 6 req / s.
+pro_sleep <- 0.2
+
+pro_get <- function(path, query = NULL) {
+  url <- paste0("https://pro-api.coingecko.com/api/v3/", sub("^/", "", path))
+  resp <- httr::GET(
+    url,
+    query = query,
+    httr::add_headers(`x-cg-pro-api-key` = CG_PRO_KEY),
+    httr::timeout(60)
+  )
+  sc <- httr::status_code(resp)
+  if (sc == 429) {
+    ra <- suppressWarnings(as.numeric(
+      httr::headers(resp)[["retry-after"]]))
+    if (is.na(ra)) ra <- 30
+    Sys.sleep(ra)
+    return(pro_get(path, query))  # one retry on 429
+  }
+  if (sc < 200 || sc >= 300) return(NULL)
+  jsonlite::fromJSON(httr::content(resp, as = "text", encoding = "UTF-8"))
+}
+```
+
+## Recipe 1: full historic id/slug mapping
+
+The Pro endpoint
+`/coins/list?include_platform=false&status=active,inactive` returns
+*every* coin CoinGecko has ever tracked, active or not. This is the
+input to the survivorship-bias-corrected universe.
+
+``` r
+
+pro_id_mapping <- function() {
+  raw <- pro_get("coins/list",
+                 query = list(include_platform = "false",
+                              status = "active,inactive"))
+  if (is.null(raw) || !length(raw)) return(tibble::tibble())
+  tibble::tibble(
+    slug         = raw$id,
+    symbol       = raw$symbol,
+    name         = raw$name,
+    harvested_at = Sys.Date()
+  )
+}
+
+mapping <- pro_id_mapping()
+nrow(mapping)
+#> [1] ~ 17 000 (active) + 5 000-10 000 inactive
+```
+
+To enrich with the numeric CoinGecko IDs, page through `/coins/markets`:
+
+``` r
+
+pro_numeric_ids <- function() {
+  per_page <- 250L
+  pages <- vector("list", 200L)
+  for (i in seq_along(pages)) {
+    Sys.sleep(pro_sleep)
+    page <- pro_get("coins/markets",
+                    query = list(vs_currency = "usd",
+                                 per_page = per_page, page = i))
+    if (is.null(page) || !nrow(page)) break
+    pages[[i]] <- tibble::tibble(
+      slug   = page$id,
+      id     = as.integer(sub("^.*/coins/images/([0-9]+).*$", "\\1",
+                              page$image)),
+      rank   = page$market_cap_rank
+    )
+    if (nrow(pages[[i]]) < per_page) break
+  }
+  dplyr::bind_rows(pages)
+}
+
+ids <- pro_numeric_ids()
+mapping_full <- dplyr::left_join(mapping, ids, by = "slug")
+```
+
+## Recipe 2: full historic OHLC per coin
+
+Pro `/coins/{slug}/ohlc?vs_currency=...&days=max` returns daily OHLC for
+the entire history of the coin in a single call.
+
+``` r
+
+pro_ohlc_one <- function(slug, vs = "usd") {
+  Sys.sleep(pro_sleep)
+  raw <- pro_get(sprintf("coins/%s/ohlc", slug),
+                 query = list(vs_currency = vs, days = "max"))
+  if (is.null(raw) || !length(raw)) return(NULL)
+  tibble::tibble(
+    slug      = slug,
+    timestamp = as.POSIXct(raw[, 1] / 1000, origin = "1970-01-01", tz = "UTC"),
+    open      = raw[, 2],
+    high      = raw[, 3],
+    low       = raw[, 4],
+    close     = raw[, 5]
+  )
+}
+
+# Run for the entire universe
+hist <- purrr::map_dfr(mapping_full$slug, pro_ohlc_one)
+```
+
+## Recipe 3: persist as a parquet dataset
+
+The accumulated parquet is the survivorship-bias-corrected archive.
+Combined with the id mapping it lets
+[`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+and `cg_list(only_active = FALSE)` work correctly on the free tier
+forever after.
+
+``` r
+
+arrow::write_parquet(mapping_full, "cg_id_mapping_pro.parquet")
+arrow::write_dataset(
+  hist,
+  path        = "data/cg_history_pro",
+  partitioning = "slug"
+)
+```
+
+## Where to host the mapping for other users
+
+If you intend the mapping to be reused by
+[`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
+(in this package or by other consumers), upload the parquet to a stable,
+anonymous public URL. The default download path baked into
+[`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
+is the Hugging Face dataset `sstoeckl/opencryptoassetpricing` at
+`data/_static.parquet`. Drop your parquet there (after stripping
+anything but the four columns `id`, `slug`, `symbol`, `name`,
+`harvested_at`) and the free-tier package will pick it up automatically.
+
+## Rate-limit budgeting
+
+A one-shot historical bootstrap of ~ 17 000 coins at 0.2 s per call is
+about **57 minutes** for the OHLC sweep alone, plus a few minutes for
+the mapping and listing snapshot. Plan for ~ 2 hours total wall-clock
+with generous safety margins. The Pro 30-day trial period is sufficient
+for exactly one bootstrap.
