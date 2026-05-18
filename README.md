@@ -488,3 +488,4 @@ file for details\</license.md\>
 - Thanks to Jesse Vent for providing the (not fully research compatible)
   [`crypto`](https://github.com/JesseVent/crypto)-package that inspired
   this package.
+
