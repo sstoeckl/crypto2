@@ -14,6 +14,8 @@ knitr::opts_chunk$set(
 
 # crypto2 <a href='https://github.com/sstoeckl/crypto2'><img src='man/figures/crypto2_hex.png' align="right" height="139" style="float:right; height:200px;"/></a>
 
+<!-- badges: start -->
+
   [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
   [![R-CMD-check](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml)
   [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
@@ -25,6 +27,7 @@ knitr::opts_chunk$set(
   [![Website - pkgdown](https://img.shields.io/website-up-down-green-red/https/www.sebastianstoeckl.com/crypto2.svg)](https://www.sebastianstoeckl.com/crypto2/)
   [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
   [![Codestyle: tidyverse](https://img.shields.io/badge/code%20style-tidyverse-blue.svg)](https://style.tidyverse.org)
+<!-- badges: end -->
 
 > **Experimental:** A CoinGecko integration is in active testing on the
 > [`dev`](https://github.com/sstoeckl/crypto2/tree/dev) branch.
