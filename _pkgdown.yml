@@ -4,10 +4,3 @@ template:
   bootswatch: spacelab
 navbar:
   bg: primary
-development:
-  # 'release' = always treat this branch's site as the production version
-  # (overrides pkgdown's version-based auto-detection, which would otherwise
-  # see DESCRIPTION's 2.0.5.9000 .9000 suffix as "devel"). The dev branch
-  # sets mode: devel so visitors get a Release/Devel dropdown letting them
-  # switch to the /dev/ preview site.
-  mode: release
