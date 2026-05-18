@@ -2,6 +2,18 @@
 
 ## All functions
 
+- [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  : Retrieve historic CoinGecko market data (OHLC + volume + market cap)
+- [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+  : Fetch CoinGecko history by numeric ID (incl. partial
+  survivorship-bias correction)
+- [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md)
+  : Retrieve per-coin metadata from CoinGecko (CMC-compatible columns)
+- [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
+  : Retrieve the CoinGecko coin universe (active coins only)
+- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+  : Retrieve the latest CoinGecko market snapshot (CMC-compatible
+  columns)
 - [`crypto_global_quotes()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_global_quotes.md)
   : Retrieves historical quotes for the global aggregate market
 - [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
