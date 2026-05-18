@@ -102,8 +102,8 @@ not available without an API key.</p></dd>
 
 <dt id="arg-sleep">sleep<a class="anchor" aria-label="anchor" href="#arg-sleep"></a></dt>
 <dd><p>integer (default <code>0</code>) Seconds to sleep between API requests.
-The internal client enforces a polite floor of <code>0.6</code> to keep the
-website host happy.</p></dd>
+The internal client enforces a polite floor to stay within CoinGecko's
+per-minute budget.</p></dd>
 
 
 <dt id="arg-wait">wait<a class="anchor" aria-label="anchor" href="#arg-wait"></a></dt>
@@ -155,18 +155,14 @@ not expose intra-day OHLC timestamps in these endpoints.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Source endpoints (no API key required) are addressed internally by
-<code><a href="cg_url.html">cg_url()</a></code>; the package source does not embed the host URLs in
-plain text. When the requested coin's numeric id is missing in
-<code>coin_list</code>, <code><a href="cg_id_mapping.html">cg_id_mapping()</a></code> is consulted to recover it. If both the
-slug-based and the numeric-id-based routes fail, the coin is silently
-skipped (the most common cause is a Cloudflare bot challenge – see
-<code><a href="cg_get.html">cg_get()</a></code>).</p>
-<p>Free-tier caveat: the public CoinGecko Demo endpoints cap historic
-retrieval at 365 days per coin. When <code>start_date</code> is more than 365 days
-in the past and the website-host endpoints are unavailable (e.g. blocked
-by Cloudflare), only the most recent 365 days are returned, with a
-single one-line warning.</p>
+    <p>No API key is required. When the requested coin's numeric id is missing
+in <code>coin_list</code>, <code><a href="cg_id_mapping.html">cg_id_mapping()</a></code> is consulted to recover it. If a coin
+cannot be resolved at all, it is silently skipped.</p>
+<p>Free-tier caveat: in some environments only the most recent 365 days of
+OHLC per coin are available. When <code>start_date</code> is further back and the
+full backfill cannot be served, the most recent 365 days are returned
+with a single one-line warning. For a one-shot complete bootstrap of the
+full historic universe, see <code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code>.</p>
     </div>
 
     <div class="section level2">

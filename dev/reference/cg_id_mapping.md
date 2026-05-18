@@ -39,10 +39,10 @@ be loaded.
 ## Details
 
 The mapping is fetched once per session and cached in
-`tempdir()/crypto2_cg_mapping.parquet`. If the network is unavailable, a
-small bundled sample (top 100 coins, shipped in `inst/extdata/`) is used
-as a fallback. When `quiet = FALSE` (default), a single one-line message
-is emitted on first successful download stating the harvest date.
+[`tempdir()`](https://rdrr.io/r/base/tempfile.html). If the network is
+unavailable, a small bundled sample of reference coins is used as a
+fallback. When `quiet = FALSE` (default), a single one-line message is
+emitted on first successful download stating the harvest date.
 
 ## Examples
 

@@ -2,7 +2,7 @@
 
 Companion to
 [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-that addresses coins by their internal **numeric ID** instead of their
+that addresses coins by their **numeric CoinGecko ID** instead of their
 slug. Useful in two scenarios:
 
 ## Usage
@@ -58,9 +58,7 @@ cg_history_by_id(
 
 - sleep, wait, max_retries:
 
-  Passed to
-  [`cg_make_client()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_make_client.md).
-  Defaults `0.6 / 60 / 3` match
+  Rate-limit knobs. Defaults `0.6 / 60 / 3` match
   [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md).
 
 - quiet:
@@ -100,10 +98,7 @@ names. Columns:
 
 ## Details
 
-1.  Coins that have been **delisted** from CoinGecko's slug routing
-    (i.e., `api.coingecko.com/api/v3/coins/{slug}` now returns 404) but
-    whose numeric ID still serves data on the website-host endpoints.
-    This holds at least for low/early IDs.
+1.  Coins that have been **delisted** and whose slug no longer resolves.
 
 2.  Cronjob-style accumulation: when you persist
     [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
@@ -114,30 +109,25 @@ names. Columns:
 
 Important caveats – please read:
 
-- **The numeric-ID space is sparse, not dense.** CoinGecko's
-  auto-increment counter has been allocated up to ~102 million, but only
-  ~15 000 IDs are actually populated as of mid 2026. **Blind iteration
-  over `1:N` does NOT recover the full universe** – most numeric IDs in
-  that range return 404. The default `ids = NULL` therefore uses the
-  active universe from
+- **The numeric-ID space is sparse, not dense.** Blind iteration over
+  `1:N` does NOT recover the full universe – most numeric IDs in that
+  range have no data. The default `ids = NULL` therefore uses the active
+  universe from
   [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md),
-  NOT a numeric range. To recover delisted coins you must supply the IDs
+  not a numeric range. To recover delisted coins you must supply the IDs
   explicitly (e.g., the union of accumulated
   [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
-  snapshots).
+  snapshots, or the historic mapping from
+  [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)).
 
-- **Slug recovery for delisted coins is not available** through any
-  free-tier endpoint. Active coins get their slug/name joined back in
-  from
+- **Slug recovery for delisted coins is not generally available on the
+  free tier.** Active coins get their slug/name joined back in from
   [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md);
   rows whose numeric ID is no longer in the active universe come back
   with `slug = NA` and `name = NA`. Use the `id` column as the join key
-  in downstream code.
-
-- **It is empirically true** that some low/early numeric IDs continue to
-  serve historical data even when their slug has been removed from the
-  public API. The exact coverage policy is undocumented and may change
-  without notice.
+  in downstream code. For a one-shot complete recovery of the full
+  historic universe see
+  [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md).
 
 ## Examples
 

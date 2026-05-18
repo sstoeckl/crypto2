@@ -97,8 +97,7 @@ nrow(mapping)
 #> [1] ~ 17 000 (active) + 5 000-10 000 inactive
 ```
 
-To enrich with the numeric CoinGecko IDs (needed for the OHLC
-website-host endpoints), page through `/coins/markets`:
+To enrich with the numeric CoinGecko IDs, page through `/coins/markets`:
 
 ``` r
 

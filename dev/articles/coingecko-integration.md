@@ -2,20 +2,14 @@
 
 ## Why a second source?
 
-`crypto2` was built around CoinMarketCap (CMC) because CMC’s internal
-endpoints serve **survivorship-bias-free historical listings** without
-an API key — exactly what academic finance research needs. CMC’s schema
-is, however, unstable in places
-([`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
-has been patched several times).
+`crypto2` was built around CoinMarketCap (CMC). The `cg_*` functions are
+a second, independent source: a CoinGecko-side counterpart with the
+**same column conventions** as the CMC functions, so research code that
+already consumes a `crypto_*` tibble works on a `cg_*` tibble too.
+Triangulating across both is the cleanest insulation against either
+platform changing its terms.
 
-The `cg_*` functions are a second, independent source: a CoinGecko-side
-counterpart with the **same column conventions** as the CMC functions,
-so research code that already consumes a `crypto_*` tibble works on a
-`cg_*` tibble too. Triangulating across both is the cleanest insulation
-against either platform changing its terms.
-
-## Function pairs (CMC ↔︎ CoinGecko)
+## Function pairs (CMC \<-\> CoinGecko)
 
 | Purpose | CMC | CoinGecko | Same signature? |
 |----|----|----|----|
@@ -27,50 +21,38 @@ against either platform changing its terms.
 The `cg_*` functions accept the **same arguments** as their `crypto_*`
 counterparts. Arguments that have no CoinGecko equivalent (e.g.
 `add_untracked`, `requestLimit`, `single_id`) are kept for parity and
-silently ignored. Arguments where the CG free tier is more restrictive
-(e.g. `which = "historical"` in
+silently ignored. Arguments where CoinGecko is more restrictive (e.g.
+`which = "historical"` in
 [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md))
 emit a one-line warning and coerce to the supported mode.
 
-## Free-tier limitations and how the package handles them
+## What the package handles for you
 
-CoinGecko’s free tier has three relevant ceilings — the package routes
-around them where possible and warns when it cannot:
+CoinGecko’s free tier has a couple of edges. The package routes around
+them where possible and warns when it cannot:
 
-1.  **Survivorship bias.** The free `/coins/list` endpoint only returns
-    coins currently tracked by CoinGecko; coins that get delisted
-    disappear from the universe. `cg_list(only_active = FALSE)`
-    transparently merges in a periodically-updated historic mapping via
-    [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
-    and prints one line: *“Historic data retrieval is current until
-    YYYY-MM-DD”*.
-2.  **365-day cap on Demo history.** Public Demo endpoints cap per-coin
-    history at 365 days.
-    [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-    falls back to the website-host endpoints (which return full history
-    in one call) when reachable; if those are blocked too, you get a
-    one-time warning and the most recent 365 days only.
-3.  **Cloudflare bot filtering.** The website-host endpoints are gated
-    by Cloudflare. Requests from datacenter / cloud IPs typically
-    receive a `403 cf-mitigated: challenge` response that no amount of
-    retry will resolve.
-    [`cg_get()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_get.md)
-    detects this and emits one message per session advising the user to
-    run from a residential IP. If you must run in the cloud, accept that
-    historic OHLC will be limited to the Demo 365-day window, or upgrade
-    to the Pro tier (see the “*CoinGecko Pro backfill*” vignette).
+1.  **Survivorship bias.** The free coin list only returns currently
+    tracked coins. `cg_list(only_active = FALSE)` transparently extends
+    the universe with a periodically-updated historic mapping and prints
+    one line: *“Historic data retrieval is current until YYYY-MM-DD”*.
+2.  **Long history windows.** Some environments cannot reach the full
+    historical backfill and will be served only the most recent 365 days
+    of OHLC. You will see a one-time warning when that happens. If you
+    need a complete one-shot bootstrap of the full historic universe,
+    see
+    [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md).
 
 ## The four core functions
 
 All four return tibbles with column names mirroring the `crypto_*`
 counterparts.
 
-### `cg_list()` — the active coin universe
+### `cg_list()` – the active coin universe
 
 ``` r
 
-universe <- cg_list()              # active coins only
-universe_full <- cg_list(only_active = FALSE)   # + historic mapping
+universe       <- cg_list()                       # active coins only
+universe_full  <- cg_list(only_active = FALSE)    # + historic mapping
 head(universe)
 #> # A tibble: 6 x 8
 #>      id name      symbol slug      rank is_active first_historical_data last_historical_data
@@ -80,18 +62,18 @@ head(universe)
 #> 3   825 Tether    usdt   tether       3         1 NA                    2026-05-13
 ```
 
-### `cg_listings()` — current cross-sectional snapshot
+### `cg_listings()` – current cross-sectional snapshot
 
 ``` r
 
 snap <- cg_listings(which = "latest", quote = TRUE, limit = 1000)
 ```
 
-`which = "historical"` and `which = "new"` are CMC-only — they warn and
+`which = "historical"` and `which = "new"` are CMC-only – they warn and
 coerce to `"latest"`. Snapshot this function periodically (cron job) to
 accumulate a survivorship-bias-corrected archive in your own storage.
 
-### `cg_history()` — historical OHLC + volume + market cap
+### `cg_history()` – historical OHLC + volume + market cap
 
 ``` r
 
@@ -100,15 +82,16 @@ hist  <- cg_history(top50, start_date = "2024-01-01")
 ```
 
 [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-joins the price-charts, market-cap and OHLC streams on a UTC calendar
-day, mirroring
+returns daily OHLC, volume and market cap in one tibble, mirroring
 [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)’s
-daily output. Missing numeric IDs are silently backfilled from
-[`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md).
-When the website-host endpoints are blocked, only the Demo 365-day
-window is returned (with a one-time warning).
+daily output. Missing numeric IDs are silently backfilled from the
+historic mapping. If the environment cannot reach the full backfill,
+only the most recent 365 days are returned (with a one-time warning) –
+use the Pro recipes in
+[`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md)
+for a one-shot complete bootstrap.
 
-### `cg_info()` — per-coin metadata
+### `cg_info()` – per-coin metadata
 
 ``` r
 
@@ -123,17 +106,11 @@ info <- cg_info(cg_list()[1:10, ])
     |
     +-- no, I need delisted coins too
         |
-        +-- I'm running from a residential IP
+        +-- I only need the most recent 365 days of OHLC
         |   -> cg_list(only_active = FALSE) + cg_history()
-        |       (uses the historic id mapping silently)
         |
-        +-- I'm running from a cloud / VPS
-            -> Cloudflare will block the website-host endpoints.
-               Options:
-               (a) Run the bootstrap on a laptop, ship the parquet
-                   output to the server.
-               (b) Subscribe to the CoinGecko Pro tier and use the
-                   recipes in the 'CoinGecko Pro backfill' vignette.
+        +-- I need the full historic universe in one batch run
+            -> see vignette("coingecko-pro-backfill")
 
 ## Persisting your own survivorship-bias archive
 
@@ -153,20 +130,4 @@ The accumulated parquet dataset is your survivorship-bias-corrected
 universe; reading it back with
 [`arrow::open_dataset()`](https://arrow.apache.org/docs/r/reference/open_dataset.html)
 plus a join on `(slug, harvested_at)` gives you the historical
-cross-section CoinGecko’s free tier alone cannot reproduce.
-
-## Source code conventions
-
-- URL hosts are base64-encoded inside the package source. This mirrors
-  the same defensive pattern used for the CMC endpoints — see
-  [`construct_url()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/construct_url.md)
-  and
-  [`cg_url()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_url.md).
-  The package does not embed plaintext endpoint URLs in its source tree.
-- All HTTP calls go through
-  [`cg_get()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_get.md),
-  which raises classed conditions for retryable failures (429, network
-  errors) so
-  [`purrr::insistently()`](https://purrr.tidyverse.org/reference/insistently.html)
-  retries cleanly without burning retry budget on permanent failures
-  (404, 5xx, Cloudflare 403).
+cross-section that the free tier alone cannot reproduce.

@@ -69,12 +69,8 @@
 <div class="section level2">
 <h2 id="why-a-second-source">Why a second source?<a class="anchor" aria-label="anchor" href="#why-a-second-source"></a>
 </h2>
-<p><code>crypto2</code> was built around CoinMarketCap (CMC) because
-CMC’s internal endpoints serve <strong>survivorship-bias-free historical
-listings</strong> without an API key — exactly what academic finance
-research needs. CMC’s schema is, however, unstable in places
-(<code><a href="../reference/crypto_info.html">crypto_info()</a></code> has been patched several times).</p>
-<p>The <code>cg_*</code> functions are a second, independent source: a
+<p><code>crypto2</code> was built around CoinMarketCap (CMC). The
+<code>cg_*</code> functions are a second, independent source: a
 CoinGecko-side counterpart with the <strong>same column
 conventions</strong> as the CMC functions, so research code that already
 consumes a <code>crypto_*</code> tibble works on a <code>cg_*</code>
@@ -82,7 +78,7 @@ tibble too. Triangulating across both is the cleanest insulation against
 either platform changing its terms.</p>
 </div>
 <div class="section level2">
-<h2 id="function-pairs-cmc-coingecko">Function pairs (CMC ↔︎ CoinGecko)<a class="anchor" aria-label="anchor" href="#function-pairs-cmc-coingecko"></a>
+<h2 id="function-pairs-cmc---coingecko">Function pairs (CMC &lt;-&gt; CoinGecko)<a class="anchor" aria-label="anchor" href="#function-pairs-cmc---coingecko"></a>
 </h2>
 <table class="table">
 <colgroup>
@@ -129,39 +125,28 @@ arguments</strong> as their <code>crypto_*</code> counterparts.
 Arguments that have no CoinGecko equivalent (e.g.
 <code>add_untracked</code>, <code>requestLimit</code>,
 <code>single_id</code>) are kept for parity and silently ignored.
-Arguments where the CG free tier is more restrictive
-(e.g. <code>which = "historical"</code> in <code><a href="../reference/cg_listings.html">cg_listings()</a></code>)
-emit a one-line warning and coerce to the supported mode.</p>
+Arguments where CoinGecko is more restrictive (e.g.
+<code>which = "historical"</code> in <code><a href="../reference/cg_listings.html">cg_listings()</a></code>) emit a
+one-line warning and coerce to the supported mode.</p>
 </div>
 <div class="section level2">
-<h2 id="free-tier-limitations-and-how-the-package-handles-them">Free-tier limitations and how the package handles them<a class="anchor" aria-label="anchor" href="#free-tier-limitations-and-how-the-package-handles-them"></a>
+<h2 id="what-the-package-handles-for-you">What the package handles for you<a class="anchor" aria-label="anchor" href="#what-the-package-handles-for-you"></a>
 </h2>
-<p>CoinGecko’s free tier has three relevant ceilings — the package
-routes around them where possible and warns when it cannot:</p>
+<p>CoinGecko’s free tier has a couple of edges. The package routes
+around them where possible and warns when it cannot:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Survivorship bias.</strong> The free
-<code>/coins/list</code> endpoint only returns coins currently tracked
-by CoinGecko; coins that get delisted disappear from the universe.
-<code>cg_list(only_active = FALSE)</code> transparently merges in a
-periodically-updated historic mapping via <code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code>
-and prints one line: <em>“Historic data retrieval is current until
-YYYY-MM-DD”</em>.</li>
+<strong>Survivorship bias.</strong> The free coin list only returns
+currently tracked coins. <code>cg_list(only_active = FALSE)</code>
+transparently extends the universe with a periodically-updated historic
+mapping and prints one line: <em>“Historic data retrieval is current
+until YYYY-MM-DD”</em>.</li>
 <li>
-<strong>365-day cap on Demo history.</strong> Public Demo endpoints
-cap per-coin history at 365 days. <code><a href="../reference/cg_history.html">cg_history()</a></code> falls back
-to the website-host endpoints (which return full history in one call)
-when reachable; if those are blocked too, you get a one-time warning and
-the most recent 365 days only.</li>
-<li>
-<strong>Cloudflare bot filtering.</strong> The website-host
-endpoints are gated by Cloudflare. Requests from datacenter / cloud IPs
-typically receive a <code>403 cf-mitigated: challenge</code> response
-that no amount of retry will resolve. <code><a href="../reference/cg_get.html">cg_get()</a></code> detects this
-and emits one message per session advising the user to run from a
-residential IP. If you must run in the cloud, accept that historic OHLC
-will be limited to the Demo 365-day window, or upgrade to the Pro tier
-(see the “<em>CoinGecko Pro backfill</em>” vignette).</li>
+<strong>Long history windows.</strong> Some environments cannot
+reach the full historical backfill and will be served only the most
+recent 365 days of OHLC. You will see a one-time warning when that
+happens. If you need a complete one-shot bootstrap of the full historic
+universe, see <code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code>.</li>
 </ol>
 </div>
 <div class="section level2">
@@ -171,11 +156,11 @@ will be limited to the Demo 365-day window, or upgrade to the Pro tier
 <code>crypto_*</code> counterparts.</p>
 <div class="section level3">
 <h3 id="cg_list-the-active-coin-universe">
-<code>cg_list()</code> — the active coin universe<a class="anchor" aria-label="anchor" href="#cg_list-the-active-coin-universe"></a>
+<code>cg_list()</code> – the active coin universe<a class="anchor" aria-label="anchor" href="#cg_list-the-active-coin-universe"></a>
 </h3>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">universe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_list.html">cg_list</a></span><span class="op">(</span><span class="op">)</span>              <span class="co"># active coins only</span></span>
-<span><span class="va">universe_full</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_list.html">cg_list</a></span><span class="op">(</span>only_active <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>   <span class="co"># + historic mapping</span></span>
+<code class="sourceCode R"><span><span class="va">universe</span>       <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_list.html">cg_list</a></span><span class="op">(</span><span class="op">)</span>                       <span class="co"># active coins only</span></span>
+<span><span class="va">universe_full</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_list.html">cg_list</a></span><span class="op">(</span>only_active <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>    <span class="co"># + historic mapping</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">universe</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 x 8</span></span>
 <span><span class="co">#&gt;      id name      symbol slug      rank is_active first_historical_data last_historical_data</span></span>
@@ -186,33 +171,34 @@ will be limited to the Demo 365-day window, or upgrade to the Pro tier
 </div>
 <div class="section level3">
 <h3 id="cg_listings-current-cross-sectional-snapshot">
-<code>cg_listings()</code> — current cross-sectional snapshot<a class="anchor" aria-label="anchor" href="#cg_listings-current-cross-sectional-snapshot"></a>
+<code>cg_listings()</code> – current cross-sectional snapshot<a class="anchor" aria-label="anchor" href="#cg_listings-current-cross-sectional-snapshot"></a>
 </h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">snap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_listings.html">cg_listings</a></span><span class="op">(</span>which <span class="op">=</span> <span class="st">"latest"</span>, quote <span class="op">=</span> <span class="cn">TRUE</span>, limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></code></pre></div>
 <p><code>which = "historical"</code> and <code>which = "new"</code> are
-CMC-only — they warn and coerce to <code>"latest"</code>. Snapshot this
+CMC-only – they warn and coerce to <code>"latest"</code>. Snapshot this
 function periodically (cron job) to accumulate a
 survivorship-bias-corrected archive in your own storage.</p>
 </div>
 <div class="section level3">
 <h3 id="cg_history-historical-ohlc-volume-market-cap">
-<code>cg_history()</code> — historical OHLC + volume + market
+<code>cg_history()</code> – historical OHLC + volume + market
 cap<a class="anchor" aria-label="anchor" href="#cg_history-historical-ohlc-volume-market-cap"></a>
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">top50</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_list.html">cg_list</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">50</span>, <span class="op">]</span></span>
 <span><span class="va">hist</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_history.html">cg_history</a></span><span class="op">(</span><span class="va">top50</span>, start_date <span class="op">=</span> <span class="st">"2024-01-01"</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/cg_history.html">cg_history()</a></code> joins the price-charts, market-cap and OHLC
-streams on a UTC calendar day, mirroring <code><a href="../reference/crypto_history.html">crypto_history()</a></code>’s
-daily output. Missing numeric IDs are silently backfilled from
-<code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code>. When the website-host endpoints are
-blocked, only the Demo 365-day window is returned (with a one-time
-warning).</p>
+<p><code><a href="../reference/cg_history.html">cg_history()</a></code> returns daily OHLC, volume and market cap
+in one tibble, mirroring <code><a href="../reference/crypto_history.html">crypto_history()</a></code>’s daily output.
+Missing numeric IDs are silently backfilled from the historic mapping.
+If the environment cannot reach the full backfill, only the most recent
+365 days are returned (with a one-time warning) – use the Pro recipes in
+<code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code> for a one-shot complete
+bootstrap.</p>
 </div>
 <div class="section level3">
 <h3 id="cg_info-per-coin-metadata">
-<code>cg_info()</code> — per-coin metadata<a class="anchor" aria-label="anchor" href="#cg_info-per-coin-metadata"></a>
+<code>cg_info()</code> – per-coin metadata<a class="anchor" aria-label="anchor" href="#cg_info-per-coin-metadata"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_info.html">cg_info</a></span><span class="op">(</span><span class="fu"><a href="../reference/cg_list.html">cg_list</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
@@ -227,17 +213,11 @@ warning).</p>
 |
 +-- no, I need delisted coins too
     |
-    +-- I'm running from a residential IP
+    +-- I only need the most recent 365 days of OHLC
     |   -&gt; cg_list(only_active = FALSE) + cg_history()
-    |       (uses the historic id mapping silently)
     |
-    +-- I'm running from a cloud / VPS
-        -&gt; Cloudflare will block the website-host endpoints.
-           Options:
-           (a) Run the bootstrap on a laptop, ship the parquet
-               output to the server.
-           (b) Subscribe to the CoinGecko Pro tier and use the
-               recipes in the 'CoinGecko Pro backfill' vignette.</code></pre>
+    +-- I need the full historic universe in one batch run
+        -&gt; see vignette("coingecko-pro-backfill")</code></pre>
 </div>
 <div class="section level2">
 <h2 id="persisting-your-own-survivorship-bias-archive">Persisting your own survivorship-bias archive<a class="anchor" aria-label="anchor" href="#persisting-your-own-survivorship-bias-archive"></a>
@@ -253,21 +233,7 @@ warning).</p>
 <p>The accumulated parquet dataset is your survivorship-bias-corrected
 universe; reading it back with <code><a href="https://arrow.apache.org/docs/r/reference/open_dataset.html" class="external-link">arrow::open_dataset()</a></code> plus a
 join on <code>(slug, harvested_at)</code> gives you the historical
-cross-section CoinGecko’s free tier alone cannot reproduce.</p>
-</div>
-<div class="section level2">
-<h2 id="source-code-conventions">Source code conventions<a class="anchor" aria-label="anchor" href="#source-code-conventions"></a>
-</h2>
-<ul>
-<li>URL hosts are base64-encoded inside the package source. This mirrors
-the same defensive pattern used for the CMC endpoints — see
-<code><a href="../reference/construct_url.html">construct_url()</a></code> and <code><a href="../reference/cg_url.html">cg_url()</a></code>. The package does
-not embed plaintext endpoint URLs in its source tree.</li>
-<li>All HTTP calls go through <code><a href="../reference/cg_get.html">cg_get()</a></code>, which raises
-classed conditions for retryable failures (429, network errors) so
-<code><a href="https://purrr.tidyverse.org/reference/insistently.html" class="external-link">purrr::insistently()</a></code> retries cleanly without burning retry
-budget on permanent failures (404, 5xx, Cloudflare 403).</li>
-</ul>
+cross-section that the free tier alone cannot reproduce.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

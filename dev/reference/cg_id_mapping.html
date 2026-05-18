@@ -86,11 +86,10 @@ can be loaded.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The mapping is fetched once per session and cached in
-<code>tempdir()/crypto2_cg_mapping.parquet</code>. If the network is unavailable, a
-small bundled sample (top 100 coins, shipped in <code>inst/extdata/</code>) is used
-as a fallback. When <code>quiet = FALSE</code> (default), a single one-line message
-is emitted on first successful download stating the harvest date.</p>
+    <p>The mapping is fetched once per session and cached in <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>. If
+the network is unavailable, a small bundled sample of reference coins
+is used as a fallback. When <code>quiet = FALSE</code> (default), a single one-line
+message is emitted on first successful download stating the harvest date.</p>
     </div>
 
     <div class="section level2">

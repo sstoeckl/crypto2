@@ -158,8 +158,8 @@ This is the input to the survivorship-bias-corrected universe.</p>
 <span><span class="va">mapping</span> <span class="op">&lt;-</span> <span class="fu">pro_id_mapping</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mapping</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] ~ 17 000 (active) + 5 000-10 000 inactive</span></span></code></pre></div>
-<p>To enrich with the numeric CoinGecko IDs (needed for the OHLC
-website-host endpoints), page through <code>/coins/markets</code>:</p>
+<p>To enrich with the numeric CoinGecko IDs, page through
+<code>/coins/markets</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pro_numeric_ids</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">per_page</span> <span class="op">&lt;-</span> <span class="fl">250L</span></span>
