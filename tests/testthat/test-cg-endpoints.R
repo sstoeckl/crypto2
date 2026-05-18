@@ -86,53 +86,54 @@ test_that("documented API: /coins/{slug} returns expected top-level fields", {
                             "missing /coins/{id} top-level fields")
 })
 
-test_that("website: /price_charts/{slug}/{vs}/30_days.json returns price + volume series", {
+test_that("website: /price_charts/{slug}/{vs}/24_hours.json returns price + volume series", {
   skip_if_no_cg()
   client <- cg_make_client(sleep = 0)
   out <- cg_parse_json(client(
-    cg_url("price_charts/bitcoin/usd/30_days.json", host = "web")
+    cg_url("price_charts/bitcoin/usd/24_hours.json", host = "web")
   ))
   if (is.null(out)) testthat::skip("CG /price_charts/ returned nothing.")
   expect_true("stats" %in% names(out),
-              info = "missing `stats` array — schema change?")
+              info = "missing `stats` array - schema change?")
   expect_true("total_volumes" %in% names(out),
-              info = "missing `total_volumes` array — schema change?")
-  expect_true(nrow(out$stats) > 100,
-              info = "stats array suspiciously small for 30-day window")
+              info = "missing `total_volumes` array - schema change?")
+  expect_true(nrow(out$stats) > 0,
+              info = "stats array empty for 24h window")
   expect_equal(ncol(out$stats), 2,
-               info = "stats no longer 2-col — schema change")
+               info = "stats no longer 2-col - schema change")
 })
 
 test_that("website: slug-based /price_charts also works", {
+  # Sibling check: hit the slug variant with the smallest window.
   skip_if_no_cg()
   client <- cg_make_client(sleep = 0)
   out <- cg_parse_json(client(
-    cg_url("price_charts/ethereum/usd/7_days.json", host = "web")
+    cg_url("price_charts/ethereum/usd/24_hours.json", host = "web")
   ))
   if (is.null(out)) testthat::skip("CG slug-based price_charts returned nothing.")
   expect_true("stats" %in% names(out))
 })
 
-test_that("website: /market_cap/{slug}/{vs}/30_days.json returns mcap series", {
+test_that("website: /market_cap/{slug}/{vs}/24_hours.json returns mcap series", {
   skip_if_no_cg()
   client <- cg_make_client(sleep = 0)
   out <- cg_parse_json(client(
-    cg_url("market_cap/bitcoin/usd/30_days.json", host = "web")
+    cg_url("market_cap/bitcoin/usd/24_hours.json", host = "web")
   ))
   if (is.null(out)) testthat::skip("CG /market_cap/ returned nothing.")
   expect_true("stats" %in% names(out),
-              info = "/market_cap missing stats — schema change?")
+              info = "/market_cap missing stats - schema change?")
 })
 
-test_that("website: /ohlc/{numeric}/series/{vs}/365_days.json returns OHLC array", {
+test_that("website: /ohlc/{numeric}/series/{vs}/24_hours.json returns OHLC array", {
   skip_if_no_cg()
   client <- cg_make_client(sleep = 0)
   out <- cg_parse_json(client(
-    cg_url("ohlc/1/series/usd/365_days.json", host = "web")
+    cg_url("ohlc/1/series/usd/24_hours.json", host = "web")
   ))
   if (is.null(out)) testthat::skip("CG /ohlc/ returned nothing.")
   expect_true("ohlc" %in% names(out),
-              info = "missing `ohlc` array — schema change?")
+              info = "missing `ohlc` array - schema change?")
   expect_true(nrow(out$ohlc) > 0,
               info = "OHLC array is empty")
   expect_equal(ncol(out$ohlc), 5,

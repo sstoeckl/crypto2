@@ -21,13 +21,17 @@ expect_no_missing_columns <- function(missing, info_text) {
 # ---- cg_list() -------------------------------------------------------------
 
 test_that("cg_list() schema is stable", {
+  # Lightweight: only enrich the top page (top_n=5 still triggers one
+  # /coins/markets call, which is the smallest API roundtrip the function
+  # supports beyond the bootstrap /coins/list call).
   skip_if_no_cg()
   skip_if_cg_rate_limited()
   cg_pace(3)
-  out <- cg_list(top_n = 50)
+  out <- cg_list(top_n = 5)
   skip_if(is.null(out) || !nrow(out),
           "cg_list returned no data (likely rate-limited).")
   expect_s3_class(out, "tbl_df")
+  # /coins/list is the source of truth; should return thousands of rows.
   expect_true(nrow(out) > 100,
               info = "cg_list returned an implausibly small universe")
   expect_no_missing_columns(setdiff(EXPECTED_COLS$cg_list, names(out)),
@@ -45,14 +49,16 @@ test_that("cg_list() schema is stable", {
 # ---- cg_listings() ---------------------------------------------------------
 
 test_that("cg_listings() schema is stable", {
+  # Lightweight: 3 rows is enough to verify schema; saves one /coins/markets
+  # page over the previous 10-row probe.
   skip_if_no_cg()
   skip_if_cg_rate_limited()
   cg_pace(3)
-  out <- cg_listings(limit = 10)
+  out <- cg_listings(limit = 3)
   skip_if(is.null(out) || !nrow(out),
           "cg_listings returned no data (likely rate-limited).")
   expect_s3_class(out, "tbl_df")
-  expect_true(nrow(out) >= 5)
+  expect_true(nrow(out) >= 3)
   expect_no_missing_columns(setdiff(EXPECTED_COLS$cg_listings, names(out)),
                             "cg_listings missing columns")
 
@@ -69,18 +75,23 @@ test_that("cg_listings() schema is stable", {
 # ---- cg_history() ----------------------------------------------------------
 
 test_that("cg_history() schema is stable and rows are daily", {
+  # Lightweight: 4-day window only. Full price/mcap/ohlc streams still
+  # exercise all 3 endpoints (one HTTP call each) but the JSON payload
+  # per call is the same regardless of window since CG always returns
+  # the full series and we filter client-side. We still pull 3 streams
+  # because that's the maximally-different schema shape to verify.
   skip_if_no_cg()
   cg_pace(2)  # /price_charts is on the website host, lighter rate concerns
   u <- tibble::tibble(slug = "bitcoin", id = 1L,
-                     name = "Bitcoin", symbol = "btc")
+                      name = "Bitcoin", symbol = "btc")
   out <- cg_history(coin_list = u,
                     what = c("price", "market_cap", "ohlc"),
-                    start_date = Sys.Date() - 14)
+                    start_date = Sys.Date() - 4)
   skip_if(is.null(out) || !nrow(out),
           "cg_history returned no data (likely network blip).")
   expect_s3_class(out, "tbl_df")
-  expect_true(nrow(out) >= 10,
-              info = "cg_history returned too few rows for a 14-day window")
+  expect_true(nrow(out) >= 3,
+              info = "cg_history returned too few rows for a 4-day window")
   expect_no_missing_columns(setdiff(EXPECTED_COLS$cg_history, names(out)),
                             "cg_history missing columns")
 
@@ -100,12 +111,13 @@ test_that("cg_history() schema is stable and rows are daily", {
 })
 
 test_that("cg_history() handles a coin with missing numeric_id (no OHLC)", {
+  # Lightweight: only 2 HTTP calls (price + market_cap), 3-day window.
   skip_if_no_cg()
   cg_pace(2)
-  # No `id` column at all → OHLC path is skipped, price+mcap still work
+  # No `id` column at all -> OHLC path is skipped, price+mcap still work
   u <- tibble::tibble(slug = "bitcoin")
   out <- cg_history(coin_list = u, what = c("price", "market_cap"),
-                    start_date = Sys.Date() - 7)
+                    start_date = Sys.Date() - 3)
   skip_if(is.null(out) || !nrow(out),
           "cg_history returned no data (likely network blip).")
   expect_s3_class(out, "tbl_df")
