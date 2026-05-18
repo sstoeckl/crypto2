@@ -35,7 +35,7 @@ your accumulated snapshots.}
 
 \item{coin_list}{Optional \code{cg_list()} output used to join \code{slug} /
 \code{name} / \code{symbol} onto recovered rows for coins still in the active
-universe. If \code{NULL}, calls \code{cg_list(top_n = 0)} automatically. Set
+universe. If \code{NULL}, calls \code{cg_list()} automatically. Set
 to \code{FALSE} to skip the join (rows then have only \code{id}).}
 
 \item{sleep, wait, max_retries}{Passed to \code{\link[=cg_make_client]{cg_make_client()}}. Defaults

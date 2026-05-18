@@ -2,7 +2,7 @@
 % Please edit documentation in R/cg_history.R
 \name{cg_history}
 \alias{cg_history}
-\title{Retrieve historic CoinGecko market data (OHLC + volume + market cap)}
+\title{Get historic crypto currency market data from CoinGecko}
 \usage{
 cg_history(
   coin_list = NULL,
@@ -10,96 +10,90 @@ cg_history(
   limit = NULL,
   start_date = NULL,
   end_date = NULL,
-  interval = "daily",
-  what = c("price", "market_cap", "ohlc"),
-  sleep = 0.6,
+  interval = NULL,
+  requestLimit = 400,
+  sleep = 0,
   wait = 60,
-  max_retries = 3,
-  finalWait = FALSE
+  finalWait = FALSE,
+  single_id = TRUE
 )
 }
 \arguments{
-\item{coin_list}{Tibble in the \code{\link[=cg_list]{cg_list()}} / \code{\link[=cg_listings]{cg_listings()}} format
-(must contain at least \code{slug}; \code{id} recommended for OHLC). If \code{NULL},
-\code{cg_list()} is called to fetch the active universe.}
+\item{coin_list}{string if NULL retrieve all currently existing coins
+(\code{\link[=cg_list]{cg_list()}}), or provide list of crypto currencies in the \code{\link[=cg_list]{cg_list()}} /
+\code{\link[=cg_listings]{cg_listings()}} format.}
 
-\item{convert}{Quote currency, default \code{"USD"} (lower-cased before sending).}
+\item{convert}{(default: \code{"USD"}). Be aware that the CoinGecko free tier
+typically supports only \code{"USD"} and \code{"BTC"} reliably.}
 
-\item{limit}{Optional cap on the number of coins to process (top of the
-tibble after sorting by \code{rank}).}
+\item{limit}{integer Return the top n records, default is all tokens.}
 
-\item{start_date, end_date}{Filter the returned timeseries to this date
-window after fetching (the upstream endpoints always return full history
-in one call, so this is a client-side filter).}
+\item{start_date, end_date}{date Filter the returned timeseries to this
+date window after fetching.}
 
-\item{interval}{Always \code{"daily"} -- CoinGecko's website endpoints return
-daily granularity for \code{max} periods. Hourly is not available without an
-API key.}
+\item{interval}{string Always coerced to \code{"daily"} -- CoinGecko website
+endpoints return daily granularity for full-history pulls. Hourly is
+not available without an API key.}
 
-\item{what}{Subset of timeseries to fetch -- character vector with any of
-\code{"price"}, \code{"market_cap"}, \code{"ohlc"}. Default \code{c("price","market_cap","ohlc")}.
-Drop \code{"ohlc"} if you don't need candles (saves one call per coin).}
+\item{requestLimit}{Kept for parity with \code{\link[=crypto_history]{crypto_history()}} -- ignored
+(CoinGecko returns full history per coin in one call).}
 
-\item{sleep}{Seconds between consecutive endpoint calls on the website
-host (default \code{0.6} -> ~100 req/min, polite). Cloudflare may issue a 403
-challenge at higher rates from less reputable IPs.}
+\item{sleep}{integer (default \code{0}) Seconds to sleep between API requests.
+The internal client enforces a polite floor of \code{0.6} to keep the
+website host happy.}
 
-\item{wait}{Seconds to wait before retrying after a 429 / network error
-(default \code{60}). See \code{\link[=cg_make_client]{cg_make_client()}}.}
+\item{wait}{waiting time before retry in case of fail (default \code{60}).}
 
-\item{max_retries}{Maximum retry attempts (default \code{3}). See
-\code{\link[=cg_make_client]{cg_make_client()}}.}
+\item{finalWait}{Sleep 60s after the last call (mirrors
+\code{\link[=crypto_history]{crypto_history()}}).}
 
-\item{finalWait}{Sleep 60s after the last call (mirrors \code{crypto_history()}).}
+\item{single_id}{Kept for parity with \code{\link[=crypto_history]{crypto_history()}} -- ignored;
+CoinGecko endpoints are always single-coin per call.}
 }
 \value{
-Tibble with one row per (coin, date) using crypto2-compatible
-column names:
-\item{id}{CoinGecko numeric id (NA if unknown).}
+Crypto currency historic OHLC market data in a tibble:
+\item{id}{CoinGecko internal numeric id (NA if unknown).}
 \item{slug, name, symbol}{Coin identifiers.}
 \item{timestamp}{POSIXct (UTC), midnight of the trading day.}
-\item{ref_cur_id}{CoinGecko quote currency code (e.g. \code{"usd"}).}
+\item{ref_cur_id}{Quote currency code (e.g. \code{"usd"}).}
 \item{ref_cur_name}{Upper-cased quote currency.}
-\item{open, high, low, close}{Daily OHLC, \code{NA} if \code{"ohlc"} not requested
-or numeric id missing. \code{close} is back-filled from the price endpoint
-when OHLC is missing -- the price-charts series records the last spot
-price of the day, which is a reasonable close proxy.}
+\item{open, high, low, close}{Daily OHLC; \code{close} is back-filled from
+the price-charts series when OHLC candles are unavailable.}
 \item{volume}{Daily total volume.}
 \item{market_cap}{Daily market cap.}
 \item{time_open, time_high, time_low, time_close}{\code{NA} -- CoinGecko does
 not expose intra-day OHLC timestamps in these endpoints.}
 }
 \description{
-Companion to \code{crypto_history()} but for CoinGecko, returning daily
-time-series data in a tibble whose column names match crypto2's CMC output.
-Uses CoinGecko's \strong{undocumented website-host endpoints} (no API key
-required, no documented rate limit) so it can be used for mass research
-backfills.
+Companion to \code{\link[=crypto_history]{crypto_history()}} but for CoinGecko. Returns daily OHLC,
+volume, and market-cap timeseries in a tibble whose column names match
+the crypto2 CMC output.
 }
 \details{
-Per coin, up to three HTTP calls are made (each returning the coin's
-\strong{full} history in one response):
-\describe{
-\item{\verb{/price_charts/\{slug\}/\{vs\}/max.json}}{price + total volume (daily)}
-\item{\verb{/market_cap/\{slug\}/\{vs\}/max.json}}{market cap (daily)}
-\item{\verb{/ohlc/\{numeric_id\}/series/\{vs\}/max.json}}{OHLC -- daily where the
-period covers >=91 days, 4-day candles for older history per CoinGecko's
-OHLC granularity policy. Sparse on short date windows.}
-}
-The three series are joined on date. If a coin's numeric id is missing
-(e.g. because the coin is outside the top market-cap pages enriched by
-\code{\link[=cg_list]{cg_list()}}), OHLC will be \code{NA} for that coin but price/volume/mcap will
-still be returned. Pass an explicit \code{coin_list} that already has a
-non-NA \code{id} column to guarantee OHLC.
+Source endpoints (no API key required) are addressed internally by
+\code{\link[=cg_url]{cg_url()}}; the package source does not embed the host URLs in
+plain text. When the requested coin's numeric id is missing in
+\code{coin_list}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted to recover it. If both the
+slug-based and the numeric-id-based routes fail, the coin is silently
+skipped (the most common cause is a Cloudflare bot challenge -- see
+\code{\link[=cg_get]{cg_get()}}).
+
+Free-tier caveat: the public CoinGecko Demo endpoints cap historic
+retrieval at 365 days per coin. When \code{start_date} is more than 365 days
+in the past and the website-host endpoints are unavailable (e.g. blocked
+by Cloudflare), only the most recent 365 days are returned, with a
+single one-line warning.
 }
 \examples{
 \dontrun{
-# Pull full price+volume+market-cap+OHLC history for the top 50 coins.
-top50 <- cg_list(top_n = 50)
-hist  <- cg_history(coin_list = top50, what = c("price", "market_cap", "ohlc"))
+# Top 50 by market cap, full available history
+top50 <- cg_list()[1:50, ]
+hist  <- cg_history(top50)
 
-# Faster: skip OHLC if you only need close+volume+mcap
-hist_fast <- cg_history(coin_list = top50, what = c("price", "market_cap"))
+# Bitcoin only, last year
+btc <- cg_history(cg_list()[1, ],
+                  start_date = Sys.Date() - 365,
+                  end_date   = Sys.Date())
 }
 
 }

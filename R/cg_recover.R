@@ -44,7 +44,7 @@
 #'   `NULL` returns full history.
 #' @param coin_list Optional `cg_list()` output used to join `slug` /
 #'   `name` / `symbol` onto recovered rows for coins still in the active
-#'   universe. If `NULL`, calls `cg_list(top_n = 0)` automatically. Set
+#'   universe. If `NULL`, calls `cg_list()` automatically. Set
 #'   to `FALSE` to skip the join (rows then have only `id`).
 #' @param sleep,wait,max_retries Passed to [cg_make_client()]. Defaults
 #'   `0.6 / 60 / 3` match `cg_history()`.
@@ -92,7 +92,7 @@ cg_history_by_id <- function(ids = NULL,
       message(cli::cat_bullet(
         "ids = NULL -> pulling cg_list() to define the universe",
         bullet = "pointer", bullet_col = "cyan"))
-      coin_list <- cg_list(top_n = 0)
+      coin_list <- cg_list()
     }
     if (!"id" %in% names(coin_list)) {
       stop("`ids` is NULL and `coin_list` has no `id` column; nothing to fetch.",
@@ -221,7 +221,7 @@ cg_history_by_id <- function(ids = NULL,
 
   # Slug join (if requested)
   if (!isFALSE(coin_list)) {
-    if (is.null(coin_list)) coin_list <- cg_list(top_n = 0)
+    if (is.null(coin_list)) coin_list <- cg_list()
     if ("id" %in% names(coin_list) && "slug" %in% names(coin_list)) {
       lookup <- coin_list[!is.na(coin_list$id),
                           c("id", "slug", "name", "symbol"), drop = FALSE]

@@ -2,87 +2,60 @@
 % Please edit documentation in R/cg_list.R
 \name{cg_list}
 \alias{cg_list}
-\title{Retrieve the CoinGecko coin universe (active coins only)}
+\title{Retrieves name, CG id, symbol, slug, rank, an activity flag as well as activity dates on CoinGecko for all coins}
 \usage{
-cg_list(
-  only_active = TRUE,
-  add_untracked = FALSE,
-  top_n = NULL,
-  sleep = 2.5,
-  wait = 60,
-  max_retries = 3,
-  vs_currency = "usd"
-)
+cg_list(only_active = TRUE, add_untracked = FALSE)
 }
 \arguments{
-\item{only_active}{Always \code{TRUE} for CoinGecko free-tier (kept for API
-parity with \code{crypto_list()}). The argument is ignored with a warning if
-set to \code{FALSE}.}
+\item{only_active}{Shall the code only retrieve active coins (\code{TRUE} =
+default) or include historically-known but currently-inactive coins
+(\code{FALSE})? When \code{FALSE}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted for the extra
+slugs.}
 
-\item{add_untracked}{Same -- ignored on CoinGecko free-tier. Kept for parity.}
-
-\item{top_n}{If non-NULL, only enrich the top \code{top_n} coins by market cap
-with \code{rank} and \code{numeric_id} (faster). Default \code{NULL} = enrich all coins
-that appear in \verb{/coins/markets}.}
-
-\item{sleep}{Seconds between consecutive \verb{/coins/markets} page calls
-(default \code{2.5} -> 24 req/min, ~80\% of the Demo-tier 30 req/min cap,
-leaving headroom for CoinGecko's sliding-window enforcement).}
-
-\item{wait}{Seconds to wait before retrying after an HTTP 429 / network
-error (default \code{60}, matching CoinGecko's rate-limit window).}
-
-\item{max_retries}{Maximum number of retry attempts on rate-limit /
-network failures (default \code{3}).}
-
-\item{vs_currency}{Quote currency for the market snapshot, default \code{"usd"}.}
+\item{add_untracked}{Kept for API parity with \code{\link[=crypto_list]{crypto_list()}} -- CoinGecko
+does not have an "untracked" listing status, so the argument is silently
+ignored.}
 }
 \value{
-Tibble with one row per coin currently tracked by CoinGecko.
-Columns mirror \code{\link[=crypto_list]{crypto_list()}}:
-\item{id}{CoinGecko internal numeric id (extracted from the image URL).
-May be \code{NA} for coins outside the top \code{top_n}.}
+List of (active and historically existing) cryptocurrencies in a
+tibble:
+\item{id}{CoinGecko internal numeric id (unique identifier).}
 \item{name}{Coin name.}
-\item{symbol}{Coin symbol (lower-case, non-unique).}
-\item{slug}{CoinGecko URL slug (unique, also the \code{id} in CoinGecko's
-documented API).}
-\item{rank}{Current market-cap rank, \code{NA} for coins outside the top
-\code{top_n} or without a market cap.}
-\item{is_active}{Always \code{1L} on CoinGecko free-tier.}
-\item{first_historical_data}{\code{NA_Date_} -- not exposed by the free tier.
-Backfill via \code{\link[=cg_history]{cg_history()}} if needed.}
-\item{last_historical_data}{Today's date, in line with \code{crypto_list()}'s
-convention for active coins.}
+\item{symbol}{Coin symbol (not-unique).}
+\item{slug}{CoinGecko URL slug (unique).}
+\item{rank}{Current market-cap rank on CoinGecko (\code{NA} for delisted or
+unranked coins).}
+\item{is_active}{Flag showing whether the coin is currently active (\code{1})
+or only historically present (\code{0}).}
+\item{first_historical_data}{First time listed on CoinGecko (currently
+only populated for coins present in the historic mapping).}
+\item{last_historical_data}{Last time listed on CoinGecko, today's date
+if still active.}
+
+Rate-limiting and retry parameters can be overridden globally via the
+package options \code{crypto2.cg_sleep}, \code{crypto2.cg_wait},
+\code{crypto2.cg_max_retries} (defaults: 2.5s between calls, 60s wait before
+retry, 3 retries on rate-limit / network failure).
 }
 \description{
-Companion to \code{crypto_list()} but for CoinGecko. Returns the active universe
+Companion to \code{\link[=crypto_list]{crypto_list()}} but for CoinGecko. Returns the active universe
 as a tibble using the same column conventions as \code{crypto_list()}, so
 downstream code that consumes a CMC coin list also consumes this one.
 }
 \details{
-Important caveat -- survivorship bias: CoinGecko actively prunes delisted
-and inactive coins from its public database. The free-tier API only returns
-coins currently active on the platform. To build a survivorship-bias-free
-dataset from CoinGecko, snapshot this list \strong{periodically} (daily/weekly,
-via an external cronjob or scheduling package) so coins that get delisted
-later remain in your accumulated archive.
-
-Data sources (no API key required):
-\itemize{
-\item \code{api.coingecko.com/api/v3/coins/list} -- the full slug/symbol/name universe
-in a single HTTP call (free, key-less, but limited to active coins).
-\item \code{api.coingecko.com/api/v3/coins/markets?per_page=250&page=N} -- paginated
-market snapshot, which provides \code{market_cap_rank} and the \code{image} URL
-from which the internal numeric ID is extracted.
-}
+Because CoinGecko prunes delisted coins from its public database, the
+free-tier API alone only returns coins currently active on the platform.
+When \code{only_active = FALSE}, the function transparently merges in
+historically-known coins via \code{\link[=cg_id_mapping]{cg_id_mapping()}}; a single one-line message
+is emitted indicating how current that mapping is.
 }
 \examples{
 \dontrun{
-# Bootstrap: one HTTP call gets the entire universe
-universe <- cg_list(top_n = 0)
+# all coins currently tracked by CoinGecko
+active_list <- cg_list(only_active = TRUE)
 
-# Enriched: pull universe + ranks + numeric IDs for the top 500
-top500 <- cg_list(top_n = 500)
+# active + historically-listed coins (uses cg_id_mapping())
+full_list <- cg_list(only_active = FALSE)
 }
 
 }

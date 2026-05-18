@@ -20,7 +20,8 @@ test_that("cg_list: known coins have their expected slugs + numeric IDs", {
   skip_if_no_cg()
   skip_if_cg_rate_limited()
   cg_pace(3)
-  u <- cg_list(top_n = 10)
+  withr::local_options(crypto2.cg_top_n = 10)
+  u <- cg_list()
   skip_if(is.null(u) || !nrow(u), "cg_list returned no data (likely 429).")
   for (k in names(KNOWN_COINS)) {
     kc <- KNOWN_COINS[[k]]
@@ -94,8 +95,8 @@ test_that("cg_history: BTC + ETH price/mcap sanity (single batched call)", {
   skip_if_no_cg()
   cg_pace(2)
   u <- tibble::tibble(slug = c("bitcoin", "ethereum"), id = c(1L, 279L))
-  h <- cg_history(coin_list = u, what = c("price", "market_cap"),
-                  start_date = Sys.Date() - 4)
+  withr::local_options(crypto2.cg_what = c("price", "market_cap"))
+  h <- cg_history(coin_list = u, start_date = Sys.Date() - 4)
   skip_if(is.null(h) || !nrow(h),
           "cg_history returned no data (likely network blip).")
   expect_s3_class(h$timestamp, "POSIXct")

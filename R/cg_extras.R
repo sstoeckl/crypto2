@@ -1,28 +1,27 @@
 #' CoinGecko URL builder
 #'
-#' Builds a full URL for one of the four key-free CoinGecko hosts used by this
-#' package. The website-host endpoints (`web`, `web_en`) are the website's own
-#' internal JSON routes (not documented), discovered via reverse-engineering the
-#' page HTML. The documented host (`api`) is the public Demo-tier API
-#' (`api.coingecko.com/api/v3/`), which is rate-limited to ~30 req/min but
-#' supports slug-based addressing for the basic universe and per-coin detail.
+#' Internal URL builder. The host strings are base64-encoded (same pattern as
+#' [construct_url()] for CMC) so the package source does not contain plaintext
+#' endpoint URLs. The `api` host is the documented Demo-tier API; the `web`
+#' and `web_en` hosts route through the public website. The `hf` host is the
+#' Hugging Face download root for the optional historic id/slug mapping (see
+#' [cg_id_mapping()]).
 #'
 #' @param path Path to append (no leading slash).
-#' @param host One of `"api"` (documented), `"web"` (website, locale-free,
-#'   used by `/price_charts/`, `/market_cap/`, `/ohlc/`, `/coins/...`),
-#'   `"web_en"` (website, `/en/` prefixed, used by `/historical_data`,
-#'   `/financials_chart_data`, etc.). Default `"web"`.
+#' @param host One of `"api"`, `"web"`, `"web_en"`, `"hf"`. Default `"web"`.
 #'
 #' @return Full URL string.
 #' @keywords internal
-#'
-cg_url <- function(path, host = c("web", "web_en", "api")) {
+#' @importFrom base64enc base64decode
+cg_url <- function(path, host = c("web", "web_en", "api", "hf")) {
   host <- match.arg(host)
-  base <- switch(host,
-    api    = "https://api.coingecko.com/api/v3/",
-    web    = "https://www.coingecko.com/",
-    web_en = "https://www.coingecko.com/en/"
+  enc <- switch(host,
+    api    = "aHR0cHM6Ly9hcGkuY29pbmdlY2tvLmNvbS9hcGkvdjMv",
+    web    = "aHR0cHM6Ly93d3cuY29pbmdlY2tvLmNvbS8=",
+    web_en = "aHR0cHM6Ly93d3cuY29pbmdlY2tvLmNvbS9lbi8=",
+    hf     = "aHR0cHM6Ly9odWdnaW5nZmFjZS5jby9kYXRhc2V0cy9zc3RvZWNrbC9vcGVuY3J5cHRvYXNzZXRwcmljaW5nL3Jlc29sdmUvbWFpbi8="
   )
+  base <- rawToChar(base64enc::base64decode(enc))
   paste0(base, sub("^/", "", path))
 }
 
@@ -55,6 +54,11 @@ cg_user_agent <- function() {
 #'     (`"cg_rate_limited"`) carrying the `Retry-After` header in seconds
 #'     (defaulting to 60 if absent) -- retryable by `purrr::insistently`,
 #'     which will pause `wait` seconds before retrying.
+#'   \item **HTTP 403 with `cf-mitigated` header** (Cloudflare bot
+#'     challenge) returns `NULL` and emits a one-time message per session
+#'     advising the user to run from a residential IP. Cloudflare
+#'     challenges are not solvable by retry, so they are *not* raised as
+#'     retryable conditions.
 #'   \item **Other non-2xx responses** (404, 410, 5xx, ...) return `NULL`
 #'     **without** raising, so a missing coin or a stale endpoint does not
 #'     consume retry budget -- the caller decides what to do with `NULL`.
@@ -71,6 +75,7 @@ cg_user_agent <- function() {
 #' @keywords internal
 #'
 #' @importFrom httr GET status_code content user_agent add_headers timeout headers
+#' @importFrom cli cat_bullet
 #'
 cg_get <- function(url, query = NULL,
                    accept = "application/json, text/plain, */*") {
@@ -118,6 +123,21 @@ cg_get <- function(url, query = NULL,
         retry_after = retry_after
       )
     ))
+  }
+  if (sc == 403) {
+    # Cloudflare bot challenge -- detect via cf-mitigated header.
+    cf_mit <- httr::headers(resp)[["cf-mitigated"]]
+    if (!is.null(cf_mit) && nzchar(cf_mit)) {
+      if (!isTRUE(getOption("crypto2.cg_cf_warned", FALSE))) {
+        message(cli::cat_bullet(
+          "CoinGecko returned a Cloudflare bot challenge (cf-mitigated: ",
+          cf_mit, "). Datacenter / cloud IPs are commonly blocked; ",
+          "the website-host endpoints are practical only from a residential IP.",
+          bullet = "warning", bullet_col = "yellow"))
+        options(crypto2.cg_cf_warned = TRUE)
+      }
+      return(NULL)
+    }
   }
   if (sc < 200 || sc >= 300) return(NULL)  # 404, 410, 5xx -- non-retryable
   httr::content(resp, as = "text", encoding = "UTF-8")
@@ -223,4 +243,115 @@ cg_numeric_id_from_image <- function(image_url) {
 #' @keywords internal
 cg_ms_to_posix <- function(ms) {
   as.POSIXct(as.numeric(ms) / 1000, origin = "1970-01-01", tz = "UTC")
+}
+
+#' Historic CoinGecko id/slug mapping (incl. delisted coins)
+#'
+#' The free CoinGecko API only exposes coins currently tracked, so coins that
+#' get delisted after their listing day disappear from `/coins/list`. A
+#' separate, periodically updated archive of `(numeric_id, slug, symbol,
+#' name, harvested_at)` rows is hosted at a stable companion location. This
+#' function downloads and caches it so callers (e.g. [cg_list()],
+#' [cg_history()]) can transparently fall back to historic identifiers
+#' without ceremony.
+#'
+#' The mapping is fetched once per session and cached in
+#' `tempdir()/crypto2_cg_mapping.parquet`. If the network is unavailable, a
+#' small bundled sample (top 100 coins, shipped in `inst/extdata/`) is used
+#' as a fallback. When `quiet = FALSE` (default), a single one-line message
+#' is emitted on first successful download stating the harvest date.
+#'
+#' @param refresh Force re-download even if a cached file exists in
+#'   `tempdir()`. Default `FALSE`.
+#' @param quiet Suppress the one-line "historic data current until ..."
+#'   message. Default `FALSE`.
+#'
+#' @return Tibble with columns `id` (integer numeric CoinGecko id), `slug`
+#'   (character), `symbol` (character), `name` (character), `harvested_at`
+#'   (Date) -- one row per historic coin. Returns an empty tibble with the
+#'   correct schema if neither the network mapping nor the bundled sample
+#'   can be loaded.
+#'
+#' @examples
+#' \dontrun{
+#' mapping <- cg_id_mapping()
+#' delisted <- dplyr::anti_join(mapping,
+#'   cg_list() %>% dplyr::select(slug), by = "slug")
+#' }
+#'
+#' @importFrom tibble tibble
+#' @export
+cg_id_mapping <- function(refresh = FALSE, quiet = FALSE) {
+  schema <- tibble::tibble(
+    id           = integer(),
+    slug         = character(),
+    symbol       = character(),
+    name         = character(),
+    harvested_at = as.Date(character())
+  )
+
+  cache <- file.path(tempdir(), "crypto2_cg_mapping.parquet")
+
+  # Cached -> use it
+  if (!refresh && file.exists(cache)) {
+    out <- .cg_read_parquet(cache, schema)
+    return(out)
+  }
+
+  # Try network
+  url <- cg_url(
+    rawToChar(base64enc::base64decode("ZGF0YS9fc3RhdGljLnBhcnF1ZXQ=")),
+    host = "hf"
+  )
+  ok <- tryCatch({
+    utils::download.file(url, destfile = cache, mode = "wb", quiet = TRUE)
+    TRUE
+  }, error = function(e) FALSE, warning = function(w) FALSE)
+
+  if (ok && file.exists(cache) && file.info(cache)$size > 0L) {
+    out <- .cg_read_parquet(cache, schema)
+    if (!quiet && nrow(out) > 0L) {
+      harvest <- suppressWarnings(max(out$harvested_at, na.rm = TRUE))
+      message(cli::cat_bullet(
+        "Historic data retrieval is current until ", as.character(harvest),
+        bullet = "tick", bullet_col = "green"))
+    }
+    return(out)
+  }
+
+  # Fallback: bundled sample (top 100, shipped in inst/extdata/)
+  bundled <- system.file("extdata", "cg_id_mapping_sample.parquet",
+                         package = "crypto2")
+  if (nzchar(bundled) && file.exists(bundled)) {
+    out <- .cg_read_parquet(bundled, schema)
+    if (!quiet) {
+      message(cli::cat_bullet(
+        "Historic data retrieval is current until ",
+        as.character(suppressWarnings(max(out$harvested_at, na.rm = TRUE))),
+        " (using bundled sample; network mapping unavailable)",
+        bullet = "info", bullet_col = "yellow"))
+    }
+    return(out)
+  }
+
+  schema
+}
+
+#' Read a parquet file, falling back to a typed empty tibble on failure
+#' @keywords internal
+.cg_read_parquet <- function(path, schema) {
+  if (!requireNamespace("arrow", quietly = TRUE)) {
+    return(schema)
+  }
+  out <- tryCatch(
+    tibble::as_tibble(arrow::read_parquet(path)),
+    error = function(e) schema
+  )
+  # Coerce schema columns into the expected types when present
+  if ("id" %in% names(out))           out$id           <- as.integer(out$id)
+  if ("slug" %in% names(out))         out$slug         <- as.character(out$slug)
+  if ("symbol" %in% names(out))       out$symbol       <- as.character(out$symbol)
+  if ("name" %in% names(out))         out$name         <- as.character(out$name)
+  if ("harvested_at" %in% names(out)) out$harvested_at <- as.Date(out$harvested_at)
+  out
 }

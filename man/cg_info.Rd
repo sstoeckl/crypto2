@@ -7,29 +7,26 @@
 cg_info(
   coin_list = NULL,
   limit = NULL,
-  sleep = 2.5,
-  wait = 60,
-  max_retries = 3,
+  requestLimit = 1,
+  sleep = 0,
   finalWait = FALSE
 )
 }
 \arguments{
-\item{coin_list}{Tibble in \code{\link[=cg_list]{cg_list()}} / \code{\link[=cg_listings]{cg_listings()}} format (must have
-a \code{slug} column). If \code{NULL}, calls \code{cg_list()}.}
+\item{coin_list}{string if NULL retrieve all currently existing coins
+(\code{\link[=cg_list]{cg_list()}}), or provide list of cryptocurrencies in the \code{\link[=cg_list]{cg_list()}} /
+\code{\link[=cg_listings]{cg_listings()}} format.}
 
-\item{limit}{Optional cap on number of coins (top of the tibble).}
+\item{limit}{integer Return the top n records, default is all tokens.}
 
-\item{sleep}{Seconds between calls (default \code{2.5} -> 24 req/min,
-~80\% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
-sliding-window enforcement).}
+\item{requestLimit}{Kept for parity with \code{\link[=crypto_info]{crypto_info()}} -- ignored
+(CoinGecko endpoint is one coin per call).}
 
-\item{wait}{Seconds to wait before retrying after a 429 (default \code{60},
-matching CoinGecko's rate-limit window). See \code{\link[=cg_make_client]{cg_make_client()}}.}
+\item{sleep}{integer (default \code{0}) Seconds to sleep between API requests.
+The internal client enforces a polite floor (default \verb{2.5s}) to stay
+under the Demo-tier 30 req/min cap.}
 
-\item{max_retries}{Maximum retry attempts on 429 / network failures
-(default \code{3}). See \code{\link[=cg_make_client]{cg_make_client()}}.}
-
-\item{finalWait}{Sleep 60s after the last call (mirrors \code{crypto_info()}).}
+\item{finalWait}{Sleep 60s after the last call (mirrors \code{\link[=crypto_info]{crypto_info()}}).}
 }
 \value{
 Tibble with one row per coin:

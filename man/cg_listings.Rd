@@ -2,98 +2,82 @@
 % Please edit documentation in R/cg_listings.R
 \name{cg_listings}
 \alias{cg_listings}
-\title{Retrieve the latest CoinGecko market snapshot (CMC-compatible columns)}
+\title{Retrieves name, CG id, symbol, slug, rank, and quote data for current listings (CoinGecko)}
 \usage{
 cg_listings(
   which = "latest",
   convert = "USD",
-  limit = NULL,
-  quote = TRUE,
-  sleep = 2.5,
+  limit = 5000,
+  start_date = NULL,
+  end_date = NULL,
+  interval = "day",
+  quote = FALSE,
+  sort = "cmc_rank",
+  sort_dir = "asc",
+  sleep = 0,
   wait = 60,
-  max_retries = 3,
-  ...
+  finalWait = FALSE
 )
 }
 \arguments{
-\item{which}{Always \code{"latest"} for CoinGecko. Other values produce a
-warning and are coerced to \code{"latest"}.}
+\item{which}{Always \code{"latest"} for CoinGecko free-tier. Other values
+produce a warning and are coerced to \code{"latest"}.}
 
-\item{convert}{Quote currency. Use \code{"USD"} (default) or \code{"BTC"}; the
-value is lower-cased and passed to CoinGecko as \code{vs_currency}.}
+\item{convert}{string (default: \code{"USD"}). The value is lower-cased and
+passed to CoinGecko as \code{vs_currency}. Common values: \code{"USD"}, \code{"BTC"},
+\code{"ETH"}, \code{"EUR"}, \code{"GBP"}.}
 
-\item{limit}{Max number of coins to return (default \code{NULL} = all coins
-with a market cap; CoinGecko currently lists ~17 000).}
+\item{limit}{integer Return the top n records (default \code{5000} -- matches
+\code{\link[=crypto_listings]{crypto_listings()}}).}
 
-\item{quote}{Kept for API parity. Always treated as \code{TRUE} because the
-\verb{/coins/markets} endpoint always returns prices.}
+\item{start_date, end_date, interval}{Kept for API parity with
+\code{\link[=crypto_listings]{crypto_listings()}} -- ignored for CoinGecko (no historical-listings
+endpoint on the free tier).}
 
-\item{sleep}{Seconds between page calls (default \code{2.5} -> 24 req/min,
-~80\% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
-sliding-window enforcement).}
+\item{quote}{logical Kept for API parity. The CoinGecko \verb{/coins/markets}
+endpoint always returns prices, so quote fields are always present;
+setting this to \code{FALSE} drops them from the returned tibble for
+parity with \code{crypto_listings()}.}
 
-\item{wait}{Seconds to wait before retrying after a 429 (default \code{60},
-matching CoinGecko's rate-limit window). See \code{\link[=cg_make_client]{cg_make_client()}}.}
+\item{sort, sort_dir}{Kept for parity. CoinGecko sorts by \code{market_cap_desc}
+on the underlying endpoint; the arguments are ignored.}
 
-\item{max_retries}{Maximum retry attempts on 429 / network failures
-(default \code{3}). See \code{\link[=cg_make_client]{cg_make_client()}}.}
+\item{sleep}{integer (default \code{0}) Seconds to sleep between API requests.
+Will be raised to at least \code{2.5} internally to stay under the Demo-tier
+30 req/min cap.}
 
-\item{...}{Other args (e.g. \code{sort}, \code{sort_dir}) ignored -- kept for parity
-with \code{crypto_listings()}.}
+\item{wait}{Seconds to wait before retrying after a 429 (default \code{60}).}
+
+\item{finalWait}{Sleep 60s after the last call (mirrors
+\code{\link[=crypto_listings]{crypto_listings()}}).}
 }
 \value{
-Tibble with columns matching \code{crypto_listings(quote = TRUE)} where
-the corresponding CoinGecko field exists. Mapping:
-\item{id}{CoinGecko internal numeric id (from image URL).}
-\item{name, symbol, slug}{Coin identifiers (slug = CG's API id).}
-\item{date_added}{\code{NA_Date_} -- not available from \verb{/coins/markets}.
-Pull via \code{\link[=cg_info]{cg_info()}} for these.}
-\item{last_updated}{Date of the last update reported by CoinGecko.}
-\item{rank}{Market-cap rank (= CG \code{market_cap_rank}).}
-\item{market_cap, fully_diluted_market_cap}{}
-\item{circulating_supply, total_supply, max_supply}{}
-\item{price}{Current price (= CG \code{current_price}).}
-\item{volume_24h}{= CG \code{total_volume}.}
-\item{percent_change_1h, _24h, _7d, _14d, _30d, _200d, _1y}{From the
-\code{price_change_percentage} parameter.}
-\item{high_24h, low_24h}{Intra-day extremes.}
-\item{ath, ath_change_percentage, ath_date}{All-time high info.}
-\item{atl, atl_change_percentage, atl_date}{All-time low info.}
-\item{ref_currency}{Quote currency, upper-cased to match CMC output.}
+Tibble with columns matching \code{\link[=crypto_listings]{crypto_listings()}} where the
+corresponding CoinGecko field exists. See \code{\link[=crypto_listings]{crypto_listings()}} for the
+column glossary; CoinGecko-specific extras (e.g. \code{ath}, \code{atl}) are
+appended at the end.
 }
 \description{
-Companion to \code{crypto_listings(which = "latest", quote = TRUE)} but for
-CoinGecko. Returns one row per coin with current price/volume/market-cap
-fields plus percent-change windows. Column names mirror those of
-\code{crypto_listings()} so that downstream code that already consumes a CMC
-listings tibble works on this tibble too.
+Companion to \code{\link[=crypto_listings]{crypto_listings()}} but for CoinGecko. Returns one row per
+coin with current price/volume/market-cap fields plus percent-change
+windows. Column names mirror those of \code{crypto_listings()} so downstream
+code that already consumes a CMC listings tibble works on this tibble too.
 }
 \details{
-Data sources (no API key required):
-\itemize{
-\item \code{api.coingecko.com/api/v3/coins/markets?vs_currency=...&per_page=250&page=N} --
-paginated. The \code{price_change_percentage} query param is set to
-\code{"1h,24h,7d,14d,30d,200d,1y"} so all CMC-equivalent return windows are
-present.
-}
-
-CoinGecko free-tier limitations
-\itemize{
-\item Snapshot only -- \code{which = "historical"} is \strong{not supported} because
-CoinGecko's free tier does not expose the historical cross-section of
-the universe. Use this function periodically (daily/weekly) and persist
-each snapshot yourself to accumulate a survivorship-bias-corrected
+CoinGecko free-tier limitations: only \code{which = "latest"} is supported.
+\code{which = "historical"} and \code{which = "new"} produce a warning and are
+coerced to \code{"latest"}, because CoinGecko's free tier does not expose the
+historical cross-section. Snapshot this function periodically (daily /
+weekly via a cron job) to accumulate a survivorship-bias-corrected
 archive over time.
-\item \code{which = "new"} is not supported (no CG equivalent endpoint).
-}
 }
 \examples{
 \dontrun{
-# Full current snapshot of all coins with a market cap
-snap <- cg_listings()
+# Full current snapshot (all coins with a market cap)
+latest <- cg_listings(which = "latest", quote = TRUE)
 
-# Top 1000 only, in BTC
-snap_btc <- cg_listings(convert = "BTC", limit = 1000)
+# Top 1000 in BTC
+latest_btc <- cg_listings(which = "latest", convert = "BTC", limit = 1000)
 }
 
 }

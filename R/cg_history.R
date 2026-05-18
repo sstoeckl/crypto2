@@ -1,61 +1,53 @@
-#' Retrieve historic CoinGecko market data (OHLC + volume + market cap)
+#' Get historic crypto currency market data from CoinGecko
 #'
-#' Companion to `crypto_history()` but for CoinGecko, returning daily
-#' time-series data in a tibble whose column names match crypto2's CMC output.
-#' Uses CoinGecko's **undocumented website-host endpoints** (no API key
-#' required, no documented rate limit) so it can be used for mass research
-#' backfills.
+#' Companion to [crypto_history()] but for CoinGecko. Returns daily OHLC,
+#' volume, and market-cap timeseries in a tibble whose column names match
+#' the crypto2 CMC output.
 #'
-#' Per coin, up to three HTTP calls are made (each returning the coin's
-#' **full** history in one response):
-#' \describe{
-#'   \item{`/price_charts/{slug}/{vs}/max.json`}{price + total volume (daily)}
-#'   \item{`/market_cap/{slug}/{vs}/max.json`}{market cap (daily)}
-#'   \item{`/ohlc/{numeric_id}/series/{vs}/max.json`}{OHLC -- daily where the
-#'     period covers >=91 days, 4-day candles for older history per CoinGecko's
-#'     OHLC granularity policy. Sparse on short date windows.}
-#' }
-#' The three series are joined on date. If a coin's numeric id is missing
-#' (e.g. because the coin is outside the top market-cap pages enriched by
-#' [cg_list()]), OHLC will be `NA` for that coin but price/volume/mcap will
-#' still be returned. Pass an explicit `coin_list` that already has a
-#' non-NA `id` column to guarantee OHLC.
+#' Source endpoints (no API key required) are addressed internally by
+#' [cg_url()]; the package source does not embed the host URLs in
+#' plain text. When the requested coin's numeric id is missing in
+#' `coin_list`, [cg_id_mapping()] is consulted to recover it. If both the
+#' slug-based and the numeric-id-based routes fail, the coin is silently
+#' skipped (the most common cause is a Cloudflare bot challenge -- see
+#' [cg_get()]).
 #'
-#' @param coin_list Tibble in the [cg_list()] / [cg_listings()] format
-#'   (must contain at least `slug`; `id` recommended for OHLC). If `NULL`,
-#'   `cg_list()` is called to fetch the active universe.
-#' @param convert Quote currency, default `"USD"` (lower-cased before sending).
-#' @param limit Optional cap on the number of coins to process (top of the
-#'   tibble after sorting by `rank`).
-#' @param start_date,end_date Filter the returned timeseries to this date
-#'   window after fetching (the upstream endpoints always return full history
-#'   in one call, so this is a client-side filter).
-#' @param interval Always `"daily"` -- CoinGecko's website endpoints return
-#'   daily granularity for `max` periods. Hourly is not available without an
-#'   API key.
-#' @param what Subset of timeseries to fetch -- character vector with any of
-#'   `"price"`, `"market_cap"`, `"ohlc"`. Default `c("price","market_cap","ohlc")`.
-#'   Drop `"ohlc"` if you don't need candles (saves one call per coin).
-#' @param sleep Seconds between consecutive endpoint calls on the website
-#'   host (default `0.6` -> ~100 req/min, polite). Cloudflare may issue a 403
-#'   challenge at higher rates from less reputable IPs.
-#' @param wait Seconds to wait before retrying after a 429 / network error
-#'   (default `60`). See [cg_make_client()].
-#' @param max_retries Maximum retry attempts (default `3`). See
-#'   [cg_make_client()].
-#' @param finalWait Sleep 60s after the last call (mirrors `crypto_history()`).
+#' Free-tier caveat: the public CoinGecko Demo endpoints cap historic
+#' retrieval at 365 days per coin. When `start_date` is more than 365 days
+#' in the past and the website-host endpoints are unavailable (e.g. blocked
+#' by Cloudflare), only the most recent 365 days are returned, with a
+#' single one-line warning.
 #'
-#' @return Tibble with one row per (coin, date) using crypto2-compatible
-#'   column names:
-#'   \item{id}{CoinGecko numeric id (NA if unknown).}
+#' @param coin_list string if NULL retrieve all currently existing coins
+#'   ([cg_list()]), or provide list of crypto currencies in the [cg_list()] /
+#'   [cg_listings()] format.
+#' @param convert (default: `"USD"`). Be aware that the CoinGecko free tier
+#'   typically supports only `"USD"` and `"BTC"` reliably.
+#' @param limit integer Return the top n records, default is all tokens.
+#' @param start_date,end_date date Filter the returned timeseries to this
+#'   date window after fetching.
+#' @param interval string Always coerced to `"daily"` -- CoinGecko website
+#'   endpoints return daily granularity for full-history pulls. Hourly is
+#'   not available without an API key.
+#' @param requestLimit Kept for parity with [crypto_history()] -- ignored
+#'   (CoinGecko returns full history per coin in one call).
+#' @param sleep integer (default `0`) Seconds to sleep between API requests.
+#'   The internal client enforces a polite floor of `0.6` to keep the
+#'   website host happy.
+#' @param wait waiting time before retry in case of fail (default `60`).
+#' @param finalWait Sleep 60s after the last call (mirrors
+#'   [crypto_history()]).
+#' @param single_id Kept for parity with [crypto_history()] -- ignored;
+#'   CoinGecko endpoints are always single-coin per call.
+#'
+#' @return Crypto currency historic OHLC market data in a tibble:
+#'   \item{id}{CoinGecko internal numeric id (NA if unknown).}
 #'   \item{slug, name, symbol}{Coin identifiers.}
 #'   \item{timestamp}{POSIXct (UTC), midnight of the trading day.}
-#'   \item{ref_cur_id}{CoinGecko quote currency code (e.g. `"usd"`).}
+#'   \item{ref_cur_id}{Quote currency code (e.g. `"usd"`).}
 #'   \item{ref_cur_name}{Upper-cased quote currency.}
-#'   \item{open, high, low, close}{Daily OHLC, `NA` if `"ohlc"` not requested
-#'     or numeric id missing. `close` is back-filled from the price endpoint
-#'     when OHLC is missing -- the price-charts series records the last spot
-#'     price of the day, which is a reasonable close proxy.}
+#'   \item{open, high, low, close}{Daily OHLC; `close` is back-filled from
+#'     the price-charts series when OHLC candles are unavailable.}
 #'   \item{volume}{Daily total volume.}
 #'   \item{market_cap}{Daily market cap.}
 #'   \item{time_open, time_high, time_low, time_close}{`NA` -- CoinGecko does
@@ -63,34 +55,38 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Pull full price+volume+market-cap+OHLC history for the top 50 coins.
-#' top50 <- cg_list(top_n = 50)
-#' hist  <- cg_history(coin_list = top50, what = c("price", "market_cap", "ohlc"))
+#' # Top 50 by market cap, full available history
+#' top50 <- cg_list()[1:50, ]
+#' hist  <- cg_history(top50)
 #'
-#' # Faster: skip OHLC if you only need close+volume+mcap
-#' hist_fast <- cg_history(coin_list = top50, what = c("price", "market_cap"))
+#' # Bitcoin only, last year
+#' btc <- cg_history(cg_list()[1, ],
+#'                   start_date = Sys.Date() - 365,
+#'                   end_date   = Sys.Date())
 #' }
+#'
+#' @name cg_history
 #'
 #' @importFrom dplyr bind_rows full_join transmute mutate select arrange filter relocate
 #' @importFrom tibble tibble
-#' @importFrom purrr map
 #' @importFrom progress progress_bar
 #' @importFrom cli cat_bullet
 #' @export
 cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
                        start_date = NULL, end_date = NULL,
-                       interval = "daily",
-                       what = c("price", "market_cap", "ohlc"),
-                       sleep = 0.6, wait = 60, max_retries = 3,
-                       finalWait = FALSE) {
-  if (!identical(interval, "daily")) {
-    warning("CoinGecko free-tier website endpoints return daily granularity ",
-            "only for full-history pulls; `interval` argument is ignored.",
-            call. = FALSE)
+                       interval = NULL,
+                       requestLimit = 400, sleep = 0, wait = 60,
+                       finalWait = FALSE, single_id = TRUE) {
+  if (!is.null(interval) && !identical(interval, "daily")) {
+    warning("CoinGecko free-tier returns daily granularity only; ",
+            "`interval` argument is ignored.", call. = FALSE)
   }
-  what <- match.arg(what, choices = c("price", "market_cap", "ohlc"),
-                    several.ok = TRUE)
   vs <- tolower(convert)
+
+  max_retries <- getOption("crypto2.cg_max_retries", 3)
+  sleep_eff   <- max(sleep, getOption("crypto2.cg_sleep_web", 0.6))
+  what        <- getOption("crypto2.cg_what",
+                           c("price", "market_cap", "ohlc"))
 
   if (is.null(coin_list)) coin_list <- cg_list()
   if (!"slug" %in% names(coin_list)) {
@@ -98,27 +94,52 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
   }
   if (!is.null(limit)) coin_list <- coin_list[seq_len(min(limit, nrow(coin_list))), ]
 
-  client <- cg_make_client(sleep = sleep, wait = wait, max_retries = max_retries)
+  # Backfill numeric ids from the historic mapping where missing
+  if (!("id" %in% names(coin_list)) || any(is.na(coin_list$id))) {
+    mapping <- tryCatch(cg_id_mapping(quiet = TRUE),
+                        error = function(e) NULL)
+    if (!is.null(mapping) && nrow(mapping) > 0L) {
+      mp <- mapping[, c("slug", "id")]
+      names(mp)[2] <- ".id_from_map"
+      coin_list <- merge(coin_list, mp, by = "slug",
+                         all.x = TRUE, sort = FALSE)
+      if (!"id" %in% names(coin_list)) coin_list$id <- NA_integer_
+      coin_list$id <- ifelse(is.na(coin_list$id),
+                             coin_list$.id_from_map, coin_list$id)
+      coin_list$.id_from_map <- NULL
+    }
+  }
+
+  # 365-day-window pre-flight warning
+  if (!is.null(start_date) &&
+      as.Date(start_date) < Sys.Date() - 365L) {
+    if (!isTRUE(getOption("crypto2.cg_long_window_warned", FALSE))) {
+      warning("CoinGecko free-tier Demo endpoints cap historic retrieval at ",
+              "365 days per coin. Older history is only available via the ",
+              "website-host endpoints (used here when reachable), which may ",
+              "be blocked by Cloudflare from cloud / datacenter IPs.",
+              call. = FALSE)
+      options(crypto2.cg_long_window_warned = TRUE)
+    }
+  }
+
+  client <- cg_make_client(sleep = sleep_eff, wait = wait,
+                           max_retries = max_retries)
 
   # Helper: collapse a (timestamp, value...) tibble to daily bars on the UTC
-  # calendar. The CG website endpoints intermix daily bars with a final
-  # rolling "now" point in the same series, so we floor to date and keep the
-  # last observation per day for each value column.
+  # calendar.
   floor_daily <- function(df, value_cols) {
     if (is.null(df) || !nrow(df)) return(df)
     df$date <- as.Date(df$timestamp, tz = "UTC")
     df <- df[order(df$date, df$timestamp), , drop = FALSE]
-    # take the last row per date (latest timestamp wins)
     df <- df[!duplicated(df$date, fromLast = TRUE), , drop = FALSE]
     df[, c("date", value_cols), drop = FALSE]
   }
 
-  # ---- per-coin fetcher ----
   fetch_one <- function(slug, numeric_id, name = NA_character_,
                         symbol = NA_character_) {
     out <- NULL
 
-    # price + total_volumes
     if ("price" %in% what) {
       pj <- cg_parse_json(client(cg_url(
         sprintf("price_charts/%s/%s/max.json", slug, vs))))
@@ -142,7 +163,6 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
       }
     }
 
-    # market_cap
     if ("market_cap" %in% what) {
       mj <- cg_parse_json(client(cg_url(
         sprintf("market_cap/%s/%s/max.json", slug, vs))))
@@ -156,7 +176,6 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
       }
     }
 
-    # OHLC (numeric id required)
     if ("ohlc" %in% what && !is.na(numeric_id)) {
       oj <- cg_parse_json(client(cg_url(
         sprintf("ohlc/%d/series/%s/max.json", as.integer(numeric_id), vs))))
@@ -173,7 +192,6 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
           out <- ohlc %>% dplyr::mutate(close = close_o) %>% dplyr::select(-close_o)
         } else {
           out <- dplyr::full_join(out, ohlc, by = "date") %>%
-            # prefer OHLC close when present, else keep price-charts close
             dplyr::mutate(close = ifelse(is.na(close_o), close, close_o)) %>%
             dplyr::select(-close_o)
         }
@@ -182,7 +200,6 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
 
     if (is.null(out) || !nrow(out)) return(NULL)
 
-    # Add identifiers + ensure all expected columns present
     expected_cols <- c("open", "high", "low", "close", "volume", "market_cap")
     for (cc in setdiff(expected_cols, names(out))) out[[cc]] <- NA_real_
 
@@ -208,13 +225,11 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
       )
   }
 
-  # ---- batch with progress ----
   n <- nrow(coin_list)
   pb <- progress::progress_bar$new(
     format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
     total = n, clear = FALSE)
-  message(cli::cat_bullet("Scraping CoinGecko history (",
-                          paste(what, collapse = "+"), ")",
+  message(cli::cat_bullet("Scraping historical CoinGecko data",
                           bullet = "pointer", bullet_col = "green"))
 
   results <- vector("list", n)
@@ -240,7 +255,6 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
   hist <- dplyr::bind_rows(results) %>%
     dplyr::arrange(slug, timestamp)
 
-  # Client-side date filter
   if (!is.null(start_date)) {
     sd <- as.POSIXct(as.Date(start_date), tz = "UTC")
     hist <- dplyr::filter(hist, timestamp >= sd)

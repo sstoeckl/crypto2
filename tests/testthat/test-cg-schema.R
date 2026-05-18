@@ -27,7 +27,8 @@ test_that("cg_list() schema is stable", {
   skip_if_no_cg()
   skip_if_cg_rate_limited()
   cg_pace(3)
-  out <- cg_list(top_n = 5)
+  withr::local_options(crypto2.cg_top_n = 5)
+  out <- cg_list()
   skip_if(is.null(out) || !nrow(out),
           "cg_list returned no data (likely rate-limited).")
   expect_s3_class(out, "tbl_df")
@@ -84,9 +85,7 @@ test_that("cg_history() schema is stable and rows are daily", {
   cg_pace(2)  # /price_charts is on the website host, lighter rate concerns
   u <- tibble::tibble(slug = "bitcoin", id = 1L,
                       name = "Bitcoin", symbol = "btc")
-  out <- cg_history(coin_list = u,
-                    what = c("price", "market_cap", "ohlc"),
-                    start_date = Sys.Date() - 4)
+  out <- cg_history(coin_list = u, start_date = Sys.Date() - 4)
   skip_if(is.null(out) || !nrow(out),
           "cg_history returned no data (likely network blip).")
   expect_s3_class(out, "tbl_df")
@@ -116,8 +115,8 @@ test_that("cg_history() handles a coin with missing numeric_id (no OHLC)", {
   cg_pace(2)
   # No `id` column at all -> OHLC path is skipped, price+mcap still work
   u <- tibble::tibble(slug = "bitcoin")
-  out <- cg_history(coin_list = u, what = c("price", "market_cap"),
-                    start_date = Sys.Date() - 3)
+  withr::local_options(crypto2.cg_what = c("price", "market_cap"))
+  out <- cg_history(coin_list = u, start_date = Sys.Date() - 3)
   skip_if(is.null(out) || !nrow(out),
           "cg_history returned no data (likely network blip).")
   expect_s3_class(out, "tbl_df")

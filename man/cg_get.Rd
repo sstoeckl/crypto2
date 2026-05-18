@@ -33,6 +33,11 @@ Failure semantics -- designed to interact correctly with the
 (\code{"cg_rate_limited"}) carrying the \code{Retry-After} header in seconds
 (defaulting to 60 if absent) -- retryable by \code{purrr::insistently},
 which will pause \code{wait} seconds before retrying.
+\item \strong{HTTP 403 with \code{cf-mitigated} header} (Cloudflare bot
+challenge) returns \code{NULL} and emits a one-time message per session
+advising the user to run from a residential IP. Cloudflare
+challenges are not solvable by retry, so they are \emph{not} raised as
+retryable conditions.
 \item \strong{Other non-2xx responses} (404, 410, 5xx, ...) return \code{NULL}
 \strong{without} raising, so a missing coin or a stale endpoint does not
 consume retry budget -- the caller decides what to do with \code{NULL}.

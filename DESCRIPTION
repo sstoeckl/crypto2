@@ -31,7 +31,9 @@ Suggests:
     testthat (>= 3.0.0),
     digest,
     knitr,
-    rmarkdown
+    rmarkdown,
+    arrow,
+    withr
 VignetteBuilder: knitr
 Language: en-US
 Config/testthat/edition: 3

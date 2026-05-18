@@ -8,17 +8,16 @@
 #' Column names mirror `crypto_info()` where there is a direct equivalent,
 #' and add a few CG-specific fields (`platforms`, `categories`).
 #'
-#' @param coin_list Tibble in [cg_list()] / [cg_listings()] format (must have
-#'   a `slug` column). If `NULL`, calls `cg_list()`.
-#' @param limit Optional cap on number of coins (top of the tibble).
-#' @param sleep Seconds between calls (default `2.5` -> 24 req/min,
-#'   ~80% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
-#'   sliding-window enforcement).
-#' @param wait Seconds to wait before retrying after a 429 (default `60`,
-#'   matching CoinGecko's rate-limit window). See [cg_make_client()].
-#' @param max_retries Maximum retry attempts on 429 / network failures
-#'   (default `3`). See [cg_make_client()].
-#' @param finalWait Sleep 60s after the last call (mirrors `crypto_info()`).
+#' @param coin_list string if NULL retrieve all currently existing coins
+#'   ([cg_list()]), or provide list of cryptocurrencies in the [cg_list()] /
+#'   [cg_listings()] format.
+#' @param limit integer Return the top n records, default is all tokens.
+#' @param requestLimit Kept for parity with [crypto_info()] -- ignored
+#'   (CoinGecko endpoint is one coin per call).
+#' @param sleep integer (default `0`) Seconds to sleep between API requests.
+#'   The internal client enforces a polite floor (default `2.5s`) to stay
+#'   under the Demo-tier 30 req/min cap.
+#' @param finalWait Sleep 60s after the last call (mirrors [crypto_info()]).
 #'
 #' @return Tibble with one row per coin:
 #'   \item{id}{CoinGecko internal numeric id (from `image$thumb`).}
@@ -53,16 +52,20 @@
 #' @importFrom progress progress_bar
 #' @importFrom cli cat_bullet
 #' @export
-cg_info <- function(coin_list = NULL, limit = NULL,
-                    sleep = 2.5, wait = 60, max_retries = 3,
-                    finalWait = FALSE) {
+cg_info <- function(coin_list = NULL, limit = NULL, requestLimit = 1,
+                    sleep = 0, finalWait = FALSE) {
   if (is.null(coin_list)) coin_list <- cg_list()
   if (!"slug" %in% names(coin_list)) {
     stop("`coin_list` must contain a `slug` column.", call. = FALSE)
   }
   if (!is.null(limit)) coin_list <- coin_list[seq_len(min(limit, nrow(coin_list))), ]
 
-  client <- cg_make_client(sleep = sleep, wait = wait, max_retries = max_retries)
+  wait        <- getOption("crypto2.cg_wait", 60)
+  max_retries <- getOption("crypto2.cg_max_retries", 3)
+  sleep_eff   <- max(sleep, getOption("crypto2.cg_sleep", 2.5))
+
+  client <- cg_make_client(sleep = sleep_eff, wait = wait,
+                           max_retries = max_retries)
 
   fetch_one <- function(slug) {
     url <- cg_url(sprintf("coins/%s", slug), host = "api")

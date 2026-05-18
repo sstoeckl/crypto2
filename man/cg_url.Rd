@@ -4,25 +4,22 @@
 \alias{cg_url}
 \title{CoinGecko URL builder}
 \usage{
-cg_url(path, host = c("web", "web_en", "api"))
+cg_url(path, host = c("web", "web_en", "api", "hf"))
 }
 \arguments{
 \item{path}{Path to append (no leading slash).}
 
-\item{host}{One of \code{"api"} (documented), \code{"web"} (website, locale-free,
-used by \verb{/price_charts/}, \verb{/market_cap/}, \verb{/ohlc/}, \verb{/coins/...}),
-\code{"web_en"} (website, \verb{/en/} prefixed, used by \verb{/historical_data},
-\verb{/financials_chart_data}, etc.). Default \code{"web"}.}
+\item{host}{One of \code{"api"}, \code{"web"}, \code{"web_en"}, \code{"hf"}. Default \code{"web"}.}
 }
 \value{
 Full URL string.
 }
 \description{
-Builds a full URL for one of the four key-free CoinGecko hosts used by this
-package. The website-host endpoints (\code{web}, \code{web_en}) are the website's own
-internal JSON routes (not documented), discovered via reverse-engineering the
-page HTML. The documented host (\code{api}) is the public Demo-tier API
-(\verb{api.coingecko.com/api/v3/}), which is rate-limited to ~30 req/min but
-supports slug-based addressing for the basic universe and per-coin detail.
+Internal URL builder. The host strings are base64-encoded (same pattern as
+\code{\link[=construct_url]{construct_url()}} for CMC) so the package source does not contain plaintext
+endpoint URLs. The \code{api} host is the documented Demo-tier API; the \code{web}
+and \code{web_en} hosts route through the public website. The \code{hf} host is the
+Hugging Face download root for the optional historic id/slug mapping (see
+\code{\link[=cg_id_mapping]{cg_id_mapping()}}).
 }
 \keyword{internal}
