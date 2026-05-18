@@ -19,7 +19,8 @@ cg_history(
   sleep = 0,
   wait = 60,
   finalWait = FALSE,
-  single_id = TRUE
+  single_id = TRUE,
+  date_convention = c("end_of_day", "raw")
 )
 ```
 
@@ -81,6 +82,20 @@ cg_history(
   Kept for parity with
   [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
   – ignored; CoinGecko endpoints are always single-coin per call.
+
+- date_convention:
+
+  Either `"end_of_day"` (the default) or `"raw"`. CoinGecko's native
+  daily series timestamps each point at 00:00:00 UTC of date X, which is
+  the same physical instant as 23:59:59 UTC of date X-1 – i.e. CG labels
+  it as the start-of-day rather than the close-of-day. CMC (and
+  [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md))
+  label that instant as date X-1 (the day that just ended), which is
+  also the standard asset-pricing convention used by CRSP/Compustat and
+  major academic datasets. With `"end_of_day"` (default) `cg_history()`
+  shifts CG's midnight ticks by -1 day so `close[X] / close[X-1] - 1` is
+  the return earned during date X, matching CMC. Pass `"raw"` to keep
+  CG's native start-of-day labelling.
 
 ## Value
 

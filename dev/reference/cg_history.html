@@ -22,7 +22,8 @@ the crypto2 CMC output."></head><body>
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: a second source for crypto2</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cg-vs-cmc.html">Cross-source reconciliation: CMC vs CoinGecko</a></li>
+    <li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: a second source for crypto2</a></li>
     <li><a class="dropdown-item" href="../articles/coingecko-pro-backfill.html">CoinGecko Pro backfill: one-shot survivorship-bias archive</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +62,8 @@ the crypto2 CMC output.</p>
 <span>  sleep <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  wait <span class="op">=</span> <span class="fl">60</span>,</span>
 <span>  finalWait <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  single_id <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  single_id <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  date_convention <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"end_of_day"</span>, <span class="st">"raw"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -118,6 +120,20 @@ per-minute budget.</p></dd>
 <dt id="arg-single-id">single_id<a class="anchor" aria-label="anchor" href="#arg-single-id"></a></dt>
 <dd><p>Kept for parity with <code><a href="crypto_history.html">crypto_history()</a></code> – ignored;
 CoinGecko endpoints are always single-coin per call.</p></dd>
+
+
+<dt id="arg-date-convention">date_convention<a class="anchor" aria-label="anchor" href="#arg-date-convention"></a></dt>
+<dd><p>Either <code>"end_of_day"</code> (the default) or <code>"raw"</code>.
+CoinGecko's native daily series timestamps each point at 00:00:00 UTC
+of date X, which is the same physical instant as 23:59:59 UTC of date
+X-1 – i.e. CG labels it as the start-of-day rather than the
+close-of-day. CMC (and <code><a href="crypto_history.html">crypto_history()</a></code>) label that instant as
+date X-1 (the day that just ended), which is also the standard
+asset-pricing convention used by CRSP/Compustat and major academic
+datasets. With <code>"end_of_day"</code> (default) <code>cg_history()</code> shifts CG's
+midnight ticks by -1 day so <code>close[X] / close[X-1] - 1</code> is the return
+earned during date X, matching CMC. Pass <code>"raw"</code> to keep CG's native
+start-of-day labelling.</p></dd>
 
 </dl></div>
     <div class="section level2">

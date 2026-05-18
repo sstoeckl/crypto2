@@ -18,7 +18,8 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: a second source for crypto2</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cg-vs-cmc.html">Cross-source reconciliation: CMC vs CoinGecko</a></li>
+    <li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: a second source for crypto2</a></li>
     <li><a class="dropdown-item" href="../articles/coingecko-pro-backfill.html">CoinGecko Pro backfill: one-shot survivorship-bias archive</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -57,9 +58,20 @@
 </ul><p>CG-specific knobs that have no CMC counterpart (rate-limit floor, retry budget, OHLC-stream selection) move to package options: <code>crypto2.cg_sleep</code>, <code>crypto2.cg_wait</code>, <code>crypto2.cg_max_retries</code>, <code>crypto2.cg_top_n</code>, <code>crypto2.cg_what</code>, <code>crypto2.cg_vs_currency</code>. This keeps the public signatures aligned with the CMC functions.</p>
 </div>
 <div class="section level3">
+<h3 id="date-convention-behavioural-change-in-cg_history-2-1-0-9000">Date convention (behavioural change in <code>cg_history()</code>)<a class="anchor" aria-label="anchor" href="#date-convention-behavioural-change-in-cg_history-2-1-0-9000"></a></h3>
+<p><code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> now harmonize their date labels with <code><a href="../reference/crypto_history.html">crypto_history()</a></code> by default. CoinGecko’s native daily series timestamps each point at 00:00:00 UTC of date X, which is the same physical instant as 23:59:59 UTC of date X-1 – but CMC (and the standard asset-pricing convention used by CRSP / Compustat / Liu, Tsyvinski &amp; Wu 2022) labels that instant as date X-1, while CG labels it as date X. Empirically, CG’s row labelled date X agrees with CMC’s row labelled date X-1 to within sub-dollar precision (verified against hourly intraday CG data; see <code>tools/check_cg_midnight_convention.R</code>).</p>
+<ul><li>New argument <code>date_convention = c("end_of_day", "raw")</code> on both <code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code>, defaulting to <code>"end_of_day"</code>. Under the default, midnight-UTC ticks are attributed to the previous date so <code>close[X] / close[X-1] - 1</code> is the return earned during date X, matching CMC.</li>
+<li>Pass <code>date_convention = "raw"</code> to keep CG’s native start-of-day labels.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="vignettes-2-1-0-9000">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes-2-1-0-9000"></a></h3>
 <ul><li>New <code>coingecko-integration.Rmd</code> – the user-facing walkthrough.</li>
 <li>New <code>coingecko-pro-backfill.Rmd</code> – recipes for the optional one-shot Pro-tier bootstrap of a complete historic universe. Functions are kept inline in the vignette rather than exported from the package.</li>
+<li>New <code>cg-vs-cmc.Rmd</code> – cross-source reconciliation, the date-convention story in detail, and guidance on which fields are expected to agree vs. expected to differ between the two providers.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="tests-2-1-0-9000">Tests<a class="anchor" aria-label="anchor" href="#tests-2-1-0-9000"></a></h3>
+<ul><li>New <code>test-cg-vs-cmc.R</code> – reconciles <code>cg_history(BTC)</code> against <code>crypto_history(BTC)</code> over a 7-day window, asserts |pct diff| &lt; 1% per day. Will fail loudly if the date conventions ever drift out of alignment again or if either provider switches its underlying exchange basket enough to break the tolerance.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="other-2-1-0-9000">Other<a class="anchor" aria-label="anchor" href="#other-2-1-0-9000"></a></h3>

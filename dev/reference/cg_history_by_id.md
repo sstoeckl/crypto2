@@ -19,7 +19,8 @@ cg_history_by_id(
   wait = 60,
   max_retries = 3,
   quiet = FALSE,
-  finalWait = FALSE
+  finalWait = FALSE,
+  date_convention = c("end_of_day", "raw")
 )
 ```
 
@@ -69,6 +70,14 @@ cg_history_by_id(
 
   Sleep 60 s after the last call (mirrors
   [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)).
+
+- date_convention:
+
+  Either `"end_of_day"` (the default) or `"raw"`. See
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  for the explanation – this argument applies the same -1 day shift to
+  midnight-UTC ticks so dates align with the CMC / CRSP / Compustat
+  end-of-day convention.
 
 ## Value
 
