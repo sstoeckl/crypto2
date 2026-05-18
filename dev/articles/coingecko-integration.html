@@ -143,11 +143,17 @@ transparently extends the universe with a periodically-updated historic
 mapping and prints one line: <em>“Historic data retrieval is current
 until YYYY-MM-DD”</em>.</li>
 <li>
-<strong>Long history windows.</strong> Some environments cannot
-reach the full historical backfill and will be served only the most
-recent 365 days of OHLC. You will see a one-time warning when that
-happens. If you need a complete one-shot bootstrap of the full historic
-universe, see <code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code>.</li>
+<strong>Daily price / volume / market-cap history is available in
+full</strong> – back to each coin’s listing date in a single call, no
+key required. This is the workhorse path and the basis for almost all
+factor work.</li>
+<li>
+<strong>OHLC (open / high / low) is capped at the most recent 365
+days on the free tier.</strong> Close prices over a longer window come
+from the price stream above; if you genuinely need long-horizon OHLC
+candles (for intra-day microstructure or candlestick-based signals), use
+the one-shot Pro recipes in
+<code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code>.</li>
 </ol>
 </div>
 <div class="section level2">
@@ -182,20 +188,27 @@ function periodically (cron job) to accumulate a
 survivorship-bias-corrected archive in your own storage.</p>
 </div>
 <div class="section level3">
-<h3 id="cg_history-historical-ohlc-volume-market-cap">
-<code>cg_history()</code> – historical OHLC + volume + market
-cap<a class="anchor" aria-label="anchor" href="#cg_history-historical-ohlc-volume-market-cap"></a>
+<h3 id="cg_history-full-daily-history-close-volume-market-cap-ohlc">
+<code>cg_history()</code> – full daily history (close, volume,
+market cap, +OHLC)<a class="anchor" aria-label="anchor" href="#cg_history-full-daily-history-close-volume-market-cap-ohlc"></a>
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">top50</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_list.html">cg_list</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">50</span>, <span class="op">]</span></span>
-<span><span class="va">hist</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_history.html">cg_history</a></span><span class="op">(</span><span class="va">top50</span>, start_date <span class="op">=</span> <span class="st">"2024-01-01"</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/cg_history.html">cg_history()</a></code> returns daily OHLC, volume and market cap
-in one tibble, mirroring <code><a href="../reference/crypto_history.html">crypto_history()</a></code>’s daily output.
-Missing numeric IDs are silently backfilled from the historic mapping.
-If the environment cannot reach the full backfill, only the most recent
-365 days are returned (with a one-time warning) – use the Pro recipes in
-<code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code> for a one-shot complete
-bootstrap.</p>
+<span><span class="va">hist</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_history.html">cg_history</a></span><span class="op">(</span><span class="va">top50</span>, start_date <span class="op">=</span> <span class="st">"2014-01-01"</span><span class="op">)</span>   <span class="co"># back to 2014, free</span></span></code></pre></div>
+<p><code><a href="../reference/cg_history.html">cg_history()</a></code> returns daily history in one tibble,
+mirroring <code><a href="../reference/crypto_history.html">crypto_history()</a></code>’s output. <strong>Close, volume
+and market cap are available for the full lifetime of each coin</strong>
+on the free tier – typically from the coin’s listing date forward.
+Missing numeric IDs are silently backfilled from the historic
+mapping.</p>
+<p>The only field with a free-tier ceiling is the <strong>OHLC quartet
+(open / high / low)</strong>, which CoinGecko caps at the most recent
+365 days. For any longer window, <code>open</code>, <code>high</code>
+and <code>low</code> are returned as <code>NA</code> (close is still
+populated from the price stream). If you need long-horizon OHLC candles
+for microstructure or technical-signal work, the one-shot Pro recipes in
+<code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code> produce a complete
+backfill of the OHLC stream too.</p>
 </div>
 <div class="section level3">
 <h3 id="cg_info-per-coin-metadata">
@@ -214,11 +227,11 @@ bootstrap.</p>
 |
 +-- no, I need delisted coins too
     |
-    +-- I only need the most recent 365 days of OHLC
+    +-- I need close / volume / market cap (any horizon)
     |   -&gt; cg_list(only_active = FALSE) + cg_history()
     |
-    +-- I need the full historic universe in one batch run
-        -&gt; see vignette("coingecko-pro-backfill")</code></pre>
+    +-- I need OHLC candles older than ~365 days
+        -&gt; see vignette("coingecko-pro-backfill") for the Pro recipes</code></pre>
 </div>
 <div class="section level2">
 <h2 id="persisting-your-own-survivorship-bias-archive">Persisting your own survivorship-bias archive<a class="anchor" aria-label="anchor" href="#persisting-your-own-survivorship-bias-archive"></a>

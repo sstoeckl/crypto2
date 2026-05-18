@@ -77,7 +77,7 @@
 <h3 id="other-2-1-0-9000">Other<a class="anchor" aria-label="anchor" href="#other-2-1-0-9000"></a></h3>
 <ul><li>
 <code><a href="../reference/crypto_info.html">crypto_info()</a></code> and <code><a href="../reference/exchange_info.html">exchange_info()</a></code> now use a column allowlist instead of a denylist when processing API responses. New or unknown fields from CMC – including list-type fields that would previously break <code><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble()</a></code> – are silently ignored, making both functions robust to future CMC additions without a patch release.</li>
-<li>Behaviour change: <code><a href="../reference/cg_history.html">cg_history()</a></code> emits a one-time warning when <code>start_date</code> is more than 365 days in the past and the full backfill cannot be served, then returns the most recent 365 days.</li>
+<li>Coverage clarification (and tightened warning in <code><a href="../reference/cg_history.html">cg_history()</a></code>): close, volume and market cap are returned for the full lifetime of each coin on the free tier. The OHLC quartet (open / high / low) is capped at the most recent 365 days; for older windows those three columns come back <code>NA</code> while close remains populated from the price stream. The one-time warning now only fires when OHLC is actually requested over a window that exceeds the cap.</li>
 </ul></div>
 </div>
     <div class="section level2">

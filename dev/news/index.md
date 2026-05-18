@@ -103,11 +103,14 @@ sub-dollar precision (verified against hourly intraday CG data; see
   [`as_tibble()`](https://tibble.tidyverse.org/reference/as_tibble.html)
   – are silently ignored, making both functions robust to future CMC
   additions without a patch release.
-- Behaviour change:
-  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-  emits a one-time warning when `start_date` is more than 365 days in
-  the past and the full backfill cannot be served, then returns the most
-  recent 365 days.
+- Coverage clarification (and tightened warning in
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)):
+  close, volume and market cap are returned for the full lifetime of
+  each coin on the free tier. The OHLC quartet (open / high / low) is
+  capped at the most recent 365 days; for older windows those three
+  columns come back `NA` while close remains populated from the price
+  stream. The one-time warning now only fires when OHLC is actually
+  requested over a window that exceeds the cap.
 
 ## crypto2 1.4.0
 

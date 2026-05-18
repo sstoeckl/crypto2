@@ -147,11 +147,13 @@ in `coin_list`,
 is consulted to recover it. If a coin cannot be resolved at all, it is
 silently skipped.
 
-Free-tier caveat: in some environments only the most recent 365 days of
-OHLC per coin are available. When `start_date` is further back and the
-full backfill cannot be served, the most recent 365 days are returned
-with a single one-line warning. For a one-shot complete bootstrap of the
-full historic universe, see
+Free-tier coverage: **close, volume and market cap are returned for the
+full lifetime of each coin** – typically from the coin's listing date
+forward. The OHLC quartet (`open` / `high` / `low`) is capped at the
+**most recent 365 days** on the free tier; for older windows those three
+columns come back `NA` while `close` remains populated from the price
+stream. For a one-shot complete backfill of OHLC over the full history
+see
 [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md).
 
 ## Examples

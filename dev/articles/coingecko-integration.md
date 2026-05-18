@@ -35,11 +35,14 @@ them where possible and warns when it cannot:
     tracked coins. `cg_list(only_active = FALSE)` transparently extends
     the universe with a periodically-updated historic mapping and prints
     one line: *“Historic data retrieval is current until YYYY-MM-DD”*.
-2.  **Long history windows.** Some environments cannot reach the full
-    historical backfill and will be served only the most recent 365 days
-    of OHLC. You will see a one-time warning when that happens. If you
-    need a complete one-shot bootstrap of the full historic universe,
-    see
+2.  **Daily price / volume / market-cap history is available in full** –
+    back to each coin’s listing date in a single call, no key required.
+    This is the workhorse path and the basis for almost all factor work.
+3.  **OHLC (open / high / low) is capped at the most recent 365 days on
+    the free tier.** Close prices over a longer window come from the
+    price stream above; if you genuinely need long-horizon OHLC candles
+    (for intra-day microstructure or candlestick-based signals), use the
+    one-shot Pro recipes in
     [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md).
 
 ## The four core functions
@@ -73,23 +76,30 @@ snap <- cg_listings(which = "latest", quote = TRUE, limit = 1000)
 coerce to `"latest"`. Snapshot this function periodically (cron job) to
 accumulate a survivorship-bias-corrected archive in your own storage.
 
-### `cg_history()` – historical OHLC + volume + market cap
+### `cg_history()` – full daily history (close, volume, market cap, +OHLC)
 
 ``` r
 
 top50 <- cg_list()[1:50, ]
-hist  <- cg_history(top50, start_date = "2024-01-01")
+hist  <- cg_history(top50, start_date = "2014-01-01")   # back to 2014, free
 ```
 
 [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-returns daily OHLC, volume and market cap in one tibble, mirroring
+returns daily history in one tibble, mirroring
 [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)’s
-daily output. Missing numeric IDs are silently backfilled from the
-historic mapping. If the environment cannot reach the full backfill,
-only the most recent 365 days are returned (with a one-time warning) –
-use the Pro recipes in
+output. **Close, volume and market cap are available for the full
+lifetime of each coin** on the free tier – typically from the coin’s
+listing date forward. Missing numeric IDs are silently backfilled from
+the historic mapping.
+
+The only field with a free-tier ceiling is the **OHLC quartet (open /
+high / low)**, which CoinGecko caps at the most recent 365 days. For any
+longer window, `open`, `high` and `low` are returned as `NA` (close is
+still populated from the price stream). If you need long-horizon OHLC
+candles for microstructure or technical-signal work, the one-shot Pro
+recipes in
 [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md)
-for a one-shot complete bootstrap.
+produce a complete backfill of the OHLC stream too.
 
 ### `cg_info()` – per-coin metadata
 
@@ -106,11 +116,11 @@ info <- cg_info(cg_list()[1:10, ])
     |
     +-- no, I need delisted coins too
         |
-        +-- I only need the most recent 365 days of OHLC
+        +-- I need close / volume / market cap (any horizon)
         |   -> cg_list(only_active = FALSE) + cg_history()
         |
-        +-- I need the full historic universe in one batch run
-            -> see vignette("coingecko-pro-backfill")
+        +-- I need OHLC candles older than ~365 days
+            -> see vignette("coingecko-pro-backfill") for the Pro recipes
 
 ## Persisting your own survivorship-bias archive
 
