@@ -14,39 +14,22 @@ knitr::opts_chunk$set(
 
 # crypto2 <a href='https://github.com/sstoeckl/crypto2'><img src='man/figures/crypto2_hex.png' align="right" height="139" style="float:right; height:200px;"/></a>
 
-<!-- badges: start -->
+ <!-- badges: start -->
 
   [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
   [![R-CMD-check](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/R-CMD-check.yaml)
+  [![test-coverage](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/test-coverage.yaml)
+  [![pr-commands](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml/badge.svg)](https://github.com/sstoeckl/crypto2/actions/workflows/pr-commands.yaml)
   [![CRAN_latest_release_date](https://www.r-pkg.org/badges/last-release/crypto2)](https://cran.r-project.org/package=crypto2)
   [![CRAN status](https://www.r-pkg.org/badges/version/crypto2)](https://CRAN.R-project.org/package=crypto2)
   [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/crypto2)](https://cran.r-project.org/package=crypto2)
   [![CRAN downloads last month](http://cranlogs.r-pkg.org/badges/crypto2)](https://cran.r-project.org/package=crypto2)
   [![CRAN downloads last week](http://cranlogs.r-pkg.org/badges/last-week/crypto2)](https://cran.r-project.org/package=crypto2)
   [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
-  [![Website - pkgdown](https://img.shields.io/website-up-down-green-red/https/www.sebastianstoeckl.com/crypto2.svg)](https://www.sebastianstoeckl.com/crypto2/)
-  [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-  [![Codestyle: tidyverse](https://img.shields.io/badge/code%20style-tidyverse-blue.svg)](https://style.tidyverse.org)
-<!-- badges: end -->
+  [![Website - pkgdown](https://img.shields.io/website-up-down-green-red/https/sstoeckl.github.io/crypto2.svg)](https://sstoeckl.github.io/crypto2/)
+ <!-- badges: end -->
 
 # Historical Cryptocurrency Prices for Active and Delisted Tokens!
-
-> **Experimental:** A CoinGecko integration is in active testing on the
-> [`dev`](https://github.com/sstoeckl/crypto2/tree/dev) branch.
-> It adds `cg_list()`, `cg_listings()`, `cg_history()`, `cg_info()`, and
-> `cg_history_by_id()` — CMC-column-compatible companions that pull from
-> CoinGecko, **no API key required**. Browse the dev docs at
-> <https://www.sebastianstoeckl.com/crypto2/dev/> (use the navbar
-> Release / Devel switcher) or install the dev branch directly:
->
-> ```r
-> # install.packages("remotes")
-> remotes::install_github("sstoeckl/crypto2@dev")
-> ```
->
-> CoinGecko's free tier exposes only **active** coins; the package warns
-> when delisted-coin retrieval is impossible. Build a survivorship-bias-free
-> archive by snapshotting periodically (daily/weekly) from your own cronjob.
 
 This is a modification of the original `crypto` package by [jesse vent](https://github.com/JesseVent/crypto). It is entirely set up to use means from the `tidyverse` and provides `tibble`s with all data available via the web-api of [coinmarketcap.com](https://coinmarketcap.com/). **It does not require an API key but in turn only provides information that is also available through the website of [coinmarketcap.com](https://coinmarketcap.com/).**
 
@@ -57,11 +40,15 @@ It allows the user to retrieve
 - `crypto_info()` a list of all information available for all available coins according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyInfo)
 - `crypto_history()` the **most powerful** function of this package that allows to download the entire available history for all coins covered by CMC according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyOhlcvHistorical)
 - `crypto_global_quotes()` a dataset of historical global crypto currency market metrics to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1GlobalmetricsQuotesHistorical)
-- `fiat_list()` a mapping of all fiat currencies (plus precious metals) available via the [CMC WEB API](https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap)
+- `fiat_list()` a mapping of all fiat currencies available via the [CMC WEB API](https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap) (note: since v2.0.0 only USD is available)
 - `exchange_list()` a list of all exchanges available as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMap)
 - `exchange_info()` a list of all information available for all given exchanges according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeInfo)
 
-# Update
+# Changelog
+
+## Version 2.0.5.99 (development)
+
+`crypto_info()` and `exchange_info()` have been made more robust against CMC API changes. Both functions now use a column **allowlist** instead of a denylist: only known, documented columns are retained, so any new or unknown fields added by CMC — including list-type fields that would previously break the output — are silently ignored. This should eliminate the recurring patch releases caused by CMC adding new columns.
 
 ## Version 2.0.2/2.0.3/2.0.4/2.0.5 (September 2025)
 
@@ -83,16 +70,6 @@ After a major change in the api structure of coinmarketcap.com, the package had 
 - `crypto_history()` has been modified. It still retrieves all the OHLC history of all the coins, but is slower due to an increased number of necessary api calls. The number of available intervals is strongly limited, but hourly and daily data is still available. Currently only USD and BTC are available as quote currencies through this library.
 - `crypto_global_quotes()` has been modified. It still produces a clear picture of the global market, but the data structure has somewhat slightly changed.
 
-## Version 1.4.7
-
-Since version 1.4.6 I have added the possibility to "sort" the historical `crypto_listings()` in _asc_ending or _desc_ending order ("sort_dir") to allow for the possibility to download only the top x crypto currencies using "limit" based on the requested sort (not available for "new" sorting). Also corrected some problems when sourcing lists that now do not have the "last_historical_data" field available any more.
-
-Since version 1.4.5 I have added a new function `crypto_global_quotes()` which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.
-
-Since version 1.4.4 a new function `crypto_listings()` was introduced that retrieves new/latest/historical listings and listing information at CMC. Additionally some aspects of the other functions have been reworked. We noticed that `finalWait = TRUE` does not seem to be necessary at the moment, as well as `sleep` can be set to '0' seconds. If you experience strange behavior this might be due to the the api sending back strange (old) results. In this case let `sleep = 60` (the default) and `finalWait = TRUE` (the default).
-
-Since version 1.4.0 the package has been reworked to retrieve as many assets as possible with one api call, as there is a new "feature" introduced by CMC to send back the initially requested data for each api call within 60 seconds. So one needs to wait 60s before calling the api again. Additionally, since version v1.4.3 the package allows for a data `interval` larger than daily (e.g. '2d' or '7d' or 'weekly')
-
 ## Installation
 
 You can install `crypto2` from CRAN with 
@@ -113,7 +90,7 @@ As this provides access not only to **active** coins but also to those that have
 
 ## Package Usage
 
-First we load the `crypto2`-package and download the set of active coins from <https://coinmarketcap.com> (additionally one could load delisted coins with `only_Active=FALSE` as well as untracked coins with `add_untracked=TRUE`).
+First we load the `crypto2`-package and download the set of active coins from <https://coinmarketcap.com> (additionally one could load delisted coins with `only_active=FALSE` as well as untracked coins with `add_untracked=TRUE`).
 
 ```{r example}
 library(crypto2)
@@ -148,7 +125,7 @@ coin_info %>% select(slug,tags) %>% tidyr::unnest(tags) %>% group_by(slug) %>% s
 Additionally: Here are some urls pertaining to these coins as provided by <https://coinmarketcap.com>.
 
 ```{r urls}
-coin_info %>% pull(urls) %>% .[[1]] |> unlist()
+coin_info %>% dplyr::pull(urls) %>% .[[1]] %>% unlist()
 ```
 
 In a next step we download time series data for these coins.
@@ -171,31 +148,31 @@ coin_hist_m <- crypto_history(coins, limit=3, start_date="20210101", end_date="2
 coin_hist_m %>% group_by(slug) %>% slice(1:2)
 ```
 
-Alternatively, we could determine the price of these coins in other currencies. A list of such currencies is available as `fiat_list()`
+Since v2.0.0, only USD and BTC are available as quote currencies. The available currencies can be checked with `fiat_list()`:
 
 ```{r fiat}
 fiats <- fiat_list()
 fiats
 ```
 
-So we download the time series again depicting prices in terms of Bitcoin and Euro (note that multiple currencies can be given to `convert`, separated by ",").
+We can download the same time series priced in Bitcoin instead of USD:
 
 ```{r history2}
-# retrieve historical data for all (the first 3) of them
-coin_hist2 <- crypto_history(coins, convert="USD", limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
+# retrieve historical data for all (the first 3) of them, priced in BTC
+coin_hist2 <- crypto_history(coins, convert="BTC", limit=3, start_date="20210101", end_date="20210105", finalWait=FALSE)
 
 # and give the first two times of information per coin
 coin_hist2 %>% group_by(slug,ref_cur_name) %>% slice(1:2)
 ```
 
-As a new features in version 1.4.4. we introduced the possibility to download historical listings and listing information (add `quote = TRUE`).
+We can also download historical listings and listing information (add `quote = TRUE`):
 
 ```{r listings}
 latest_listings <- crypto_listings(which="latest", limit=10, quote=TRUE, finalWait=FALSE)
 latest_listings
 ```
 
-An additional feature that was added in version 1.4.5 retrieves global aggregate market statistics for CMC.
+`crypto_global_quotes()` retrieves global aggregate market statistics for CMC:
 
 ```{r quotes}
 all_quotes <- crypto_global_quotes(which="historical", quote=TRUE)
@@ -221,7 +198,7 @@ exchanges <- exchange_list(only_active=TRUE)
 exchanges
 ```
 
-and then download information on "binance" and "bittrex":
+and then download information on "binance" and "kraken":
 
 ```{r exchange-info}
 ex_info <- exchange_info(exchanges %>% filter(slug %in% c('binance','kraken')), finalWait=FALSE)
