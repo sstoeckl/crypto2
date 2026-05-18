@@ -13,9 +13,8 @@ logos, contract addresses across chains, links) for each coin in
 cg_info(
   coin_list = NULL,
   limit = NULL,
-  sleep = 2.5,
-  wait = 60,
-  max_retries = 3,
+  requestLimit = 1,
+  sleep = 0,
   finalWait = FALSE
 )
 ```
@@ -24,33 +23,29 @@ cg_info(
 
 - coin_list:
 
-  Tibble in
+  string if NULL retrieve all currently existing coins
+  ([`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)),
+  or provide list of cryptocurrencies in the
   [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
   /
   [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
-  format (must have a `slug` column). If `NULL`, calls
-  [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md).
+  format.
 
 - limit:
 
-  Optional cap on number of coins (top of the tibble).
+  integer Return the top n records, default is all tokens.
+
+- requestLimit:
+
+  Kept for parity with
+  [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
+  – ignored (CoinGecko endpoint is one coin per call).
 
 - sleep:
 
-  Seconds between calls (default `2.5` -\> 24 req/min, ~80% of the
-  Demo-tier 30 req/min cap, with headroom for CoinGecko's sliding-window
-  enforcement).
-
-- wait:
-
-  Seconds to wait before retrying after a 429 (default `60`, matching
-  CoinGecko's rate-limit window). See
-  [`cg_make_client()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_make_client.md).
-
-- max_retries:
-
-  Maximum retry attempts on 429 / network failures (default `3`). See
-  [`cg_make_client()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_make_client.md).
+  integer (default `0`) Seconds to sleep between API requests. The
+  internal client enforces a polite floor (default `2.5s`) to stay under
+  the Demo-tier 30 req/min cap.
 
 - finalWait:
 

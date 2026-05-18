@@ -1,441 +1,172 @@
-# CoinGecko integration: pulling crypto data without an API key
+# CoinGecko integration: a second source for crypto2
 
-## Why a CoinGecko branch?
+## Why a second source?
 
-`crypto2` was built around CoinMarketCap (CMC) because CMC was
-historically the only free source of **survivorship-bias-free historical
-crypto listings** — their internal API serves delisted-coin data without
-an API key, which is exactly what academic finance research needs.
+`crypto2` was built around CoinMarketCap (CMC) because CMC’s internal
+endpoints serve **survivorship-bias-free historical listings** without
+an API key — exactly what academic finance research needs. CMC’s schema
+is, however, unstable in places
+([`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
+has been patched several times).
 
-CMC’s internal API is also notoriously unstable — the
-[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
-function has been patched several times because CMC keeps adding fields
-that break the deny-list approach. The CoinGecko branch is the second
-source: a CG-side counterpart with the same column conventions, so
-downstream research code that already consumes a
-[`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md)
-/
-[`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
-/
-[`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
-tibble works on a
-[`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
-/
-[`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
-/
-[`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-tibble too.
+The `cg_*` functions are a second, independent source: a CoinGecko-side
+counterpart with the **same column conventions** as the CMC functions,
+so research code that already consumes a `crypto_*` tibble works on a
+`cg_*` tibble too. Triangulating across both is the cleanest insulation
+against either platform changing its terms.
 
-Triangulating across both sources is the safest way to insulate your
-research against any one platform changing its policies.
+## Function pairs (CMC ↔︎ CoinGecko)
 
-The branch is experimental. Install with:
-
-``` r
-
-# install.packages("remotes")
-remotes::install_github("sstoeckl/crypto2@coingecko-integration")
-library(crypto2)
-```
-
-## The endpoint surface
-
-CoinGecko exposes two different hosts:
-
-| Host | Purpose | Rate limit | Key required? |
+| Purpose | CMC | CoinGecko | Same signature? |
 |----|----|----|----|
-| `api.coingecko.com/api/v3/...` | Documented public API. Demo tier, stable schema, versioned. | **30 req / min** (Demo, key-less) | No |
-| `www.coingecko.com/...` | Undocumented internal endpoints that the CoinGecko **website itself** uses to render its pages. JSON responses, browser-like User-Agent recommended. | No documented cap; Cloudflare bot filtering at high request rates | No |
+| Coin universe | [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md) | [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md) | yes |
+| Current snapshot | [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md) | [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md) | yes |
+| Historical OHLC | [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md) | [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md) | yes |
+| Per-coin metadata | [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md) | [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md) | yes |
 
-Inside this package, every `cg_*` function picks the host that makes
-most sense for its job. The summary:
+The `cg_*` functions accept the **same arguments** as their `crypto_*`
+counterparts. Arguments that have no CoinGecko equivalent (e.g.
+`add_untracked`, `requestLimit`, `single_id`) are kept for parity and
+silently ignored. Arguments where the CG free tier is more restrictive
+(e.g. `which = "historical"` in
+[`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md))
+emit a one-line warning and coerce to the supported mode.
 
-| Function | Hits | Rate-limit posture |
-|----|----|----|
-| [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md) | documented `coins/list` + `coins/markets` paginated | Sleeps **2.5 s** between page calls (≈ 24/min, 80 % of cap) |
-| [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md) | documented `coins/markets` paginated | Same |
-| [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md) | undocumented `price_charts/`, `market_cap/`, `ohlc/` per coin | Sleeps **0.6 s** (≈ 100/min, polite) |
-| [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md) | same as [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md) but addresses by numeric ID | Same |
-| [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md) | documented `coins/{slug}` per coin | Sleeps 2.5 s |
+## Free-tier limitations and how the package handles them
+
+CoinGecko’s free tier has three relevant ceilings — the package routes
+around them where possible and warns when it cannot:
+
+1.  **Survivorship bias.** The free `/coins/list` endpoint only returns
+    coins currently tracked by CoinGecko; coins that get delisted
+    disappear from the universe. `cg_list(only_active = FALSE)`
+    transparently merges in a periodically-updated historic mapping via
+    [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
+    and prints one line: *“Historic data retrieval is current until
+    YYYY-MM-DD”*.
+2.  **365-day cap on Demo history.** Public Demo endpoints cap per-coin
+    history at 365 days.
+    [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+    falls back to the website-host endpoints (which return full history
+    in one call) when reachable; if those are blocked too, you get a
+    one-time warning and the most recent 365 days only.
+3.  **Cloudflare bot filtering.** The website-host endpoints are gated
+    by Cloudflare. Requests from datacenter / cloud IPs typically
+    receive a `403 cf-mitigated: challenge` response that no amount of
+    retry will resolve.
+    [`cg_get()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_get.md)
+    detects this and emits one message per session advising the user to
+    run from a residential IP. If you must run in the cloud, accept that
+    historic OHLC will be limited to the Demo 365-day window, or upgrade
+    to the Pro tier (see the “*CoinGecko Pro backfill*” vignette).
 
 ## The four core functions
 
-All four return tibbles with column names that mirror their `crypto_*`
+All four return tibbles with column names mirroring the `crypto_*`
 counterparts.
 
 ### `cg_list()` — the active coin universe
 
 ``` r
 
-universe <- cg_list(top_n = NULL)        # ≈ 17 000 coins (active only)
+universe <- cg_list()              # active coins only
+universe_full <- cg_list(only_active = FALSE)   # + historic mapping
 head(universe)
-#> # A tibble: 6 × 8
-#>      id name       symbol slug      rank is_active first_historical_data last_historical_data
-#>   <int> <chr>      <chr>  <chr>    <int>     <int> <date>                <date>
-#> 1     1 Bitcoin    btc    bitcoin      1         1 NA                    2026-05-13
-#> 2   279 Ethereum   eth    ethereum     2         1 NA                    2026-05-13
-#> 3   325 Tether     usdt   tether       3         1 NA                    2026-05-13
-#> ...
+#> # A tibble: 6 x 8
+#>      id name      symbol slug      rank is_active first_historical_data last_historical_data
+#>   <int> <chr>     <chr>  <chr>    <int>     <int> <date>                <date>
+#> 1     1 Bitcoin   btc    bitcoin      1         1 NA                    2026-05-13
+#> 2   279 Ethereum  eth    ethereum     2         1 NA                    2026-05-13
+#> 3   825 Tether    usdt   tether       3         1 NA                    2026-05-13
 ```
-
-- `id`: CoinGecko **internal numeric ID** (extracted from the image URL
-  in `/coins/markets`). The numeric ID is the primary key for the
-  website-host endpoints (`/price_charts/{id}/...` etc.).
-- `slug`: CoinGecko **API slug** (= the `id` field in CG’s documented
-  API). Used for the slug-addressed endpoints.
-- `rank`: current market-cap rank (`market_cap_rank` from CG).
-- `is_active`: always `1L` on CG’s free tier (CG does not expose
-  inactive coins via `/coins/list` without a paid key — see the
-  *survivorship-bias-free strategy* section below).
-
-`top_n` controls how many pages of `/coins/markets` are pulled for
-enrichment. `top_n = 0` skips enrichment entirely (one HTTP call, no
-numeric IDs); `top_n = NULL` paginates the full universe.
 
 ### `cg_listings()` — current cross-sectional snapshot
 
 ``` r
 
-snapshot <- cg_listings(limit = 1000)     # top 1000 by market cap, with returns
-head(snapshot)
+snap <- cg_listings(which = "latest", quote = TRUE, limit = 1000)
 ```
 
-Returns 30 columns that match `crypto_listings(quote = TRUE)` where the
-corresponding CG field exists:
+`which = "historical"` and `which = "new"` are CMC-only — they warn and
+coerce to `"latest"`. Snapshot this function periodically (cron job) to
+accumulate a survivorship-bias-corrected archive in your own storage.
 
-- `id, name, symbol, slug`
-- `last_updated`, `rank`
-- `market_cap, fully_diluted_market_cap`
-- `circulating_supply, total_supply, max_supply`
-- `price, volume_24h, high_24h, low_24h`
-- `percent_change_1h, _24h, _7d, _14d, _30d, _200d, _1y`
-- `ath, ath_change_percentage, ath_date`, same for `atl`
-- `ref_currency` (the upper-cased quote currency, matching
-  [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)’s
-  CMC output)
-
-Historical cross-sectional snapshots (`which = "historical"`) are **not
-available** on CG’s free tier — see the next section.
-
-### `cg_history()` — daily OHLC + volume + market cap per coin
+### `cg_history()` — historical OHLC + volume + market cap
 
 ``` r
 
-# Pass a tibble in cg_list()/cg_listings() format
-top10 <- cg_list(top_n = 10)
-hist  <- cg_history(coin_list = top10,
-                    what       = c("price", "market_cap", "ohlc"),
-                    start_date = "2020-01-01")
+top50 <- cg_list()[1:50, ]
+hist  <- cg_history(top50, start_date = "2024-01-01")
 ```
 
-The output schema matches
-[`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md):
-
-    id, slug, name, symbol, timestamp,
-    ref_cur_id, ref_cur_name,
-    open, high, low, close, volume, market_cap,
-    time_open, time_high, time_low, time_close
-
-Three calls per coin per stream — one each to `/price_charts/`,
-`/market_cap/`, `/ohlc/` (the OHLC call requires the numeric `id` from
-[`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)).
-Each call returns the coin’s **full** history in one response; the
-`start_date` / `end_date` filtering happens client-side.
-
-OHLC sparsity caveat: CoinGecko returns daily OHLC candles only for
-windows ≥ 91 days back from “now”; recent periods return finer (4-hour)
-candles that don’t align to UTC midnight, so the daily floor drops them
-from the OHLC join. Price / Volume / Market-cap remain perfectly daily.
+[`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+joins the price-charts, market-cap and OHLC streams on a UTC calendar
+day, mirroring
+[`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)’s
+daily output. Missing numeric IDs are silently backfilled from
+[`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md).
+When the website-host endpoints are blocked, only the Demo 365-day
+window is returned (with a one-time warning).
 
 ### `cg_info()` — per-coin metadata
 
 ``` r
 
-info <- cg_info(coin_list = data.frame(slug = "bitcoin"))
+info <- cg_info(cg_list()[1:10, ])
 ```
 
-Schema mirrors
-[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
-where there is a direct equivalent, plus a few CG-specific extras
-(`platforms` for cross-chain contract addresses, `categories` for
-thematic groupings).
+## Decision tree: which function should I call?
 
-## The survivorship-bias problem
+    Do I want a snapshot of *current* coins only?
+    |
+    +-- yes -> cg_list() + cg_listings()
+    |
+    +-- no, I need delisted coins too
+        |
+        +-- I'm running from a residential IP
+        |   -> cg_list(only_active = FALSE) + cg_history()
+        |       (uses the historic id mapping silently)
+        |
+        +-- I'm running from a cloud / VPS
+            -> Cloudflare will block the website-host endpoints.
+               Options:
+               (a) Run the bootstrap on a laptop, ship the parquet
+                   output to the server.
+               (b) Subscribe to the CoinGecko Pro tier and use the
+                   recipes in the 'CoinGecko Pro backfill' vignette.
 
-CoinGecko **deliberately prunes** delisted coins from its public API.
-From the platform’s own support documentation:
+## Persisting your own survivorship-bias archive
 
-> Users will not be able to access historical data for inactive or
-> delisted coins via the CoinGecko API.
-
-> CoinGecko periodically reviews existing listings and if they fail to
-> meet their requirements, then they will be deactivated or removed.
-
-> CoinGecko has removed over 24 000 “dead” cryptocurrencies from its
-> platform.
-
-For academic finance research this is disqualifying: any cross-section
-you assemble from CG today is the **surviving subset**, which biases
-returns upward, volatility downward, and breaks every cross-sectional
-factor-pricing test.
-
-There are **three** paths to a survivorship-bias-free dataset on
-CoinGecko, with different trade-offs:
-
-## Strategy A — Accumulate via a weekly cronjob (free, slow ramp-up)
-
-The simplest path. Every week, snapshot
-[`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
-(active universe at that point) and persist it. Coins that get delisted
-**after** you start snapshotting remain in your archive. The union of
-all snapshots grows into a survivorship-bias-corrected universe over
-time.
+A small companion package (or a plain cron job) can run weekly:
 
 ``` r
 
-# inside your cronjob (separate package):
-weekly_universe <- cg_list(top_n = NULL)
-arrow::write_parquet(
-  weekly_universe,
-  file.path("data/cg_universes", paste0(Sys.Date(), ".parquet"))
+snap <- cg_listings(which = "latest", quote = TRUE)
+arrow::write_dataset(
+  snap,
+  path        = "data/cg_listings",
+  partitioning = "harvested_at"
 )
 ```
 
-After a few months you have a usable rolling bias-corrected universe.
+The accumulated parquet dataset is your survivorship-bias-corrected
+universe; reading it back with
+[`arrow::open_dataset()`](https://arrow.apache.org/docs/r/reference/open_dataset.html)
+plus a join on `(slug, harvested_at)` gives you the historical
+cross-section CoinGecko’s free tier alone cannot reproduce.
 
-## Strategy B — One-shot Pro-tier harvest, then free forever (\$129)
+## Source code conventions
 
-The **best** strategy if you want a complete *historical* universe right
-now, including coins that were delisted before you started.
-
-Key insight: CoinGecko’s internal numeric IDs are stable and the
-**website-host endpoints (`/price_charts/{id}/...`,
-`/market_cap/{id}/...`, `/ohlc/{id}/series/...`) continue to serve
-historical data even for delisted coins, addressed by numeric ID**. The
-slug routing is what gets removed when CG delists a coin, not the
-underlying numeric-ID data.
-
-So: pay for one month of the **Analyst tier** (\$129), harvest the
-complete (slug, numeric_id, name, symbol, status) mapping for the entire
-universe (active **and** inactive), then cancel the subscription. From
-then on, you use the free
-[`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-against your harvested numeric IDs.
-
-The Pro tier gives you:
-
-- `pro-api.coingecko.com/api/v3/coins/list?status=inactive` — the
-  delisted-coin slug list (not available on the Demo tier).
-- `pro-api.coingecko.com/api/v3/coins/{slug}` for **delisted** slugs —
-  returns the image URL (and thus the numeric ID), plus name, symbol,
-  genesis date.
-
-### Step 1 — get the API key
-
-Subscribe to the [Analyst
-tier](https://www.coingecko.com/en/api/pricing). Copy your API key. Set
-it as an environment variable:
-
-``` r
-
-Sys.setenv(CG_PRO_KEY = "your-key-here")
-```
-
-### Step 2 — harvest the universe master (`pro-api.coingecko.com`)
-
-The package does not ship a Pro-tier harvest function (those endpoints
-require a paid key, which is out of scope for the free package). Use
-this self-contained script (adapt as needed):
-
-``` r
-
-# Run once with an Analyst-tier key. Writes cg_universe_master.parquet
-# with all the slug ↔ numeric_id ↔ name ↔ symbol mappings.
-library(httr)
-library(jsonlite)
-library(purrr)
-library(tibble)
-library(dplyr)
-library(stringr)
-library(arrow)
-
-key <- Sys.getenv("CG_PRO_KEY")
-stopifnot(nzchar(key))
-
-pro_get <- function(path, query = NULL) {
-  url  <- sprintf("https://pro-api.coingecko.com/api/v3/%s", path)
-  resp <- httr::GET(url, query = query,
-                    httr::add_headers(`x-cg-pro-api-key` = key,
-                                      `User-Agent` = "crypto2/coingecko-harvest"),
-                    httr::timeout(60))
-  if (httr::status_code(resp) != 200) return(NULL)
-  jsonlite::fromJSON(httr::content(resp, "text", encoding = "UTF-8"))
-}
-
-# 1. Active + inactive universes (slug lists)
-active   <- pro_get("coins/list",
-                    query = list(include_platform = "true"))
-inactive <- pro_get("coins/list",
-                    query = list(include_platform = "true",
-                                 status           = "inactive"))
-
-all_slugs <- unique(c(active$id, inactive$id))
-status_lookup <- setNames(
-  c(rep("active",   length(active$id)),
-    rep("inactive", length(inactive$id))),
-  c(active$id, inactive$id)
-)
-
-# 2. Per-slug detail → numeric_id, name, symbol, genesis_date
-extract_one <- function(slug) {
-  d <- pro_get(sprintf("coins/%s", slug),
-               query = list(localization   = "false",
-                            tickers        = "false",
-                            market_data    = "false",
-                            community_data = "false",
-                            developer_data = "false",
-                            sparkline      = "false"))
-  if (is.null(d)) return(NULL)
-  image_url  <- d$image$large %||% d$image$small %||% d$image$thumb
-  numeric_id <- as.integer(stringr::str_extract(
-    image_url, "(?<=/coins/images/)\\d+"))
-  tibble::tibble(
-    numeric_id        = numeric_id,
-    slug              = slug,
-    name              = d$name,
-    symbol            = d$symbol,
-    status            = status_lookup[[slug]],
-    genesis_date      = as.Date(d$genesis_date %||% NA_character_),
-    asset_platform_id = d$asset_platform_id %||% NA_character_,
-    web_slug          = d$web_slug %||% slug,
-    harvested_at      = Sys.time()
-  )
-}
-
-# At ~500 req/min on the Analyst tier, ~40 000 calls = ~80 min.
-mapping <- purrr::map_dfr(all_slugs,
-                          purrr::possibly(extract_one, otherwise = NULL),
-                          .progress = TRUE)
-
-arrow::write_parquet(mapping, "cg_universe_master.parquet")
-```
-
-This `cg_universe_master.parquet` is the **Rosetta stone**. After this
-finishes, cancel your Analyst subscription.
-
-### Step 3 — use the free `cg_history_by_id()` going forward
-
-``` r
-
-mapping <- arrow::read_parquet("cg_universe_master.parquet")
-
-# Refresh history for the entire historical universe — free, no key.
-# Slow (~12 h at default sleep) but only needed once for the backfill.
-hist <- cg_history_by_id(
-  ids       = mapping$numeric_id,
-  what      = c("price", "market_cap", "ohlc"),
-  coin_list = mapping       # for slug join on rows where mapping has it
-)
-arrow::write_parquet(hist, "cg_history_backfill.parquet")
-```
-
-### Step 4 — keep the master mapping fresh going forward (free)
-
-Run weekly: pull
-[`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
-(free), append any **new** (slug, numeric_id) pairs to the master
-mapping. The mapping grows organically as CoinGecko lists new coins.
-
-``` r
-
-weekly <- cg_list(top_n = NULL)
-new_pairs <- weekly %>%
-  filter(!is.na(id), !id %in% mapping$numeric_id) %>%
-  transmute(numeric_id = id, slug, name, symbol,
-            status = "active", genesis_date = NA,
-            harvested_at = Sys.time())
-
-mapping <- bind_rows(mapping, new_pairs)
-arrow::write_parquet(mapping, "cg_universe_master.parquet")
-```
-
-Future delistings: when a coin is removed from `/coins/list`, its slug
-disappears from your weekly captures — but you’ve already preserved its
-numeric ID in `mapping`, so
-[`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-can still refetch its history.
-
-### What the one-shot strategy gives you
-
-- **Backfill**: all coins ever listed on CoinGecko, including the
-  pre-existing delisted ones (which weekly accumulation alone cannot
-  recover).
-- **Forward bias correction**: future delistings are automatically
-  preserved via numeric-ID retention.
-- **Cost**: \$129 once. No recurring fee.
-- **Limitation**: coins delisted *before* CoinGecko started tracking
-  them at all are obviously not recoverable.
-
-## Strategy C — cross-reference with CoinMarketCap (free)
-
-`crypto2`’s existing
-`crypto_list(only_active = FALSE, add_untracked = TRUE)` returns the
-*entire* CMC universe, including delisted coins. CMC’s delisting policy
-is stricter than CG’s, so cross-referencing both sources gives you:
-
-- A second independent universe estimate.
-- Coverage for coins that one platform delisted but the other kept.
-- Cross-validation of market-cap / volume figures (within the limits of
-  exchange aggregation differences).
-
-``` r
-
-cmc_full <- crypto_list(only_active = FALSE, add_untracked = TRUE)
-cg_full  <- arrow::read_parquet("cg_universe_master.parquet")
-
-# Match on symbol+name (slugs differ across platforms)
-joint <- dplyr::inner_join(cmc_full, cg_full,
-                           by = c("symbol", "name"),
-                           suffix = c(".cmc", ".cg"))
-```
-
-## Performance & rate-limit reference
-
-| Function | Calls per run (typical) | Default sleep | Throughput | Notes |
-|----|---:|---:|----|----|
-| `cg_list(top_n = NULL)` | 1 + ~70 | 2.5 s | ~2 min | docu host, 24/min |
-| [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md) | ~70 | 2.5 s | ~2 min | docu host |
-| `cg_history(top_N coins)` | 3 × N | 0.6 s | ~30 coins/min | website host |
-| `cg_history_by_id(union)` | 3 × N | 0.6 s | ~30 coins/min | website host |
-| `cg_info(N coins)` | N | 2.5 s | 24/min | docu host |
-
-For the full 40 000-coin backfill via
-[`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md),
-expect roughly 12 hours per stream (`price` / `market_cap` / `ohlc`),
-totaling ~36 hours wall-clock. Run as a background process or split into
-chunks.
-
-## FAQ
-
-**Q: Do I have to use the Pro-tier strategy?** No. Strategy A (weekly
-cronjob) is fully free and builds the bias-corrected universe over time.
-Strategy B is the fastest path to a *backfilled* dataset.
-
-**Q: What if CoinGecko closes the undocumented endpoints?** The
-package’s
-[`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-would stop working. Your already- harvested data remains intact. You’d
-need to migrate to a paid tier or another data source for fresh history.
-This risk is inherent in any undocumented-API approach, including
-`crypto2`’s use of CMC’s internal endpoints.
-
-**Q: Are CoinGecko’s numeric IDs sequential?** Only in the **dense early
-range** (low IDs 1–~50 000 are mostly populated). The full ID space
-extends to ~10⁸ but is **sparse** above ~70 000 — modern listings get
-pseudo-random IDs in that large space. Blind `1:N` iteration does
-**not** recover the full universe; that’s why
-[`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-defaults to using `cg_list()$id`, not a numeric range.
-
-**Q: Where’s the cronjob package?** The cronjob orchestration lives in a
-separate project — this package ships only the data-pulling functions.
+- URL hosts are base64-encoded inside the package source. This mirrors
+  the same defensive pattern used for the CMC endpoints — see
+  [`construct_url()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/construct_url.md)
+  and
+  [`cg_url()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_url.md).
+  The package does not embed plaintext endpoint URLs in its source tree.
+- All HTTP calls go through
+  [`cg_get()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_get.md),
+  which raises classed conditions for retryable failures (429, network
+  errors) so
+  [`purrr::insistently()`](https://purrr.tidyverse.org/reference/insistently.html)
+  retries cleanly without burning retry budget on permanent failures
+  (404, 5xx, Cloudflare 403).

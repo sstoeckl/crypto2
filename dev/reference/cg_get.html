@@ -20,7 +20,8 @@ bot heuristic), follows redirects, and returns the response body as text."></hea
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: pulling crypto data without an API key</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: a second source for crypto2</a></li>
+    <li><a class="dropdown-item" href="../articles/coingecko-pro-backfill.html">CoinGecko Pro backfill: one-shot survivorship-bias archive</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -81,6 +82,11 @@ on retryable failures (429, network errors).</p>
 (<code>"cg_rate_limited"</code>) carrying the <code>Retry-After</code> header in seconds
 (defaulting to 60 if absent) – retryable by <code><a href="https://purrr.tidyverse.org/reference/insistently.html" class="external-link">purrr::insistently</a></code>,
 which will pause <code>wait</code> seconds before retrying.</p></li>
+<li><p><strong>HTTP 403 with <code>cf-mitigated</code> header</strong> (Cloudflare bot
+challenge) returns <code>NULL</code> and emits a one-time message per session
+advising the user to run from a residential IP. Cloudflare
+challenges are not solvable by retry, so they are <em>not</em> raised as
+retryable conditions.</p></li>
 <li><p><strong>Other non-2xx responses</strong> (404, 410, 5xx, ...) return <code>NULL</code>
 <strong>without</strong> raising, so a missing coin or a stale endpoint does not
 consume retry budget – the caller decides what to do with <code>NULL</code>.</p></li>

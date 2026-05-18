@@ -52,8 +52,9 @@ cg_history_by_id(
   [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
   output used to join `slug` / `name` / `symbol` onto recovered rows for
   coins still in the active universe. If `NULL`, calls
-  `cg_list(top_n = 0)` automatically. Set to `FALSE` to skip the join
-  (rows then have only `id`).
+  [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
+  automatically. Set to `FALSE` to skip the join (rows then have only
+  `id`).
 
 - sleep, wait, max_retries:
 

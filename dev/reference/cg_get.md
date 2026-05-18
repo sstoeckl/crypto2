@@ -47,6 +47,11 @@ retry wrapper:
   [`purrr::insistently`](https://purrr.tidyverse.org/reference/insistently.html),
   which will pause `wait` seconds before retrying.
 
+- **HTTP 403 with `cf-mitigated` header** (Cloudflare bot challenge)
+  returns `NULL` and emits a one-time message per session advising the
+  user to run from a residential IP. Cloudflare challenges are not
+  solvable by retry, so they are *not* raised as retryable conditions.
+
 - **Other non-2xx responses** (404, 410, 5xx, ...) return `NULL`
   **without** raising, so a missing coin or a stale endpoint does not
   consume retry budget – the caller decides what to do with `NULL`.

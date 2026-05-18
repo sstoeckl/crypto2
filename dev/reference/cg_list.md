@@ -1,4 +1,4 @@
-# Retrieve the CoinGecko coin universe (active coins only)
+# Retrieves name, CG id, symbol, slug, rank, an activity flag as well as activity dates on CoinGecko for all coins
 
 Companion to
 [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md)
@@ -10,65 +10,33 @@ so downstream code that consumes a CMC coin list also consumes this one.
 ## Usage
 
 ``` r
-cg_list(
-  only_active = TRUE,
-  add_untracked = FALSE,
-  top_n = NULL,
-  sleep = 2.5,
-  wait = 60,
-  max_retries = 3,
-  vs_currency = "usd"
-)
+cg_list(only_active = TRUE, add_untracked = FALSE)
 ```
 
 ## Arguments
 
 - only_active:
 
-  Always `TRUE` for CoinGecko free-tier (kept for API parity with
-  [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md)).
-  The argument is ignored with a warning if set to `FALSE`.
+  Shall the code only retrieve active coins (`TRUE` = default) or
+  include historically-known but currently-inactive coins (`FALSE`)?
+  When `FALSE`,
+  [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
+  is consulted for the extra slugs.
 
 - add_untracked:
 
-  Same – ignored on CoinGecko free-tier. Kept for parity.
-
-- top_n:
-
-  If non-NULL, only enrich the top `top_n` coins by market cap with
-  `rank` and `numeric_id` (faster). Default `NULL` = enrich all coins
-  that appear in `/coins/markets`.
-
-- sleep:
-
-  Seconds between consecutive `/coins/markets` page calls (default `2.5`
-  -\> 24 req/min, ~80% of the Demo-tier 30 req/min cap, leaving headroom
-  for CoinGecko's sliding-window enforcement).
-
-- wait:
-
-  Seconds to wait before retrying after an HTTP 429 / network error
-  (default `60`, matching CoinGecko's rate-limit window).
-
-- max_retries:
-
-  Maximum number of retry attempts on rate-limit / network failures
-  (default `3`).
-
-- vs_currency:
-
-  Quote currency for the market snapshot, default `"usd"`.
+  Kept for API parity with
+  [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md)
+  – CoinGecko does not have an "untracked" listing status, so the
+  argument is silently ignored.
 
 ## Value
 
-Tibble with one row per coin currently tracked by CoinGecko. Columns
-mirror
-[`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md):
+List of (active and historically existing) cryptocurrencies in a tibble:
 
 - id:
 
-  CoinGecko internal numeric id (extracted from the image URL). May be
-  `NA` for coins outside the top `top_n`.
+  CoinGecko internal numeric id (unique identifier).
 
 - name:
 
@@ -76,62 +44,54 @@ mirror
 
 - symbol:
 
-  Coin symbol (lower-case, non-unique).
+  Coin symbol (not-unique).
 
 - slug:
 
-  CoinGecko URL slug (unique, also the `id` in CoinGecko's documented
-  API).
+  CoinGecko URL slug (unique).
 
 - rank:
 
-  Current market-cap rank, `NA` for coins outside the top `top_n` or
-  without a market cap.
+  Current market-cap rank on CoinGecko (`NA` for delisted or unranked
+  coins).
 
 - is_active:
 
-  Always `1L` on CoinGecko free-tier.
+  Flag showing whether the coin is currently active (`1`) or only
+  historically present (`0`).
 
 - first_historical_data:
 
-  `NA_Date_` – not exposed by the free tier. Backfill via
-  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-  if needed.
+  First time listed on CoinGecko (currently only populated for coins
+  present in the historic mapping).
 
 - last_historical_data:
 
-  Today's date, in line with
-  [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md)'s
-  convention for active coins.
+  Last time listed on CoinGecko, today's date if still active.
+
+Rate-limiting and retry parameters can be overridden globally via the
+package options `crypto2.cg_sleep`, `crypto2.cg_wait`,
+`crypto2.cg_max_retries` (defaults: 2.5s between calls, 60s wait before
+retry, 3 retries on rate-limit / network failure).
 
 ## Details
 
-Important caveat – survivorship bias: CoinGecko actively prunes delisted
-and inactive coins from its public database. The free-tier API only
-returns coins currently active on the platform. To build a
-survivorship-bias-free dataset from CoinGecko, snapshot this list
-**periodically** (daily/weekly, via an external cronjob or scheduling
-package) so coins that get delisted later remain in your accumulated
-archive.
-
-Data sources (no API key required):
-
-- `api.coingecko.com/api/v3/coins/list` – the full slug/symbol/name
-  universe in a single HTTP call (free, key-less, but limited to active
-  coins).
-
-- `api.coingecko.com/api/v3/coins/markets?per_page=250&page=N` –
-  paginated market snapshot, which provides `market_cap_rank` and the
-  `image` URL from which the internal numeric ID is extracted.
+Because CoinGecko prunes delisted coins from its public database, the
+free-tier API alone only returns coins currently active on the platform.
+When `only_active = FALSE`, the function transparently merges in
+historically-known coins via
+[`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md);
+a single one-line message is emitted indicating how current that mapping
+is.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-# Bootstrap: one HTTP call gets the entire universe
-universe <- cg_list(top_n = 0)
+# all coins currently tracked by CoinGecko
+active_list <- cg_list(only_active = TRUE)
 
-# Enriched: pull universe + ranks + numeric IDs for the top 500
-top500 <- cg_list(top_n = 500)
+# active + historically-listed coins (uses cg_id_mapping())
+full_list <- cg_list(only_active = FALSE)
 } # }
 ```

@@ -3,6 +3,7 @@
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/LICENSE-text.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/LICENSE.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-integration.html</loc></url>
+<url><loc>https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/articles/index.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/authors.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/index.html</loc></url>
@@ -10,6 +11,7 @@
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_get.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.html</loc></url>
+<url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.html</loc></url>
@@ -26,6 +28,7 @@
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.html</loc></url>
+<url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/dot-cg_read_parquet.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_info.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_list.html</loc></url>
 <url><loc>https://www.sebastianstoeckl.com/crypto2/dev/reference/fiat_list.html</loc></url>

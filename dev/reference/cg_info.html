@@ -24,7 +24,8 @@ api.coingecko.com/api/v3/coins/{slug} (no key required; ~30 req/min)."></head><b
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: pulling crypto data without an API key</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: a second source for crypto2</a></li>
+    <li><a class="dropdown-item" href="../articles/coingecko-pro-backfill.html">CoinGecko Pro backfill: one-shot survivorship-bias archive</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -55,9 +56,8 @@ for each coin in <code>coin_list</code>. Uses the documented public API endpoint
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cg_info</span><span class="op">(</span></span>
 <span>  coin_list <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  limit <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sleep <span class="op">=</span> <span class="fl">2.5</span>,</span>
-<span>  wait <span class="op">=</span> <span class="fl">60</span>,</span>
-<span>  max_retries <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  requestLimit <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  sleep <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  finalWait <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -67,28 +67,24 @@ for each coin in <code>coin_list</code>. Uses the documented public API endpoint
 
 
 <dl><dt id="arg-coin-list">coin_list<a class="anchor" aria-label="anchor" href="#arg-coin-list"></a></dt>
-<dd><p>Tibble in <code><a href="cg_list.html">cg_list()</a></code> / <code><a href="cg_listings.html">cg_listings()</a></code> format (must have
-a <code>slug</code> column). If <code>NULL</code>, calls <code><a href="cg_list.html">cg_list()</a></code>.</p></dd>
+<dd><p>string if NULL retrieve all currently existing coins
+(<code><a href="cg_list.html">cg_list()</a></code>), or provide list of cryptocurrencies in the <code><a href="cg_list.html">cg_list()</a></code> /
+<code><a href="cg_listings.html">cg_listings()</a></code> format.</p></dd>
 
 
 <dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
-<dd><p>Optional cap on number of coins (top of the tibble).</p></dd>
+<dd><p>integer Return the top n records, default is all tokens.</p></dd>
+
+
+<dt id="arg-requestlimit">requestLimit<a class="anchor" aria-label="anchor" href="#arg-requestlimit"></a></dt>
+<dd><p>Kept for parity with <code><a href="crypto_info.html">crypto_info()</a></code> – ignored
+(CoinGecko endpoint is one coin per call).</p></dd>
 
 
 <dt id="arg-sleep">sleep<a class="anchor" aria-label="anchor" href="#arg-sleep"></a></dt>
-<dd><p>Seconds between calls (default <code>2.5</code> -&gt; 24 req/min,
-~80% of the Demo-tier 30 req/min cap, with headroom for CoinGecko's
-sliding-window enforcement).</p></dd>
-
-
-<dt id="arg-wait">wait<a class="anchor" aria-label="anchor" href="#arg-wait"></a></dt>
-<dd><p>Seconds to wait before retrying after a 429 (default <code>60</code>,
-matching CoinGecko's rate-limit window). See <code><a href="cg_make_client.html">cg_make_client()</a></code>.</p></dd>
-
-
-<dt id="arg-max-retries">max_retries<a class="anchor" aria-label="anchor" href="#arg-max-retries"></a></dt>
-<dd><p>Maximum retry attempts on 429 / network failures
-(default <code>3</code>). See <code><a href="cg_make_client.html">cg_make_client()</a></code>.</p></dd>
+<dd><p>integer (default <code>0</code>) Seconds to sleep between API requests.
+The internal client enforces a polite floor (default <code>2.5s</code>) to stay
+under the Demo-tier 30 req/min cap.</p></dd>
 
 
 <dt id="arg-finalwait">finalWait<a class="anchor" aria-label="anchor" href="#arg-finalwait"></a></dt>

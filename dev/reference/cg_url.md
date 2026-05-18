@@ -1,17 +1,18 @@
 # CoinGecko URL builder
 
-Builds a full URL for one of the four key-free CoinGecko hosts used by
-this package. The website-host endpoints (`web`, `web_en`) are the
-website's own internal JSON routes (not documented), discovered via
-reverse-engineering the page HTML. The documented host (`api`) is the
-public Demo-tier API (`api.coingecko.com/api/v3/`), which is
-rate-limited to ~30 req/min but supports slug-based addressing for the
-basic universe and per-coin detail.
+Internal URL builder. The host strings are base64-encoded (same pattern
+as
+[`construct_url()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/construct_url.md)
+for CMC) so the package source does not contain plaintext endpoint URLs.
+The `api` host is the documented Demo-tier API; the `web` and `web_en`
+hosts route through the public website. The `hf` host is the Hugging
+Face download root for the optional historic id/slug mapping (see
+[`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)).
 
 ## Usage
 
 ``` r
-cg_url(path, host = c("web", "web_en", "api"))
+cg_url(path, host = c("web", "web_en", "api", "hf"))
 ```
 
 ## Arguments
@@ -22,10 +23,7 @@ cg_url(path, host = c("web", "web_en", "api"))
 
 - host:
 
-  One of `"api"` (documented), `"web"` (website, locale-free, used by
-  `/price_charts/`, `/market_cap/`, `/ohlc/`, `/coins/...`), `"web_en"`
-  (website, `/en/` prefixed, used by `/historical_data`,
-  `/financials_chart_data`, etc.). Default `"web"`.
+  One of `"api"`, `"web"`, `"web_en"`, `"hf"`. Default `"web"`.
 
 ## Value
 
