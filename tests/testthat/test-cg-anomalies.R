@@ -50,7 +50,9 @@ test_that("cg_listings: Bitcoin row is in plausible ranges + percent_change pars
   skip_if_no_cg()
   skip_if_cg_rate_limited()
   cg_pace(3)
-  ls <- cg_listings(limit = 10)
+  # quote = TRUE so price / volume_24h / percent_change_* are included
+  # (CMC parity: cg_listings() defaults to quote = FALSE like crypto_listings)
+  ls <- cg_listings(limit = 10, quote = TRUE)
   skip_if(is.null(ls) || !nrow(ls), "cg_listings returned no data (likely 429).")
 
   btc <- ls[ls$slug == "bitcoin", , drop = FALSE]

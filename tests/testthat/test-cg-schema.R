@@ -55,7 +55,7 @@ test_that("cg_listings() schema is stable", {
   skip_if_no_cg()
   skip_if_cg_rate_limited()
   cg_pace(3)
-  out <- cg_listings(limit = 3)
+  out <- cg_listings(limit = 3, quote = TRUE)
   skip_if(is.null(out) || !nrow(out),
           "cg_listings returned no data (likely rate-limited).")
   expect_s3_class(out, "tbl_df")
