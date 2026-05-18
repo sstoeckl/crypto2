@@ -3,103 +3,162 @@
 ## Why a second source?
 
 `crypto2` was built around CoinMarketCap (CMC). The `cg_*` functions are
-a second, independent source: a CoinGecko-side counterpart with the
-**same column conventions** as the CMC functions, so research code that
-already consumes a `crypto_*` tibble works on a `cg_*` tibble too.
-Triangulating across both is the cleanest insulation against either
-platform changing its terms.
+a second, independent source that returns tibbles with the **same column
+conventions** as the CMC functions, so research code that already
+consumes a `crypto_*` tibble works on a `cg_*` tibble too.
 
-## Function pairs (CMC \<-\> CoinGecko)
+Three concrete reasons to bother with a second source:
 
-| Purpose | CMC | CoinGecko | Same signature? |
-|----|----|----|----|
-| Coin universe | [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md) | [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md) | yes |
-| Current snapshot | [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md) | [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md) | yes |
-| Historical OHLC | [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md) | [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md) | yes |
-| Per-coin metadata | [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md) | [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md) | yes |
+- **Triangulation.** If a factor signal disagrees between CMC and CG,
+  treat the disagreement as informative on its own. Most schema /
+  data-quality regressions show up first as a cross-source delta. The
+  vignette `cg-vs-cmc` shows the dedicated reconciliation workflow.
+- **Independence.** CMC and CG are owned and operated separately, so
+  policy changes on one side do not affect the other.
+- **Universe completeness.** CG exposes a separate (and partially
+  non-overlapping) set of delisted coins to CMC, so combining the two
+  universes captures more of the historic cross-section than either one
+  alone.
 
-The `cg_*` functions accept the **same arguments** as their `crypto_*`
-counterparts. Arguments that have no CoinGecko equivalent (e.g.
+This vignette focuses on **how** to actually pull a complete history out
+of CG for asset-pricing research.
+
+## Build a survivorship-bias-free price history (free, no key)
+
+The end-to-end recipe is three lines of code. It produces a daily panel
+of `(slug, date, close, volume, market_cap)` for every coin CoinGecko
+has ever tracked – active *and* delisted – back to each coin’s listing
+date.
+
+``` r
+
+library(crypto2)
+library(arrow)
+
+# 1. Full historic universe: active + delisted, via cg_id_mapping()
+universe <- cg_list(only_active = FALSE)
+
+# 2. Daily close / volume / market cap, full lifetime per coin.
+#    Skip OHLC here -- it adds a 3rd HTTP call per coin and is the only
+#    free-tier-capped stream (see "What is NOT in the free tier" below).
+options(crypto2.cg_what = c("price", "market_cap"))
+hist <- cg_history(universe)
+
+# 3. Persist
+arrow::write_parquet(hist, "data/cg_history.parquet")
+```
+
+**Output shape (`hist`)**: columns match
+[`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
+exactly –
+`id, slug, name, symbol, timestamp, ref_cur_id, ref_cur_name, open, high, low, close, volume, market_cap, time_open, ...`.
+Under the default `date_convention = "end_of_day"`, dates are labelled
+with CMC’s convention so `close[X] / close[X-1] - 1` is the return
+earned during date X (see
+[`vignette("cg-vs-cmc")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/cg-vs-cmc.md)
+for the date-convention story).
+
+### Preconditions
+
+- **Run from a workstation / local machine.** CoinGecko serves the full
+  historic backfill freely, but its bot filtering refuses requests from
+  some cloud / VPS environments. If
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  prints the one-time message *“CoinGecko refused the request from this
+  environment”*, the recipe above will not complete on your host.
+  Workarounds:
+  1.  run the bootstrap on a laptop, ship the parquet to the server;
+  2.  use the one-shot Pro recipes in
+      [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md).
+- **The historic mapping must be reachable.**
+  `cg_list(only_active = FALSE)` calls
+  [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
+  to download the slug / numeric-id / symbol / name archive of delisted
+  coins. The mapping is cached after the first call; if the download
+  itself is blocked, only the bundled fallback (~20 reference coins) is
+  used and you will see a yellow *“using bundled sample”* message.
+
+### What you get back
+
+| Column | Coverage on free tier |
+|----|----|
+| `close` | full lifetime of each coin (daily) |
+| `volume` | full lifetime of each coin (daily) |
+| `market_cap` | full lifetime of each coin (daily) |
+| `open`, `high`, `low` | **only the most recent 365 days**; older rows have `NA` here |
+
+For complete OHLC over the full history (microstructure work,
+candlestick-based signals, intraday volatility models), see the Pro
+recipes in
+[`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md).
+
+## Function reference
+
+All four exported `cg_*` functions accept the same arguments as their
+`crypto_*` counterparts. Arguments without a CG equivalent (e.g.
 `add_untracked`, `requestLimit`, `single_id`) are kept for parity and
-silently ignored. Arguments where CoinGecko is more restrictive (e.g.
+silently ignored. Arguments where CG is more restrictive (e.g.
 `which = "historical"` in
 [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md))
 emit a one-line warning and coerce to the supported mode.
 
-## What the package handles for you
+| Purpose | CMC | CoinGecko |
+|----|----|----|
+| Coin universe | [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md) | [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md) |
+| Current snapshot | [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md) | [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md) |
+| Daily history | [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md) | [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md) |
+| Per-coin metadata | [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md) | [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md) |
 
-CoinGecko’s free tier has a couple of edges. The package routes around
-them where possible and warns when it cannot:
-
-1.  **Survivorship bias.** The free coin list only returns currently
-    tracked coins. `cg_list(only_active = FALSE)` transparently extends
-    the universe with a periodically-updated historic mapping and prints
-    one line: *“Historic data retrieval is current until YYYY-MM-DD”*.
-2.  **Daily price / volume / market-cap history is available in full** –
-    back to each coin’s listing date in a single call, no key required.
-    This is the workhorse path and the basis for almost all factor work.
-3.  **OHLC (open / high / low) is capped at the most recent 365 days on
-    the free tier.** Close prices over a longer window come from the
-    price stream above; if you genuinely need long-horizon OHLC candles
-    (for intra-day microstructure or candlestick-based signals), use the
-    one-shot Pro recipes in
-    [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md).
-
-## The four core functions
-
-All four return tibbles with column names mirroring the `crypto_*`
-counterparts.
-
-### `cg_list()` – the active coin universe
+### `cg_list()` – the universe
 
 ``` r
 
 universe       <- cg_list()                       # active coins only
 universe_full  <- cg_list(only_active = FALSE)    # + historic mapping
-head(universe)
-#> # A tibble: 6 x 8
-#>      id name      symbol slug      rank is_active first_historical_data last_historical_data
-#>   <int> <chr>     <chr>  <chr>    <int>     <int> <date>                <date>
-#> 1     1 Bitcoin   btc    bitcoin      1         1 NA                    2026-05-13
-#> 2   279 Ethereum  eth    ethereum     2         1 NA                    2026-05-13
-#> 3   825 Tether    usdt   tether       3         1 NA                    2026-05-13
 ```
 
-### `cg_listings()` – current cross-sectional snapshot
+`only_active = FALSE` is the survivorship-bias-corrected universe: the
+output is
+[`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)’s
+active rows plus the historic-only rows from
+[`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md).
+A single one-line message reports the mapping’s harvest date: *“Historic
+data retrieval is current until YYYY-MM-DD”*.
+
+### `cg_listings()` – current cross-section
 
 ``` r
 
 snap <- cg_listings(which = "latest", quote = TRUE, limit = 1000)
 ```
 
-`which = "historical"` and `which = "new"` are CMC-only – they warn and
-coerce to `"latest"`. Snapshot this function periodically (cron job) to
-accumulate a survivorship-bias-corrected archive in your own storage.
-
-### `cg_history()` – full daily history (close, volume, market cap, +OHLC)
+`which = "historical"` and `which = "new"` warn and coerce to `"latest"`
+– CG’s free tier does not expose the historical cross-section in a
+single call. To build your own cross-section history on the free tier,
+snapshot
+[`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+periodically (cron) and accumulate the parquet output:
 
 ``` r
 
-top50 <- cg_list()[1:50, ]
-hist  <- cg_history(top50, start_date = "2014-01-01")   # back to 2014, free
+arrow::write_dataset(
+  cg_listings(which = "latest", quote = TRUE),
+  path        = "data/cg_listings",
+  partitioning = "harvested_at"
+)
 ```
 
-[`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-returns daily history in one tibble, mirroring
-[`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)’s
-output. **Close, volume and market cap are available for the full
-lifetime of each coin** on the free tier – typically from the coin’s
-listing date forward. Missing numeric IDs are silently backfilled from
-the historic mapping.
+### `cg_history()` – the workhorse
 
-The only field with a free-tier ceiling is the **OHLC quartet (open /
-high / low)**, which CoinGecko caps at the most recent 365 days. For any
-longer window, `open`, `high` and `low` are returned as `NA` (close is
-still populated from the price stream). If you need long-horizon OHLC
-candles for microstructure or technical-signal work, the one-shot Pro
-recipes in
-[`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md)
-produce a complete backfill of the OHLC stream too.
+Covered in the recipe at the top of this vignette. Key knobs:
+
+- `start_date` / `end_date` – date window (client-side filter).
+- `options(crypto2.cg_what = ...)` – restrict to
+  `c("price", "market_cap")` to skip OHLC and save one HTTP call per
+  coin.
+- `date_convention = c("end_of_day", "raw")` – default `"end_of_day"`
+  aligns dates with CMC; see
+  [`vignette("cg-vs-cmc")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/cg-vs-cmc.md).
 
 ### `cg_info()` – per-coin metadata
 
@@ -108,36 +167,35 @@ produce a complete backfill of the OHLC stream too.
 info <- cg_info(cg_list()[1:10, ])
 ```
 
-## Decision tree: which function should I call?
+Description, categories, contract addresses across chains, and various
+link fields. Same column conventions as
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
 
-    Do I want a snapshot of *current* coins only?
-    |
-    +-- yes -> cg_list() + cg_listings()
-    |
-    +-- no, I need delisted coins too
-        |
-        +-- I need close / volume / market cap (any horizon)
-        |   -> cg_list(only_active = FALSE) + cg_history()
-        |
-        +-- I need OHLC candles older than ~365 days
-            -> see vignette("coingecko-pro-backfill") for the Pro recipes
+## What is NOT in the free tier
 
-## Persisting your own survivorship-bias archive
+The free tier covers every cell needed for daily asset-pricing work
+*except* the older end of the OHLC quartet:
 
-A small companion package (or a plain cron job) can run weekly:
+- **OHLC (open / high / low) older than ~365 days.** Close is fine
+  (returned from the price stream), volume and market cap are fine, but
+  the three intra-day extreme columns come back `NA` for any date more
+  than a year old. For a complete backfill, run the Pro recipes in
+  [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md)
+  once – the recipes are kept inline in that vignette rather than
+  exported from the package, so the package itself stays key-less.
 
-``` r
+## Cross-checking against CMC
 
-snap <- cg_listings(which = "latest", quote = TRUE)
-arrow::write_dataset(
-  snap,
-  path        = "data/cg_listings",
-  partitioning = "harvested_at"
-)
-```
+Triangulation is one click away once you have the parquet from the
+recipe above. The dedicated vignette `cg-vs-cmc` walks through:
 
-The accumulated parquet dataset is your survivorship-bias-corrected
-universe; reading it back with
-[`arrow::open_dataset()`](https://arrow.apache.org/docs/r/reference/open_dataset.html)
-plus a join on `(slug, harvested_at)` gives you the historical
-cross-section that the free tier alone cannot reproduce.
+- the date-convention difference between CMC and CG and how `crypto2`
+  harmonizes it;
+- a worked BTC reconciliation showing typical agreement \< 0.05% per
+  day;
+- which fields are expected to agree exactly vs. which ones genuinely
+  differ between providers (volume disagrees more than price – they
+  aggregate over different exchange sets).
+
+A live cross-source test (`tests/testthat/test-cg-vs-cmc.R`) runs in CI
+and will fail loudly if either provider drifts.
