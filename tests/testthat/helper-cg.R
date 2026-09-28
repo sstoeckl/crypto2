@@ -82,6 +82,26 @@ skip_if_cg_rate_limited <- function(url = "https://api.coingecko.com/api/v3/ping
   }
 }
 
+# Fetch a website endpoint for an endpoint test. Skips when CoinGecko's
+# Cloudflare refuses this environment (typical on CI / cloud runners) or
+# rate-limits; any other non-200 (e.g. 404 = endpoint retired) FAILS, so a
+# retired endpoint cannot hide behind a skip.
+cg_web_text_or_skip <- function(url, accept = "application/json, text/plain, */*") {
+  resp <- tryCatch(
+    httr::GET(url, httr::user_agent(cg_user_agent()),
+              httr::add_headers(Accept = accept), httr::timeout(30)),
+    error = function(e) NULL)
+  if (is.null(resp)) testthat::skip("CoinGecko website unreachable.")
+  sc <- httr::status_code(resp)
+  if (sc == 403 && !is.null(httr::headers(resp)[["cf-mitigated"]])) {
+    testthat::skip("CoinGecko refuses requests from this environment (Cloudflare).")
+  }
+  if (sc == 429) testthat::skip("CG rate-limited (HTTP 429).")
+  testthat::expect_equal(sc, 200L, info = paste("HTTP status for", url))
+  if (sc != 200) return(NULL)
+  httr::content(resp, as = "text", encoding = "UTF-8")
+}
+
 # Pre-test pause to amortize across the per-minute budget. Use at the top
 # of each test that hits the documented API host so multi-test files don't
 # blow the 30 req/min limit.

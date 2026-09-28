@@ -86,16 +86,15 @@ test_that("documented API: /coins/{slug} returns expected top-level fields", {
                             "missing /coins/{id} top-level fields")
 })
 
-# These endpoints feed cg_history(). A missing response is a failure, not a
-# skip: when CoinGecko retired /price_charts/<slug>/<vs>/max.json the old
-# skip-on-NULL tests hid the outage.
+# These endpoints feed cg_history(). A retired endpoint (404) is a failure,
+# not a skip: when CoinGecko retired /price_charts/<slug>/<vs>/max.json the
+# old skip-on-NULL tests hid the outage. Only a Cloudflare refusal of this
+# environment (CI runners) or a 429 skips.
 
 test_that("website: /price_charts/export/{slug}/usd.csv returns the daily history", {
   skip_if_no_cg()
-  client <- cg_make_client(sleep = 0)
-  txt <- client(cg_url("price_charts/export/bitcoin/usd.csv", host = "web"),
-                accept = "text/csv, */*")
-  expect_false(is.null(txt), info = "CSV export endpoint returned nothing")
+  txt <- cg_web_text_or_skip(cg_url("price_charts/export/bitcoin/usd.csv"),
+                             accept = "text/csv, */*")
   ticks <- cg_parse_export_csv(txt)
   expect_false(is.null(ticks), info = "CSV export header changed")
   expect_gt(nrow(ticks$close), 4000)
@@ -105,20 +104,15 @@ test_that("website: /price_charts/export/{slug}/usd.csv returns the daily histor
 
 test_that("website: CSV export also resolves numeric ids", {
   skip_if_no_cg()
-  client <- cg_make_client(sleep = 0)
-  txt <- client(cg_url("price_charts/export/279/usd.csv", host = "web"),
-                accept = "text/csv, */*")
+  txt <- cg_web_text_or_skip(cg_url("price_charts/export/279/usd.csv"),
+                             accept = "text/csv, */*")
   expect_false(is.null(cg_parse_export_csv(txt)),
                info = "numeric-id CSV export returned nothing")
 })
 
 test_that("website: /ohlc/{numeric}/series/{vs}/30_days.json returns 4-hour candles", {
   skip_if_no_cg()
-  client <- cg_make_client(sleep = 0)
-  out <- cg_parse_json(client(
-    cg_url("ohlc/1/series/usd/30_days.json", host = "web")
-  ))
-  expect_false(is.null(out), info = "OHLC endpoint returned nothing")
+  out <- cg_parse_json(cg_web_text_or_skip(cg_url("ohlc/1/series/usd/30_days.json")))
   expect_true("ohlc" %in% names(out),
               info = "missing `ohlc` array - schema change?")
   expect_equal(ncol(out$ohlc), 5,
