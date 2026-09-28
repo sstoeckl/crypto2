@@ -8,7 +8,7 @@ This code retrieves listing data (latest/new/historic).
 crypto_listings(
   which = "latest",
   convert = "USD",
-  limit = 5000,
+  limit = NULL,
   start_date = NULL,
   end_date = NULL,
   interval = "day",
@@ -37,7 +37,10 @@ crypto_listings(
 
 - limit:
 
-  integer Return the top n records
+  integer Return the top n records per listing (per day for
+  `which = "historical"`). `NULL` (default) returns all coins. If a
+  result reaches `limit` exactly, a warning flags it as possibly
+  truncated.
 
 - start_date:
 

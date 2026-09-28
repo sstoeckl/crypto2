@@ -2,6 +2,76 @@
 
 ## crypto2 2.1.0.9000 (development version)
 
+### Complete listings, no silent truncation
+
+Two defaults silently returned incomplete data; both are fixed.
+
+- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+  now defaults to `quote = TRUE` and returns every field of
+  `/coins/markets`: `price` (`current_price`), `volume_24h`
+  (`total_volume`), `high_24h`, `low_24h`, `price_change_24h`, the
+  `percent_change_*` windows, `market_cap_change_24h`,
+  `market_cap_change_percentage_24h`, `ath`/`atl` with their dates, and
+  the flattened `roi_times`, `roi_currency`, `roi_percentage`.
+  `last_updated`, `ath_date` and `atl_date` are now POSIXct (UTC) rather
+  than Date. Under the previous `quote = FALSE` default, snapshots
+  carried no price, and deriving one as
+  `market_cap / circulating_supply` is off by up to 16%.
+- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+  defaults to `limit = NULL` (all coins, about 18,000 on 70+ pages). A
+  page that still fails after the retries now stops paging with a
+  warning naming the page, instead of returning a silently shortened
+  snapshot.
+- All `cg_*` functions send a CoinGecko Demo-API key as the
+  `x-cg-demo-api-key` header when the environment variable `CG_DEMO_KEY`
+  is set (30 instead of a handful of calls per minute). HTTP
+  408/502/503/504 are now retried with backoff like 429.
+- [`?cg_listings`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+  documents that `/coins/markets` no longer lists wrapped, staked or
+  bridged tokens (stETH, wstETH, WBTC, JitoSOL, bridged USDT); their
+  history is only available through
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md).
+- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+  defaults to `limit = NULL` (all coins). Since 2021-05-07 CMC lists
+  more than 5,000 coins per day (9,002 on 2024-01-07), and the old
+  default `limit = 5000` cut every day at rank 5,000 without a warning.
+  `which = "historical"` now pages in blocks of 5,000, and a result that
+  reaches an explicit `limit` warns that it may be truncated.
+  [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
+  without `coin_list` now selects from the full latest listing rather
+  than its top 5,000.
+
+### `cg_history()` rebuilt on CoinGecko’s CSV export
+
+CoinGecko retired the website endpoints
+`price_charts/<coin>/<vs>/max.json` and
+`market_cap/<coin>/<vs>/max.json` (HTTP 404). Since then
+[`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+and
+[`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+silently returned no close, volume or market cap, only 4-day OHLC
+candles misread as daily bars.
+
+- Close, volume and market cap now come from the daily CSV export
+  `price_charts/export/<coin>/usd.csv`: the full lifetime of each coin
+  in a single request. Over the last 365 days the values are identical
+  to the API’s `market_chart` series and within 0.05% of CMC for BTC.
+  The export’s close is dated one day later than its market cap and
+  volume; the package re-aligns them, so the `date_convention` semantics
+  are unchanged.
+- The export is USD-only. For any other `convert` / `vs_currency` the
+  series come from the API `market_chart` endpoint and cover the most
+  recent 365 days (a one-time warning says so).
+- Daily OHLC is aggregated from 4-hour candles and covers the most
+  recent 30 days (previously documented as 365 days, but those were
+  4-day candles). `close` now comes from the price series throughout, so
+  the column no longer switches source 30 days back; OHLC candles only
+  back-fill it.
+- Only completed days are returned.
+- If no series can be retrieved for any requested coin, the functions
+  now stop with an error; partial failures warn and name the affected
+  coins.
+
 ### CoinGecko integration
 
 Added a CoinGecko-side counterpart to the CMC API as a second,

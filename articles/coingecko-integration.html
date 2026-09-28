@@ -110,9 +110,10 @@ each coin’s listing date.</p>
 <span><span class="co"># 1. Full historic universe: active + delisted, via cg_id_mapping()</span></span>
 <span><span class="va">universe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_list.html">cg_list</a></span><span class="op">(</span>only_active <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 2. Daily close / volume / market cap, full lifetime per coin.</span></span>
-<span><span class="co">#    Skip OHLC here -- it adds a 3rd HTTP call per coin and is the only</span></span>
-<span><span class="co">#    free-tier-capped stream (see "What is NOT in the free tier" below).</span></span>
+<span><span class="co"># 2. Daily close / volume / market cap in USD, full lifetime per coin</span></span>
+<span><span class="co">#    (one CSV download per coin). Skip OHLC here -- it adds a 2nd HTTP</span></span>
+<span><span class="co">#    call per coin and only covers the last 30 days (see "What is NOT in</span></span>
+<span><span class="co">#    the free tier" below).</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>crypto2.cg_what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"price"</span>, <span class="st">"market_cap"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_history.html">cg_history</a></span><span class="op">(</span><span class="va">universe</span><span class="op">)</span></span>
 <span></span>
@@ -167,26 +168,29 @@ sample”</em> message.</li>
 <tbody>
 <tr class="odd">
 <td><code>close</code></td>
-<td>full lifetime of each coin (daily)</td>
+<td>full lifetime of each coin (daily, USD)</td>
 </tr>
 <tr class="even">
 <td><code>volume</code></td>
-<td>full lifetime of each coin (daily)</td>
+<td>full lifetime of each coin (daily, USD)</td>
 </tr>
 <tr class="odd">
 <td><code>market_cap</code></td>
-<td>full lifetime of each coin (daily)</td>
+<td>full lifetime of each coin (daily, USD)</td>
 </tr>
 <tr class="even">
 <td>
 <code>open</code>, <code>high</code>, <code>low</code>
 </td>
 <td>
-<strong>only the most recent 365 days</strong>; older rows have
+<strong>only the most recent 30 days</strong>; older rows have
 <code>NA</code> here</td>
 </tr>
 </tbody>
 </table>
+<p>Full history is served in USD only. With <code>convert = "BTC"</code>
+(or any other quote currency) close, volume and market cap come from the
+API and cover the most recent 365 days.</p>
 <p>For complete OHLC over the full history (microstructure work,
 candlestick-based signals, intraday volatility models), see the Pro
 recipes in <code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code>.</p>
@@ -249,7 +253,23 @@ is current until YYYY-MM-DD”</em>.</p>
 <code>cg_listings()</code> – current cross-section<a class="anchor" aria-label="anchor" href="#cg_listings-current-cross-section"></a>
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">snap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_listings.html">cg_listings</a></span><span class="op">(</span>which <span class="op">=</span> <span class="st">"latest"</span>, quote <span class="op">=</span> <span class="cn">TRUE</span>, limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">snap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_listings.html">cg_listings</a></span><span class="op">(</span>limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span>   <span class="co"># prices included by default</span></span></code></pre></div>
+<p>The snapshot carries every <code>/coins/markets</code> field: price,
+24h volume and range, price and market-cap changes, all-time high/low
+and ROI (see <code><a href="../reference/cg_listings.html">?cg_listings</a></code> for the column mapping). Two
+caveats:</p>
+<ul>
+<li>
+<code>/coins/markets</code> no longer lists wrapped, staked or
+bridged tokens (stETH, wstETH, WBTC, JitoSOL, bridged USDT, …). Their
+history is only available through <code><a href="../reference/cg_history.html">cg_history()</a></code>.</li>
+<li>Without a key the public endpoint allows only a few calls per
+minute, and a full snapshot needs about 70 pages. Setting
+<code>Sys.setenv(CG_DEMO_KEY = "...")</code> to a free Demo-API key
+raises the limit to 30 calls per minute. Failed pages are retried with
+backoff; if a page still fails, <code><a href="../reference/cg_listings.html">cg_listings()</a></code> warns with
+the page number instead of returning a silently truncated snapshot.</li>
+</ul>
 <p><code>which = "historical"</code> and <code>which = "new"</code> warn
 and coerce to <code>"latest"</code> – CG’s free tier does not expose the
 historical cross-section in a single call. To build your own
@@ -258,7 +278,7 @@ cross-section history on the free tier, snapshot
 parquet output:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">arrow</span><span class="fu">::</span><span class="fu"><a href="https://arrow.apache.org/docs/r/reference/write_dataset.html" class="external-link">write_dataset</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="../reference/cg_listings.html">cg_listings</a></span><span class="op">(</span>which <span class="op">=</span> <span class="st">"latest"</span>, quote <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="../reference/cg_listings.html">cg_listings</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  path        <span class="op">=</span> <span class="st">"data/cg_listings"</span>,</span>
 <span>  partitioning <span class="op">=</span> <span class="st">"harvested_at"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -297,14 +317,14 @@ various link fields. Same column conventions as
 <h2 id="what-is-not-in-the-free-tier">What is NOT in the free tier<a class="anchor" aria-label="anchor" href="#what-is-not-in-the-free-tier"></a>
 </h2>
 <p>The free tier covers every cell needed for daily asset-pricing work
-<em>except</em> the older end of the OHLC quartet:</p>
+in USD <em>except</em> the older end of the OHLC quartet:</p>
 <ul>
 <li>
-<strong>OHLC (open / high / low) older than ~365 days.</strong>
-Close is fine (returned from the price stream), volume and market cap
-are fine, but the three intra-day extreme columns come back
-<code>NA</code> for any date more than a year old. For a complete
-backfill, run the Pro recipes in
+<strong>OHLC (open / high / low) older than 30 days.</strong> Close
+is fine (returned from the price stream), volume and market cap are
+fine, but the three intra-day extreme columns come back <code>NA</code>
+for any date more than a month old; CoinGecko offers longer windows only
+as 4-day candles. For a complete backfill, run the Pro recipes in
 <code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code> once – the recipes are
 kept inline in that vignette rather than exported from the package, so
 the package itself stays key-less.</li>
@@ -340,7 +360,7 @@ loudly if either provider drifts.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
