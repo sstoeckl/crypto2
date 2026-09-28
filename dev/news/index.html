@@ -108,6 +108,68 @@
 </ul></div>
 </div>
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.5" id="crypto2-205">crypto2 2.0.5<a class="anchor" aria-label="anchor" href="#crypto2-205"></a></h2><p class="text-muted">CRAN release: 2025-09-11</p>
+<p>Slight change in api call outcome needed another modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.4" id="crypto2-204">crypto2 2.0.4<a class="anchor" aria-label="anchor" href="#crypto2-204"></a></h2>
+<p>Slight change in api call outcome needed another modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.3" id="crypto2-203">crypto2 2.0.3<a class="anchor" aria-label="anchor" href="#crypto2-203"></a></h2><p class="text-muted">CRAN release: 2024-10-11</p>
+<p>Slight change in api call outcome needed another modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>. Also corrected one failing tests to not check time zones.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.2" id="crypto2-202">crypto2 2.0.2<a class="anchor" aria-label="anchor" href="#crypto2-202"></a></h2><p class="text-muted">CRAN release: 2024-09-02</p>
+<p>Slight change in api call outcome needed another modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.1" id="crypto2-201">crypto2 2.0.1<a class="anchor" aria-label="anchor" href="#crypto2-201"></a></h2><p class="text-muted">CRAN release: 2024-07-03</p>
+<p>Slight change in api call outcome needed a modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.0" id="crypto2-200">crypto2 2.0.0<a class="anchor" aria-label="anchor" href="#crypto2-200"></a></h2><p class="text-muted">CRAN release: 2024-06-13</p>
+<p>After a major change in the api structure of coinmarketcap.com, the package had to be rewritten. As a result, many functions had to be rewritten, because data was not available any more in a similar format or with similar accuracy. Unfortunately, this will potentially break many users implementations. Here is a detailed list of changes:</p>
+<ul><li>
+<code><a href="../reference/crypto_list.html">crypto_list()</a></code> has been modified and delivers the same data as before.</li>
+<li>
+<code><a href="../reference/exchange_list.html">exchange_list()</a></code> has been modified and delivers the same data as before.</li>
+<li>
+<code><a href="../reference/fiat_list.html">fiat_list()</a></code> has been modified and no longer delivers all available currencies and precious metals (therefore only USD and Bitcoin are available any more).</li>
+<li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> needed to be modified, as multiple base currencies are not available any more. Also some of the fields downloaded from CMC might have changed. It still retrieves the latest listings, the new listings as well as historical listings. The fields returned have somewhat slightly changed. Also, no sorting is available any more, so if you want to download the top x CCs by market cap, you have to download all CCs and then sort them in R.</li>
+<li>
+<code><a href="../reference/crypto_info.html">crypto_info()</a></code> has been modified, as the data structure has changed. The fields returned have somewhat slightly changed.</li>
+<li>
+<code><a href="../reference/crypto_history.html">crypto_history()</a></code> has been modified. It still retrieves all the OHLC history of all the coins, but is slower due to an increased number of necessary api calls. The number of available intervals is strongly limited, but hourly and daily data is still available. Currently only USD and BTC are available as quote currencies through this library.</li>
+<li>
+<code><a href="../reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> has been modified. It still produces a clear picture of the global market, but the data structure has somewhat slightly changed.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.6" id="crypto2-146">crypto2 1.4.6<a class="anchor" aria-label="anchor" href="#crypto2-146"></a></h2><p class="text-muted">CRAN release: 2024-01-29</p>
+<p>Added new options “sort” and “sort_dir” for <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> to allow for the sorting of results, which in combination with “limit” allows, for example, to only download the top 100 CCs according to market capitalization that were listed at a certain date. Correct missing last_historical_data date conversion due to the now missing field.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.5" id="crypto2-145">crypto2 1.4.5<a class="anchor" aria-label="anchor" href="#crypto2-145"></a></h2><p class="text-muted">CRAN release: 2022-10-19</p>
+<p>Added a new function <code><a href="../reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.4" id="crypto2-144">crypto2 1.4.4<a class="anchor" aria-label="anchor" href="#crypto2-144"></a></h2><p class="text-muted">CRAN release: 2022-07-18</p>
+<p>A new function <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> is introduced to retrieve new/latest/historical listings and listing information at CMC. The option <code>finalWait = TRUE</code> does not seem to be necessary any more, also <code>sleep</code> can be set to ‘0’ seconds.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.3" id="crypto2-143">crypto2 1.4.3<a class="anchor" aria-label="anchor" href="#crypto2-143"></a></h2><p class="text-muted">CRAN release: 2022-01-25</p>
+<p>change limit==1 bug, add interval parameter (offered by pull-request), also change the amount of id splits to allow for max url length 2000</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.2" id="crypto2-142">crypto2 1.4.2<a class="anchor" aria-label="anchor" href="#crypto2-142"></a></h2><p class="text-muted">CRAN release: 2022-01-11</p>
+<p>Repaired the history retrieval due to the fact that one api call can only retrieve 1000 data points. Therefore we have to call more often on the api when retrieving the entire history.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.1" id="crypto2-141">crypto2 1.4.1<a class="anchor" aria-label="anchor" href="#crypto2-141"></a></h2>
+<p>Added and corrected a waiter function to wait an additional 60 seconds after the end of the history command before another command could be executed (to not accidentally retrieve the same outdated data). Fixed the waiter.</p>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.4.0" id="crypto2-140">crypto2 1.4.0<a class="anchor" aria-label="anchor" href="#crypto2-140"></a></h2><p class="text-muted">CRAN release: 2022-01-10</p>
 <p>Due to a change in the web-api of CMC we can only make one call to the api per minute (else, it will just deliver the same output as for the first call of the 60 seconds). To reduce the overhang, I have redesigned the interfaces to retrieve as many ids from one api call as possible (limited by the 2000 character limitation of the URL). We can set <code>requestLimit</code> to increase/decrease the number of simultaneous ids that are retrieved from CMC.</p>
 </div>

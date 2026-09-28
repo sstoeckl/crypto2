@@ -195,6 +195,132 @@ sub-dollar precision (verified against hourly intraday CG data; see
   stream. The one-time warning now only fires when OHLC is actually
   requested over a window that exceeds the cap.
 
+## crypto2 2.0.5
+
+CRAN release: 2025-09-11
+
+Slight change in api call outcome needed another modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+
+## crypto2 2.0.4
+
+Slight change in api call outcome needed another modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+
+## crypto2 2.0.3
+
+CRAN release: 2024-10-11
+
+Slight change in api call outcome needed another modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+Also corrected one failing tests to not check time zones.
+
+## crypto2 2.0.2
+
+CRAN release: 2024-09-02
+
+Slight change in api call outcome needed another modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+
+## crypto2 2.0.1
+
+CRAN release: 2024-07-03
+
+Slight change in api call outcome needed a modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+
+## crypto2 2.0.0
+
+CRAN release: 2024-06-13
+
+After a major change in the api structure of coinmarketcap.com, the
+package had to be rewritten. As a result, many functions had to be
+rewritten, because data was not available any more in a similar format
+or with similar accuracy. Unfortunately, this will potentially break
+many users implementations. Here is a detailed list of changes:
+
+- [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md)
+  has been modified and delivers the same data as before.
+- [`exchange_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_list.md)
+  has been modified and delivers the same data as before.
+- [`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/fiat_list.md)
+  has been modified and no longer delivers all available currencies and
+  precious metals (therefore only USD and Bitcoin are available any
+  more).
+- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+  needed to be modified, as multiple base currencies are not available
+  any more. Also some of the fields downloaded from CMC might have
+  changed. It still retrieves the latest listings, the new listings as
+  well as historical listings. The fields returned have somewhat
+  slightly changed. Also, no sorting is available any more, so if you
+  want to download the top x CCs by market cap, you have to download all
+  CCs and then sort them in R.
+- [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
+  has been modified, as the data structure has changed. The fields
+  returned have somewhat slightly changed.
+- [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
+  has been modified. It still retrieves all the OHLC history of all the
+  coins, but is slower due to an increased number of necessary api
+  calls. The number of available intervals is strongly limited, but
+  hourly and daily data is still available. Currently only USD and BTC
+  are available as quote currencies through this library.
+- [`crypto_global_quotes()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_global_quotes.md)
+  has been modified. It still produces a clear picture of the global
+  market, but the data structure has somewhat slightly changed.
+
+## crypto2 1.4.6
+
+CRAN release: 2024-01-29
+
+Added new options “sort” and “sort_dir” for
+[`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+to allow for the sorting of results, which in combination with “limit”
+allows, for example, to only download the top 100 CCs according to
+market capitalization that were listed at a certain date. Correct
+missing last_historical_data date conversion due to the now missing
+field.
+
+## crypto2 1.4.5
+
+CRAN release: 2022-10-19
+
+Added a new function
+[`crypto_global_quotes()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_global_quotes.md)
+which retrieves global aggregate market statistics for CMC. There also
+were some bugs fixed.
+
+## crypto2 1.4.4
+
+CRAN release: 2022-07-18
+
+A new function
+[`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+is introduced to retrieve new/latest/historical listings and listing
+information at CMC. The option `finalWait = TRUE` does not seem to be
+necessary any more, also `sleep` can be set to ‘0’ seconds.
+
+## crypto2 1.4.3
+
+CRAN release: 2022-01-25
+
+change limit==1 bug, add interval parameter (offered by pull-request),
+also change the amount of id splits to allow for max url length 2000
+
+## crypto2 1.4.2
+
+CRAN release: 2022-01-11
+
+Repaired the history retrieval due to the fact that one api call can
+only retrieve 1000 data points. Therefore we have to call more often on
+the api when retrieving the entire history.
+
+## crypto2 1.4.1
+
+Added and corrected a waiter function to wait an additional 60 seconds
+after the end of the history command before another command could be
+executed (to not accidentally retrieve the same outdated data). Fixed
+the waiter.
+
 ## crypto2 1.4.0
 
 CRAN release: 2022-01-10
