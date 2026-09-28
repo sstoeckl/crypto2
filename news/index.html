@@ -52,6 +52,10 @@
 <code><a href="../reference/cg_listings.html">?cg_listings</a></code> documents that <code>/coins/markets</code> no longer lists wrapped, staked or bridged tokens (stETH, wstETH, WBTC, JitoSOL, bridged USDT); their history is only available through <code><a href="../reference/cg_history.html">cg_history()</a></code>.</li>
 <li>
 <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>limit = NULL</code> (all coins). Since 2021-05-07 CMC lists more than 5,000 coins per day (9,002 on 2024-01-07), and the old default <code>limit = 5000</code> cut every day at rank 5,000 without a warning. <code>which = "historical"</code> now pages in blocks of 5,000, and a result that reaches an explicit <code>limit</code> warns that it may be truncated. <code><a href="../reference/crypto_history.html">crypto_history()</a></code> without <code>coin_list</code> now selects from the full latest listing rather than its top 5,000.</li>
+<li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> no longer loses a whole day when CMC lists an exact multiple of 5,000 coins (e.g. 10,000 on 2024-07-10 and 2024-07-11). The empty page that ends such a day made the page parser fail; for <code>which = "historical"</code> the day was then dropped without a warning, for <code>"latest"</code> / <code>"new"</code> the call errored. Empty pages now end the paging and keep the pages already loaded.</li>
+<li>
+<code>crypto_listings(which = "historical")</code> now warns and names every day that still fails after the retries; such days are missing from the result rather than truncated. <code><a href="../reference/cg_list.html">cg_list()</a></code> warns with the page number if <code>/coins/markets</code> paging stops on a failed page.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="cg_history-rebuilt-on-coingeckos-csv-export-2-1-0-9000">

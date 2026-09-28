@@ -210,4 +210,11 @@ result may only contain some of the following variables):
 
   90 day return
 
+## Details
+
+For `which = "historical"` each day is fetched in pages of 5,000 coins
+and retried as a whole if a page fails. A day is returned complete or
+not at all: a day that still fails after the retries is dropped and
+named in a warning, never returned truncated.
+
 ## Examples
