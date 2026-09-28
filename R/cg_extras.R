@@ -37,10 +37,28 @@ cg_user_agent <- function() {
   )
 }
 
+#' Optional CoinGecko Demo-API key header
+#'
+#' Returns `c(`x-cg-demo-api-key` = key)` when the environment variable
+#' `CG_DEMO_KEY` is set and `url` targets the documented API host, else an
+#' empty character vector. The key is never sent to any other host.
+#'
+#' @param url Full request URL.
+#' @keywords internal
+#' @noRd
+cg_demo_key_header <- function(url) {
+  key <- Sys.getenv("CG_DEMO_KEY")
+  if (!nzchar(key) || !startsWith(url, cg_url("", host = "api"))) {
+    return(character())
+  }
+  c(`x-cg-demo-api-key` = key)
+}
+
 #' Safe HTTP GET
 #'
 #' Wraps `httr::GET` with a browser-like User-Agent, follows redirects, and
-#' returns the response body as text.
+#' returns the response body as text. Adds the Demo-API key header when
+#' `CG_DEMO_KEY` is set (see `cg_demo_key_header()`).
 #'
 #' Failure semantics -- designed to interact correctly with the
 #' `cg_make_client()` retry wrapper:
@@ -51,11 +69,13 @@ cg_user_agent <- function() {
 #'     (`"cg_rate_limited"`) carrying the `Retry-After` header in seconds
 #'     (defaulting to 60 if absent) -- retryable by `purrr::insistently`,
 #'     which will pause `wait` seconds before retrying.
+#'   \item **HTTP 408 / 502 / 503 / 504** (transient upstream failures)
+#'     raise `"cg_server_error"` -- retryable like a 429.
 #'   \item **HTTP 403** that signals a refused request returns `NULL` and
 #'     emits a one-time message per session pointing the user to the Pro
 #'     backfill vignette. These responses are not solvable by retry, so
 #'     they are *not* raised as retryable conditions.
-#'   \item **Other non-2xx responses** (404, 410, 5xx, ...) return `NULL`
+#'   \item **Other non-2xx responses** (404, 410, 500, ...) return `NULL`
 #'     **without** raising, so a missing coin or a stale endpoint does not
 #'     consume retry budget -- the caller decides what to do with `NULL`.
 #'   \item **2xx** returns the response body as a length-1 character vector.
@@ -67,7 +87,7 @@ cg_user_agent <- function() {
 #'   `"text/html"` etc. as needed.
 #' @return Raw response body as a length-1 character vector on 2xx, or
 #'   `NULL` for non-retryable non-2xx (404 etc.). Raises a classed condition
-#'   on retryable failures (429, network errors).
+#'   on retryable failures (429, 408/502/503/504, network errors).
 #' @keywords internal
 #' @noRd
 #'
@@ -81,11 +101,12 @@ cg_get <- function(url, query = NULL,
       url,
       query = query,
       httr::user_agent(cg_user_agent()),
-      httr::add_headers(
+      httr::add_headers(.headers = c(
         Accept = accept,
         `Accept-Language` = "en-US,en;q=0.9",
-        `Cache-Control` = "no-cache"
-      ),
+        `Cache-Control` = "no-cache",
+        cg_demo_key_header(url)
+      )),
       httr::timeout(60)
     ),
     error = function(e) {
@@ -121,6 +142,16 @@ cg_get <- function(url, query = NULL,
       )
     ))
   }
+  if (sc %in% c(408, 502, 503, 504)) {
+    stop(structure(
+      class = c("cg_server_error", "error", "condition"),
+      list(
+        message = sprintf("CoinGecko transient HTTP %d (url: %s)", sc, url),
+        call = sys.call(),
+        status = sc
+      )
+    ))
+  }
   if (sc == 403) {
     # Cloudflare bot challenge -- detect via cf-mitigated header.
     cf_mit <- httr::headers(resp)[["cf-mitigated"]]
@@ -136,7 +167,7 @@ cg_get <- function(url, query = NULL,
       return(NULL)
     }
   }
-  if (sc < 200 || sc >= 300) return(NULL)  # 404, 410, 5xx -- non-retryable
+  if (sc < 200 || sc >= 300) return(NULL)  # 404, 410, 500 -- non-retryable
   httr::content(resp, as = "text", encoding = "UTF-8")
 }
 
@@ -165,10 +196,10 @@ cg_parse_json <- function(txt, ...) {
 #' errors) to produce an HTTP client suitable for batch jobs.
 #'
 #' Retry behaviour: `cg_get()` raises a classed condition for HTTP 429
-#' (rate-limited) and network failures. The `insistently` wrapper catches
+#' (rate-limited), transient 408/502/503/504 responses and network failures. The `insistently` wrapper catches
 #' these and retries up to `max_retries` times, waiting `wait` seconds
 #' before the first retry and up to `wait * 4` seconds before later
-#' retries (with jitter). Non-retryable HTTP errors (404, 410, 5xx) still
+#' retries (with jitter). Non-retryable HTTP errors (404, 410, 500) still
 #' return `NULL` immediately and do not consume retry budget.
 #'
 #' @param sleep Seconds between successive successful calls (default 0.6;
@@ -229,6 +260,16 @@ cg_numeric_id_from_image <- function(image_url) {
     if (length(mm) == 1L) out[i] <- as.integer(mm)
   }
   out
+}
+
+#' Parse CoinGecko ISO-8601 timestamps to POSIXct (UTC)
+#'
+#' @param x Character vector like `"2024-03-14T07:10:36.635Z"`.
+#' @return POSIXct vector, UTC; `NA` where parsing failed.
+#' @keywords internal
+#' @noRd
+cg_iso_to_posix <- function(x) {
+  as.POSIXct(as.character(x), format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC")
 }
 
 #' Convert CoinGecko millisecond timestamps to POSIXct (UTC)

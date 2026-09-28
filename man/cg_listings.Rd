@@ -7,11 +7,11 @@
 cg_listings(
   which = "latest",
   convert = "USD",
-  limit = 5000,
+  limit = NULL,
   start_date = NULL,
   end_date = NULL,
   interval = "day",
-  quote = FALSE,
+  quote = TRUE,
   sort = "cmc_rank",
   sort_dir = "asc",
   sleep = 0,
@@ -27,24 +27,25 @@ produce a warning and are coerced to \code{"latest"}.}
 passed to CoinGecko as \code{vs_currency}. Common values: \code{"USD"}, \code{"BTC"},
 \code{"ETH"}, \code{"EUR"}, \code{"GBP"}.}
 
-\item{limit}{integer Return the top n records (default \code{5000} -- matches
-\code{\link[=crypto_listings]{crypto_listings()}}).}
+\item{limit}{integer Return the top n records. \code{NULL} (default) returns
+all coins.}
 
 \item{start_date, end_date, interval}{Kept for API parity with
 \code{\link[=crypto_listings]{crypto_listings()}} -- ignored for CoinGecko (no historical-listings
 endpoint on the free tier).}
 
-\item{quote}{logical Kept for API parity. The CoinGecko \verb{/coins/markets}
-endpoint always returns prices, so quote fields are always present;
-setting this to \code{FALSE} drops them from the returned tibble for
-parity with \code{crypto_listings()}.}
+\item{quote}{logical (default \code{TRUE}). The \verb{/coins/markets} endpoint
+always returns prices at no extra cost, so they are included by
+default. Set to \code{FALSE} to keep only the identifier, rank, market-cap
+and supply columns. Note that this default differs from
+\code{\link[=crypto_listings]{crypto_listings()}}.}
 
 \item{sort, sort_dir}{Kept for parity. CoinGecko sorts by \code{market_cap_desc}
 on the underlying endpoint; the arguments are ignored.}
 
 \item{sleep}{integer (default \code{0}) Seconds to sleep between API requests.
-Will be raised to at least \code{2.5} internally to stay under the Demo-tier
-30 req/min cap.}
+Will be raised to at least \code{getOption("crypto2.cg_sleep", 2.5)}
+internally to stay under the Demo-tier 30 req/min cap.}
 
 \item{wait}{Seconds to wait before retrying after a 429 (default \code{60}).}
 
@@ -52,16 +53,34 @@ Will be raised to at least \code{2.5} internally to stay under the Demo-tier
 \code{\link[=crypto_listings]{crypto_listings()}}).}
 }
 \value{
-Tibble with columns matching \code{\link[=crypto_listings]{crypto_listings()}} where the
-corresponding CoinGecko field exists. See \code{\link[=crypto_listings]{crypto_listings()}} for the
-column glossary; CoinGecko-specific extras (e.g. \code{ath}, \code{atl}) are
-appended at the end.
+Tibble with one row per coin. Always present: \code{id}, \code{name},
+\code{symbol}, \code{slug}, \code{date_added} (always \code{NA}), \code{last_updated} (POSIXct,
+UTC), \code{rank}, \code{market_cap}, \code{fully_diluted_market_cap},
+\code{circulating_supply}, \code{total_supply}, \code{max_supply}. With
+\code{quote = TRUE} additionally (CoinGecko field name in brackets):
+\item{price}{[\code{current_price}]}
+\item{volume_24h}{[\code{total_volume}]}
+\item{high_24h, low_24h}{24h price range}
+\item{price_change_24h}{absolute 24h price change}
+\item{percent_change_1h, _24h, _7d, _14d, _30d, _200d, _1y}{
+[\verb{price_change_percentage_<window>_in_currency}]}
+\item{market_cap_change_24h, market_cap_change_percentage_24h}{24h
+market-cap change, absolute and in percent}
+\item{ath, ath_change_percentage, ath_date}{all-time high; date as
+POSIXct (UTC)}
+\item{atl, atl_change_percentage, atl_date}{all-time low; date as
+POSIXct (UTC)}
+\item{roi_times, roi_currency, roi_percentage}{flattened \code{roi} object
+(\code{NA} for most coins)}
+\item{ref_currency}{upper-cased \code{convert}}
 }
 \description{
 Companion to \code{\link[=crypto_listings]{crypto_listings()}} but for CoinGecko. Returns one row per
-coin with current price/volume/market-cap fields plus percent-change
-windows. Column names mirror those of \code{crypto_listings()} so downstream
-code that already consumes a CMC listings tibble works on this tibble too.
+coin with every field of the \verb{/coins/markets} endpoint: price, volume,
+24h range, price and market-cap changes, all-time high/low and ROI.
+Column names mirror those of \code{crypto_listings()} where a CMC counterpart
+exists, so downstream code that already consumes a CMC listings tibble
+works on this tibble too.
 }
 \details{
 CoinGecko free-tier limitations: only \code{which = "latest"} is supported.
@@ -70,14 +89,30 @@ coerced to \code{"latest"}, because CoinGecko's free tier does not expose the
 historical cross-section. Snapshot this function periodically (daily /
 weekly via a cron job) to accumulate a survivorship-bias-corrected
 archive over time.
+
+\strong{Coverage.} \verb{/coins/markets} no longer lists wrapped, staked or bridged
+tokens (e.g. stETH, wstETH, WBTC, JitoSOL, bridged USDT). Their history is
+still available through \code{\link[=cg_history]{cg_history()}} (the \code{market_chart} endpoint), but
+they will not appear in a \code{cg_listings()} snapshot.
+
+\strong{Rate limits and API key.} Without a key the public endpoint allows only
+a handful of calls per minute. Set the environment variable \code{CG_DEMO_KEY}
+to a (free) CoinGecko Demo-API key to raise this to 30 calls per minute
+(10,000 per month); it is sent as the \code{x-cg-demo-api-key} header to the
+documented API host only. HTTP 429 and transient 408/502/503/504 responses
+are retried with exponential backoff (see \code{wait} and the
+\code{crypto2.cg_max_retries} option). If a page still fails after the last
+retry, paging stops and a warning names the failed page, so an incomplete
+result is never returned silently.
 }
 \examples{
 \dontrun{
-# Full current snapshot (all coins with a market cap)
-latest <- cg_listings(which = "latest", quote = TRUE)
+# Full current snapshot (all coins with a market cap), including prices
+latest <- cg_listings()
 
-# Top 1000 in BTC
-latest_btc <- cg_listings(which = "latest", convert = "BTC", limit = 1000)
+# Top 1000 in BTC, with a Demo-API key for the higher rate limit
+Sys.setenv(CG_DEMO_KEY = "CG-...")
+latest_btc <- cg_listings(convert = "BTC", limit = 1000)
 }
 
 }

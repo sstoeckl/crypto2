@@ -7,7 +7,7 @@
 crypto_listings(
   which = "latest",
   convert = "USD",
-  limit = 5000,
+  limit = NULL,
   start_date = NULL,
   end_date = NULL,
   interval = "day",
@@ -25,7 +25,9 @@ crypto_listings(
 \item{convert}{string (default: USD) to one of available fiat prices (\code{fiat_list()}). If more
 than one are selected please separate by comma (e.g. "USD,BTC"), only necessary if 'quote=TRUE'}
 
-\item{limit}{integer Return the top n records}
+\item{limit}{integer Return the top n records per listing (per day for
+\code{which = "historical"}). \code{NULL} (default) returns all coins. If a result
+reaches \code{limit} exactly, a warning flags it as possibly truncated.}
 
 \item{start_date}{string Start date to retrieve data from, format 'yyyymmdd'}
 

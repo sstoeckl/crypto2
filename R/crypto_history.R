@@ -91,13 +91,12 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   # now create convertId from convert
   convertId <- ifelse(convert=="USD",2781,1)
   # only if no coins are provided use crypto_list() to provide all actively
-  # traded coins. We fetch enough listings to filter out non-ranked rows
-  # (index products etc. that CMC returns at the top of /listing with
-  # cmc_rank = NA but have no historical price data) before applying limit.
-  listing_fetch <- max(if (is.null(limit)) 5000L else as.integer(limit) * 4L,
-                       100L)
+  # traded coins. We fetch the full latest listing (two requests) so that
+  # non-ranked rows (index products etc. that CMC returns at the top of
+  # /listing with cmc_rank = NA but have no historical price data) can be
+  # filtered out before applying limit.
   if (is.null(coin_list)) {
-    coin_listings <- crypto_listings(limit = listing_fetch)
+    coin_listings <- crypto_listings(limit = NULL)
     coin_list <- crypto_list() %>%
       dplyr::inner_join(coin_listings %>% dplyr::select(id, cmc_rank), by = "id") %>%
       dplyr::filter(!is.na(cmc_rank)) %>%
@@ -106,7 +105,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     if (!is.null(limit)) coin_list <- coin_list[seq_len(min(limit, nrow(coin_list))), ]
   } else if (!is.null(limit)) {
     if (!"cmc_rank" %in% names(coin_list)) {
-      coin_listings <- crypto_listings(limit = max(listing_fetch, nrow(coin_list)))
+      coin_listings <- crypto_listings(limit = NULL)
       coin_list <- coin_list %>%
         dplyr::inner_join(coin_listings %>% dplyr::select(id, cmc_rank), by = "id") %>%
         dplyr::filter(!is.na(cmc_rank)) %>%

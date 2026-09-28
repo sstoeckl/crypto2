@@ -86,58 +86,45 @@ test_that("documented API: /coins/{slug} returns expected top-level fields", {
                             "missing /coins/{id} top-level fields")
 })
 
-test_that("website: /price_charts/{slug}/{vs}/24_hours.json returns price + volume series", {
+# These endpoints feed cg_history(). A missing response is a failure, not a
+# skip: when CoinGecko retired /price_charts/<slug>/<vs>/max.json the old
+# skip-on-NULL tests hid the outage.
+
+test_that("website: /price_charts/export/{slug}/usd.csv returns the daily history", {
   skip_if_no_cg()
   client <- cg_make_client(sleep = 0)
-  out <- cg_parse_json(client(
-    cg_url("price_charts/bitcoin/usd/24_hours.json", host = "web")
-  ))
-  if (is.null(out)) testthat::skip("CG /price_charts/ returned nothing.")
-  expect_true("stats" %in% names(out),
-              info = "missing `stats` array - schema change?")
-  expect_true("total_volumes" %in% names(out),
-              info = "missing `total_volumes` array - schema change?")
-  expect_true(nrow(out$stats) > 0,
-              info = "stats array empty for 24h window")
-  expect_equal(ncol(out$stats), 2,
-               info = "stats no longer 2-col - schema change")
+  txt <- client(cg_url("price_charts/export/bitcoin/usd.csv", host = "web"),
+                accept = "text/csv, */*")
+  expect_false(is.null(txt), info = "CSV export endpoint returned nothing")
+  ticks <- cg_parse_export_csv(txt)
+  expect_false(is.null(ticks), info = "CSV export header changed")
+  expect_gt(nrow(ticks$close), 4000)
+  expect_true(all(as.numeric(ticks$close$timestamp) %% 86400 == 0))
+  expect_equal(min(as.Date(ticks$market_cap$timestamp)), as.Date("2013-04-28"))
 })
 
-test_that("website: slug-based /price_charts also works", {
-  # Sibling check: hit the slug variant with the smallest window.
+test_that("website: CSV export also resolves numeric ids", {
   skip_if_no_cg()
   client <- cg_make_client(sleep = 0)
-  out <- cg_parse_json(client(
-    cg_url("price_charts/ethereum/usd/24_hours.json", host = "web")
-  ))
-  if (is.null(out)) testthat::skip("CG slug-based price_charts returned nothing.")
-  expect_true("stats" %in% names(out))
+  txt <- client(cg_url("price_charts/export/279/usd.csv", host = "web"),
+                accept = "text/csv, */*")
+  expect_false(is.null(cg_parse_export_csv(txt)),
+               info = "numeric-id CSV export returned nothing")
 })
 
-test_that("website: /market_cap/{slug}/{vs}/24_hours.json returns mcap series", {
+test_that("website: /ohlc/{numeric}/series/{vs}/30_days.json returns 4-hour candles", {
   skip_if_no_cg()
   client <- cg_make_client(sleep = 0)
   out <- cg_parse_json(client(
-    cg_url("market_cap/bitcoin/usd/24_hours.json", host = "web")
+    cg_url("ohlc/1/series/usd/30_days.json", host = "web")
   ))
-  if (is.null(out)) testthat::skip("CG /market_cap/ returned nothing.")
-  expect_true("stats" %in% names(out),
-              info = "/market_cap missing stats - schema change?")
-})
-
-test_that("website: /ohlc/{numeric}/series/{vs}/24_hours.json returns OHLC array", {
-  skip_if_no_cg()
-  client <- cg_make_client(sleep = 0)
-  out <- cg_parse_json(client(
-    cg_url("ohlc/1/series/usd/24_hours.json", host = "web")
-  ))
-  if (is.null(out)) testthat::skip("CG /ohlc/ returned nothing.")
+  expect_false(is.null(out), info = "OHLC endpoint returned nothing")
   expect_true("ohlc" %in% names(out),
               info = "missing `ohlc` array - schema change?")
-  expect_true(nrow(out$ohlc) > 0,
-              info = "OHLC array is empty")
   expect_equal(ncol(out$ohlc), 5,
                info = "OHLC array no longer 5-col [ts, o, h, l, c]")
+  expect_equal(stats::median(diff(out$ohlc[, 1])), 4 * 3600 * 1000,
+               info = "30-day OHLC is no longer 4-hourly")
 })
 
 test_that("website: /coins/price_percentage_change batched endpoint works", {

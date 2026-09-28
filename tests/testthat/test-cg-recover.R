@@ -57,8 +57,10 @@ test_that("cg_history_by_id() survives a numeric ID outside the allocated range"
   # 9 999 999 is well above the highest allocated id (404 confirmed).
   cl <- tibble::tibble(id = integer(0), slug = character(0),
                        symbol = character(0), name = character(0))
-  h <- cg_history_by_id(ids = 9999999L, what = "price",
-                        coin_list = cl, quiet = TRUE)
+  expect_warning(
+    h <- cg_history_by_id(ids = 9999999L, what = "price",
+                          coin_list = cl, quiet = TRUE),
+    "1 of 1 coin\\(s\\): 9999999")
   expect_s3_class(h, "tbl_df")
   expect_equal(nrow(h), 0L,
                info = "dead-id call should yield zero rows, not partial junk")

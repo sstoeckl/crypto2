@@ -31,8 +31,12 @@
 #'   delisted coins, supply the union of historically-observed IDs from
 #'   your accumulated snapshots.
 #' @param what Subset of streams to fetch. Any combination of
-#'   `"price"`, `"market_cap"`, and `"ohlc"`. Default all three.
-#' @param vs_currency Quote currency, default `"usd"`.
+#'   `"price"` (close + volume), `"market_cap"`, and `"ohlc"`. Default all
+#'   three. Coverage is the same as for [cg_history()]: full history for
+#'   close, volume and market cap in USD, OHLC for the last 30 days.
+#' @param vs_currency Quote currency, default `"usd"`. Other currencies are
+#'   limited to the last 365 days and need the coin's slug, so ids missing
+#'   from `coin_list` return no price series.
 #' @param start_date,end_date Client-side date filter applied after fetch.
 #'   `NULL` returns full history.
 #' @param coin_list Optional `cg_list()` output used to join `slug` /
@@ -106,92 +110,27 @@ cg_history_by_id <- function(ids = NULL,
     return(tibble::tibble())
   }
 
-  client <- cg_make_client(sleep = sleep, wait = wait,
-                           max_retries = max_retries)
+  web_client <- cg_make_client(sleep = sleep, wait = wait,
+                               max_retries = max_retries)
+  api_client <- cg_make_client(sleep = max(sleep, getOption("crypto2.cg_sleep", 2.5)),
+                               wait = wait, max_retries = max_retries)
+  cg_warn_history_coverage(vs, what, start_date)
 
-  fetch_one <- function(numeric_id) {
-    out <- NULL
-
-    if ("price" %in% what) {
-      pj <- cg_parse_json(client(cg_url(
-        sprintf("price_charts/%d/%s/max.json", numeric_id, vs))))
-      if (!is.null(pj) && length(pj$stats)) {
-        pr <- tibble::tibble(
-          timestamp = cg_ms_to_posix(pj$stats[, 1]),
-          close     = as.numeric(pj$stats[, 2])
-        )
-        pr <- floor_daily_(pr, "close", date_convention)
-        if (!is.null(pj$total_volumes) && length(pj$total_volumes)) {
-          vol <- tibble::tibble(
-            timestamp = cg_ms_to_posix(pj$total_volumes[, 1]),
-            volume    = as.numeric(pj$total_volumes[, 2])
-          )
-          vol <- floor_daily_(vol, "volume", date_convention)
-          pr <- dplyr::full_join(pr, vol, by = "date")
-        } else {
-          pr$volume <- NA_real_
-        }
-        out <- pr
-      }
+  # Slug lookup: joined onto the output, and needed for the non-USD path
+  lookup <- NULL
+  if (!isFALSE(coin_list)) {
+    if (is.null(coin_list)) coin_list <- cg_list()
+    if ("id" %in% names(coin_list) && "slug" %in% names(coin_list)) {
+      lookup <- coin_list[!is.na(coin_list$id),
+                          c("id", "slug", "name", "symbol"), drop = FALSE]
+      lookup <- lookup[!duplicated(lookup$id), , drop = FALSE]
+    } else {
+      warning("cg_history_by_id(): `coin_list` lacks `id` / `slug` columns; ",
+              "skipping slug join.", call. = FALSE)
     }
-
-    if ("market_cap" %in% what) {
-      mj <- cg_parse_json(client(cg_url(
-        sprintf("market_cap/%d/%s/max.json", numeric_id, vs))))
-      if (!is.null(mj) && length(mj$stats)) {
-        mc <- tibble::tibble(
-          timestamp  = cg_ms_to_posix(mj$stats[, 1]),
-          market_cap = as.numeric(mj$stats[, 2])
-        )
-        mc <- floor_daily_(mc, "market_cap", date_convention)
-        out <- if (is.null(out)) mc else dplyr::full_join(out, mc, by = "date")
-      }
-    }
-
-    if ("ohlc" %in% what) {
-      oj <- cg_parse_json(client(cg_url(
-        sprintf("ohlc/%d/series/%s/max.json", numeric_id, vs))))
-      if (!is.null(oj) && !is.null(oj$ohlc) && length(oj$ohlc)) {
-        ohlc <- tibble::tibble(
-          timestamp = cg_ms_to_posix(oj$ohlc[, 1]),
-          open      = as.numeric(oj$ohlc[, 2]),
-          high      = as.numeric(oj$ohlc[, 3]),
-          low       = as.numeric(oj$ohlc[, 4]),
-          close_o   = as.numeric(oj$ohlc[, 5])
-        )
-        ohlc <- floor_daily_(ohlc, c("open","high","low","close_o"), date_convention)
-        if (is.null(out)) {
-          out <- ohlc %>% dplyr::mutate(close = close_o) %>% dplyr::select(-close_o)
-        } else {
-          out <- dplyr::full_join(out, ohlc, by = "date") %>%
-            dplyr::mutate(close = ifelse(is.na(close_o), close, close_o)) %>%
-            dplyr::select(-close_o)
-        }
-      }
-    }
-
-    if (is.null(out) || !nrow(out)) return(NULL)
-
-    expected_cols <- c("open", "high", "low", "close", "volume", "market_cap")
-    for (cc in setdiff(expected_cols, names(out))) out[[cc]] <- NA_real_
-
-    out %>%
-      dplyr::mutate(
-        timestamp    = as.POSIXct(date, tz = "UTC"),
-        id           = numeric_id,
-        ref_cur_id   = vs,
-        ref_cur_name = toupper(vs),
-        time_open    = as.POSIXct(NA),
-        time_high    = as.POSIXct(NA),
-        time_low     = as.POSIXct(NA),
-        time_close   = as.POSIXct(NA)
-      ) %>%
-      dplyr::select(
-        id, timestamp, ref_cur_id, ref_cur_name,
-        open, high, low, close, volume, market_cap,
-        time_open, time_high, time_low, time_close
-      )
   }
+  slugs <- if (is.null(lookup)) rep(NA_character_, length(ids)) else
+    lookup$slug[match(ids, lookup$id)]
 
   n <- length(ids)
   pb <- if (!quiet) {
@@ -206,34 +145,45 @@ cg_history_by_id <- function(ids = NULL,
       bullet = "pointer", bullet_col = "green"))
   }
 
-  results <- vector("list", n)
+  results  <- vector("list", n)
+  price_ok <- ohlc_ok <- rep(NA, n)
   for (i in seq_along(ids)) {
     if (!quiet) pb$tick()
-    results[[i]] <- tryCatch(fetch_one(ids[i]), error = function(e) NULL)
+    r <- tryCatch(
+      cg_fetch_daily(key = ids[i], slug = slugs[i], numeric_id = ids[i],
+                     vs = vs, what = what, web_client = web_client,
+                     api_client = api_client,
+                     date_convention = date_convention),
+      error = function(e) list(data = NULL, price_ok = FALSE, ohlc_ok = NA))
+    price_ok[i] <- r$price_ok
+    ohlc_ok[i]  <- r$ohlc_ok
+    if (is.null(r$data)) next
+    results[[i]] <- r$data %>%
+      dplyr::mutate(
+        timestamp    = as.POSIXct(date, tz = "UTC"),
+        id           = ids[i],
+        ref_cur_id   = vs,
+        ref_cur_name = toupper(vs),
+        time_open    = as.POSIXct(NA),
+        time_high    = as.POSIXct(NA),
+        time_low     = as.POSIXct(NA),
+        time_close   = as.POSIXct(NA)
+      )
   }
+  cg_report_daily_failures(
+    "cg_history_by_id", as.character(ids), price_ok, ohlc_ok,
+    source_alive = function() cg_source_alive(vs, web_client, api_client))
   results <- Filter(Negate(is.null), results)
   if (!length(results)) {
-    warning("cg_history_by_id(): no data returned.", call. = FALSE)
+    if (!any(price_ok %in% FALSE)) warning("cg_history_by_id(): no data returned.", call. = FALSE)
     return(tibble::tibble())
   }
   hist <- dplyr::bind_rows(results)
-
-  # Slug join (if requested)
-  if (!isFALSE(coin_list)) {
-    if (is.null(coin_list)) coin_list <- cg_list()
-    if ("id" %in% names(coin_list) && "slug" %in% names(coin_list)) {
-      lookup <- coin_list[!is.na(coin_list$id),
-                          c("id", "slug", "name", "symbol"), drop = FALSE]
-      hist <- dplyr::left_join(hist, lookup, by = "id")
-    } else {
-      warning("cg_history_by_id(): `coin_list` lacks `id` / `slug` columns; ",
-              "skipping slug join.", call. = FALSE)
-      hist <- dplyr::mutate(hist, slug = NA_character_,
-                            name = NA_character_, symbol = NA_character_)
-    }
+  hist <- if (is.null(lookup)) {
+    dplyr::mutate(hist, slug = NA_character_,
+                  name = NA_character_, symbol = NA_character_)
   } else {
-    hist <- dplyr::mutate(hist, slug = NA_character_,
-                          name = NA_character_, symbol = NA_character_)
+    dplyr::left_join(hist, lookup, by = "id")
   }
 
   hist <- hist %>%
@@ -260,28 +210,4 @@ cg_history_by_id <- function(ids = NULL,
   }
 
   hist
-}
-
-# Internal: collapse a (timestamp, value...) tibble to daily bars on the
-# UTC calendar. Shared between cg_history() and cg_history_by_id() -- the
-# CoinGecko website endpoints intermix daily bars with a final rolling
-# "now" point in the same series, so we floor to date and keep the last
-# observation per day for each value column. Under
-# `date_convention = "end_of_day"` (the default), midnight-UTC ticks
-# are attributed to the previous date to match CMC's close-of-day
-# labelling; non-midnight points (the "now" snapshot) keep their own date.
-floor_daily_ <- function(df, value_cols,
-                         date_convention = "end_of_day") {
-  if (is.null(df) || !nrow(df)) return(df)
-  raw_date <- as.Date(df$timestamp, tz = "UTC")
-  if (date_convention == "end_of_day") {
-    is_midnight <- (as.numeric(df$timestamp) %% 86400) == 0
-    df$date <- as.Date(ifelse(is_midnight, raw_date - 1L, raw_date),
-                       origin = "1970-01-01")
-  } else {
-    df$date <- raw_date
-  }
-  df <- df[order(df$date, df$timestamp), , drop = FALSE]
-  df <- df[!duplicated(df$date, fromLast = TRUE), , drop = FALSE]
-  df[, c("date", value_cols), drop = FALSE]
 }

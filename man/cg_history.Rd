@@ -24,8 +24,9 @@ cg_history(
 (\code{\link[=cg_list]{cg_list()}}), or provide list of crypto currencies in the \code{\link[=cg_list]{cg_list()}} /
 \code{\link[=cg_listings]{cg_listings()}} format.}
 
-\item{convert}{(default: \code{"USD"}). Be aware that the CoinGecko free tier
-typically supports only \code{"USD"} and \code{"BTC"} reliably.}
+\item{convert}{(default: \code{"USD"}). Full history is available for \code{"USD"}
+only; any other CoinGecko \code{vs_currency} (e.g. \code{"BTC"}, \code{"EUR"}) is
+limited to the last 365 days.}
 
 \item{limit}{integer Return the top n records, default is all tokens.}
 
@@ -70,8 +71,9 @@ Crypto currency historic OHLC market data in a tibble:
 \item{timestamp}{POSIXct (UTC), midnight of the trading day.}
 \item{ref_cur_id}{Quote currency code (e.g. \code{"usd"}).}
 \item{ref_cur_name}{Upper-cased quote currency.}
-\item{open, high, low, close}{Daily OHLC; \code{close} is back-filled from
-the price-charts series when OHLC candles are unavailable.}
+\item{open, high, low}{Daily OHLC from 4-hour candles (last 30 days).}
+\item{close}{Daily close from the price series; back-filled from the
+OHLC candles where the price series has no value.}
 \item{volume}{Daily total volume.}
 \item{market_cap}{Daily market cap.}
 \item{time_open, time_high, time_low, time_close}{\code{NA} -- CoinGecko does
@@ -84,16 +86,27 @@ the crypto2 CMC output.
 }
 \details{
 No API key is required. When the requested coin's numeric id is missing
-in \code{coin_list}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted to recover it. If a coin
-cannot be resolved at all, it is silently skipped.
+in \code{coin_list}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted to recover it (the id is
+only needed for OHLC).
 
-Free-tier coverage: \strong{close, volume and market cap are returned for the
-full lifetime of each coin} -- typically from the coin's listing date
-forward. The OHLC quartet (\code{open} / \code{high} / \code{low}) is capped at the
-\strong{most recent 365 days} on the free tier; for older windows those three
-columns come back \code{NA} while \code{close} remains populated from the price
-stream. For a one-shot complete backfill of OHLC over the full history
-see \code{vignette("coingecko-pro-backfill")}.
+Free-tier coverage:
+\itemize{
+\item \strong{USD: close, volume and market cap for the full lifetime of each
+coin}, from CoinGecko's daily CSV export (one request per coin).
+\item \strong{Other quote currencies:} the export is USD-only, so close, volume
+and market cap come from the API's \code{market_chart} endpoint and cover
+the \strong{most recent 365 days} only.
+\item \strong{OHLC} (\code{open} / \code{high} / \code{low}) is built from 4-hour candles and
+covers the \strong{most recent 30 days}; older rows have \code{NA} there. Longer
+windows are only offered as 4-day candles, which are not daily bars.
+For a one-shot complete OHLC backfill see
+\code{vignette("coingecko-pro-backfill")}.
+}
+
+Only completed days are returned. If no close/volume/market-cap series
+can be retrieved for any requested coin, the function stops with an
+error (the source has most likely changed); if it fails for some coins
+only, a warning names them.
 }
 \examples{
 \dontrun{

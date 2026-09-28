@@ -27,9 +27,13 @@ delisted coins, supply the union of historically-observed IDs from
 your accumulated snapshots.}
 
 \item{what}{Subset of streams to fetch. Any combination of
-\code{"price"}, \code{"market_cap"}, and \code{"ohlc"}. Default all three.}
+\code{"price"} (close + volume), \code{"market_cap"}, and \code{"ohlc"}. Default all
+three. Coverage is the same as for \code{\link[=cg_history]{cg_history()}}: full history for
+close, volume and market cap in USD, OHLC for the last 30 days.}
 
-\item{vs_currency}{Quote currency, default \code{"usd"}.}
+\item{vs_currency}{Quote currency, default \code{"usd"}. Other currencies are
+limited to the last 365 days and need the coin's slug, so ids missing
+from \code{coin_list} return no price series.}
 
 \item{start_date, end_date}{Client-side date filter applied after fetch.
 \code{NULL} returns full history.}
