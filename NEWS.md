@@ -31,6 +31,16 @@ Two defaults silently returned incomplete data; both are fixed.
   result that reaches an explicit `limit` warns that it may be truncated.
   `crypto_history()` without `coin_list` now selects from the full latest
   listing rather than its top 5,000.
+* `crypto_listings()` no longer loses a whole day when CMC lists an exact
+  multiple of 5,000 coins (e.g. 10,000 on 2024-07-10 and 2024-07-11). The
+  empty page that ends such a day made the page parser fail; for
+  `which = "historical"` the day was then dropped without a warning, for
+  `"latest"` / `"new"` the call errored. Empty pages now end the paging
+  and keep the pages already loaded.
+* `crypto_listings(which = "historical")` now warns and names every day
+  that still fails after the retries; such days are missing from the
+  result rather than truncated. `cg_list()` warns with the page number if
+  `/coins/markets` paging stops on a failed page.
 
 ## `cg_history()` rebuilt on CoinGecko's CSV export
 

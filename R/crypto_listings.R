@@ -2,6 +2,11 @@
 #'
 #' This code retrieves listing data (latest/new/historic).
 #'
+#' For `which = "historical"` each day is fetched in pages of 5,000 coins
+#' and retried as a whole if a page fails. A day is returned complete or not
+#' at all: a day that still fails after the retries is dropped and named in
+#' a warning, never returned truncated.
+#'
 #' @param which string Shall the code retrieve the latest listing, the new listings or a historic listing?
 #' @param convert string (default: USD) to one of available fiat prices (`fiat_list()`). If more
 #' than one are selected please separate by comma (e.g. "USD,BTC"), only necessary if 'quote=TRUE'
@@ -101,6 +106,10 @@ crypto_listings <- function(which="latest", convert="USD", limit = NULL, start_d
                       what, as.integer(limit)), call. = FALSE)
     }
   }
+  empty_result <- function(what) {
+    warning(sprintf("crypto_listings(): CMC returned no rows for %s.", what), call. = FALSE)
+    tibble::tibble()
+  }
   # get current coins
   if (which=="new"){
     listing_raw <- NULL
@@ -109,13 +118,16 @@ crypto_listings <- function(which="latest", convert="USD", limit = NULL, start_d
     for (i in 1:limitend){
       new_url <- paste0("cryptocurrency/spotlight?dataType=8&limit=",limitdl,"&convertId=",convertId,"&sort_dir=",sort_dir,"&start=",(i-1)*limitdl+1)
       new_raw <- safeFromJSON(construct_url(new_url,v=3))
+      n <- NROW(new_raw$data$recentlyAddedList)
+      if (n == 0) break
       listing_raw <- bind_rows(listing_raw,
                                new_raw$data$recentlyAddedList %>% tibble::as_tibble() |> janitor::clean_names() %>%
                                  dplyr::rename(date_added=added_date) |>
                                  dplyr::select(-platforms) |>
                                  dplyr::mutate(dplyr::across(c(date_added),as.Date)))
-      if (nrow(new_raw$data$recentlyAddedList)<limitdl) {break}
+      if (n<limitdl) {break}
     }
+    if (is.null(listing_raw)) return(empty_result("the new listing"))
     listing_raw <- trim(listing_raw)
     warn_capped(nrow(listing_raw), "the new listing")
     listing <- listing_raw %>% dplyr::select(-price_change) %>% unique()
@@ -133,12 +145,15 @@ crypto_listings <- function(which="latest", convert="USD", limit = NULL, start_d
                         "&convertId=",
                         convertId,"&sort=",sort,"&sort_dir=",sort_dir,"&start=",(i-1)*limitdl+1)
       latest_raw <- safeFromJSON(construct_url(latest_url,v=3))
+      n <- NROW(latest_raw$data$cryptoCurrencyList)
+      if (n == 0) break
       listing_raw <- bind_rows(listing_raw,
                                latest_raw$data$cryptoCurrencyList %>% tibble::as_tibble() |> janitor::clean_names() %>%
                                  dplyr::mutate(dplyr::across(c(last_updated),as.Date)) %>%
                                  dplyr::select(-any_of(c("badges","audit_info_list","is_audited","platform"))))
-      if (nrow(latest_raw$data$cryptoCurrencyList)<limitdl) {break}
+      if (n<limitdl) {break}
     }
+    if (is.null(listing_raw)) return(empty_result("the latest listing"))
     listing_raw <- trim(listing_raw)
     warn_capped(nrow(listing_raw), "the latest listing")
     listing <- listing_raw %>% dplyr::select(-quotes,-tags) %>% unique()
@@ -166,12 +181,16 @@ crypto_listings <- function(which="latest", convert="USD", limit = NULL, start_d
         page_size <- if (is.null(limit)) limitdl else min(limitdl, limit - (i-1)*limitdl)
         history_url <- paste0(historyurl,"&limit=",page_size,"&start=",(i-1)*limitdl+1)
         history_raw <- safeFromJSON(construct_url(history_url,v=3))
+        # a day with an exact multiple of 5,000 coins ends on an empty page
+        n <- NROW(history_raw$data)
+        if (n == 0) break
         listing_raw <- bind_rows(listing_raw,
                                  history_raw$data %>% tibble::as_tibble() |> janitor::clean_names() %>%
                                    dplyr::mutate(dplyr::across(c(date_added,last_updated),as.Date)))
-        if (NROW(history_raw$data)<page_size) {break}
+        if (n<page_size) {break}
       }
-      listing <- listing_raw %>% dplyr::select(-any_of(c("tags","quotes","platform"))) %>% unique()
+      if (is.null(listing_raw)) stop("no listing returned for ", historyurl, call. = FALSE)
+      listing <-listing_raw %>% dplyr::select(-any_of(c("tags","quotes","platform"))) %>% unique()
       if (quote){
         lquote <- listing_raw %>% dplyr::select(quotes) %>% tidyr::unnest(quotes) %>% tidyr::unnest(everything(), names_sep="_") |> janitor::clean_names()
         listing <- listing_raw %>% dplyr::select(-any_of(c("tags","quotes","platform"))) %>%
@@ -191,6 +210,16 @@ crypto_listings <- function(which="latest", convert="USD", limit = NULL, start_d
                            total = length(dates), clear = TRUE)
     message(cli::cat_bullet("Scraping historical listings", bullet = "pointer",bullet_col = "green"))
     data <- tbdate %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x, quote)))
+    # A day is kept whole or not at all: a day that still fails after the
+    # retries is dropped (never truncated) and named in a warning.
+    failed <- vapply(data$out, is.null, logical(1))
+    if (any(failed)) {
+      warning(sprintf("crypto_listings(): %d of %d day(s) failed after retries and are MISSING from the result: %s",
+                      sum(failed), length(failed),
+                      paste0(paste(utils::head(format(data$date[failed]), 10), collapse = ", "),
+                             if (sum(failed) > 10) ", ..." else "")),
+              call. = FALSE)
+    }
     # Modify massive dataframe
     listing <- data %>% select(-historyurl) %>% tidyr::unnest(out)
     if (!is.null(limit) && nrow(listing) > 0) {

@@ -85,6 +85,12 @@ whether "quote" is requested, the result may only contain some of the following 
 \description{
 This code retrieves listing data (latest/new/historic).
 }
+\details{
+For \code{which = "historical"} each day is fetched in pages of 5,000 coins
+and retried as a whole if a page fails. A day is returned complete or not
+at all: a day that still fails after the retries is dropped and named in
+a warning, never returned truncated.
+}
 \examples{
 \dontrun{
 # return new listings from the last 30 days

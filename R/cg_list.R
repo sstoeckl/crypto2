@@ -92,7 +92,15 @@ cg_list <- function(only_active = TRUE, add_untracked = FALSE) {
       query = list(vs_currency = vs_currency,
                    per_page = per_page, page = i)
     ))
-    if (is.null(page) || (is.data.frame(page) && nrow(page) == 0L)) break
+    # NULL = failed after all retries; an empty array = past the last page
+    if (is.null(page)) {
+      warning(sprintf(paste0(
+        "cg_list(): page %d of /coins/markets failed after retries; paging ",
+        "stopped. Rank and market data cover pages 1-%d only and are INCOMPLETE."),
+        i, i - 1L), call. = FALSE)
+      break
+    }
+    if (!NROW(page)) break
     markets_rows[[i]] <- tibble::as_tibble(page)
     if (nrow(markets_rows[[i]]) < per_page) break
   }

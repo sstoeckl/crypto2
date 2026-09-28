@@ -24,6 +24,54 @@ test_that("historical listings are not truncated at 5,000 by default", {
   expect_equal(anyDuplicated(hist$id), 0L)
 })
 
+# Offline: CMC ends a day with exactly 10,000 coins on an empty third page
+fake_cmc_page <- function(n, offset) {
+  if (!n) return(list(data = list()))
+  list(data = data.frame(id = seq_len(n) + offset, name = "x", symbol = "x",
+                         slug = paste0("c", seq_len(n) + offset),
+                         cmcRank = seq_len(n) + offset,
+                         dateAdded = "2020-01-01T00:00:00.000Z",
+                         lastUpdated = "2024-07-10T23:59:00.000Z"))
+}
+
+test_that("an empty page after exactly 10,000 coins keeps the loaded pages", {
+  local_mocked_bindings(safeFromJSON = function(url, ...) {
+    start <- as.integer(sub(".*start=(\\d+).*", "\\1", url))
+    fake_cmc_page(if (start > 10000) 0L else 5000L, start - 1L)
+  })
+  for (lim in list(NULL, 100000)) {
+    expect_no_warning(
+      out <- crypto_listings(which = "historical", start_date = "20240710",
+                             end_date = "20240710", limit = lim, wait = 0.01)
+    )
+    expect_equal(nrow(out), 10000L)
+    expect_equal(anyDuplicated(out$id), 0L)
+  }
+})
+
+test_that("a day that keeps failing is dropped whole and named in a warning", {
+  local_mocked_bindings(safeFromJSON = function(url, ...) {
+    start <- as.integer(sub(".*start=(\\d+).*", "\\1", url))
+    if (grepl("date=2024-07-11", url) && start > 5000) stop("simulated failure")
+    fake_cmc_page(if (start > 5000) 0L else 5000L, start - 1L)
+  })
+  expect_warning(
+    out <- crypto_listings(which = "historical", start_date = "20240710",
+                           end_date = "20240711", wait = 0.01),
+    "1 of 2 day\\(s\\) failed.*MISSING.*2024-07-11")
+  expect_equal(unique(out$date), as.Date("2024-07-10"))
+  expect_equal(nrow(out), 5000L)
+})
+
+test_that("live: a day with exactly 10,000 coins is returned in full", {
+  skip_on_cran()
+  expect_no_warning(
+    out <- crypto_listings(which = "historical", start_date = "20240710",
+                           end_date = "20240710", limit = 100000)
+  )
+  expect_equal(nrow(out), 10000L)
+})
+
 # Output data structure is correct
 test_that("Output data structure is correct", {
   skip_on_cran()
