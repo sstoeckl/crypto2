@@ -48,7 +48,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">crypto_listings</span><span class="op">(</span></span>
 <span>  which <span class="op">=</span> <span class="st">"latest"</span>,</span>
 <span>  convert <span class="op">=</span> <span class="st">"USD"</span>,</span>
-<span>  limit <span class="op">=</span> <span class="fl">5000</span>,</span>
+<span>  limit <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interval <span class="op">=</span> <span class="st">"day"</span>,</span>
@@ -75,7 +75,9 @@ than one are selected please separate by comma (e.g. "USD,BTC"), only necessary 
 
 
 <dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
-<dd><p>integer Return the top n records</p></dd>
+<dd><p>integer Return the top n records per listing (per day for
+<code>which = "historical"</code>). <code>NULL</code> (default) returns all coins. If a result
+reaches <code>limit</code> exactly, a warning flags it as possibly truncated.</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
@@ -206,6 +208,13 @@ whether "quote" is requested, the result may only contain some of the following 
 <dd><p>90 day return</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>For <code>which = "historical"</code> each day is fetched in pages of 5,000 coins
+and retried as a whole if a page fails. A day is returned complete or not
+at all: a day that still fails after the retries is dropped and named in
+a warning, never returned truncated.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -220,7 +229,7 @@ whether "quote" is requested, the result may only contain some of the following 
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

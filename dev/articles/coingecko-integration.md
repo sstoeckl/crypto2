@@ -38,9 +38,10 @@ library(arrow)
 # 1. Full historic universe: active + delisted, via cg_id_mapping()
 universe <- cg_list(only_active = FALSE)
 
-# 2. Daily close / volume / market cap, full lifetime per coin.
-#    Skip OHLC here -- it adds a 3rd HTTP call per coin and is the only
-#    free-tier-capped stream (see "What is NOT in the free tier" below).
+# 2. Daily close / volume / market cap in USD, full lifetime per coin
+#    (one CSV download per coin). Skip OHLC here -- it adds a 2nd HTTP
+#    call per coin and only covers the last 30 days (see "What is NOT in
+#    the free tier" below).
 options(crypto2.cg_what = c("price", "market_cap"))
 hist <- cg_history(universe)
 
@@ -82,10 +83,14 @@ for the date-convention story).
 
 | Column | Coverage on free tier |
 |----|----|
-| `close` | full lifetime of each coin (daily) |
-| `volume` | full lifetime of each coin (daily) |
-| `market_cap` | full lifetime of each coin (daily) |
-| `open`, `high`, `low` | **only the most recent 365 days**; older rows have `NA` here |
+| `close` | full lifetime of each coin (daily, USD) |
+| `volume` | full lifetime of each coin (daily, USD) |
+| `market_cap` | full lifetime of each coin (daily, USD) |
+| `open`, `high`, `low` | **only the most recent 30 days**; older rows have `NA` here |
+
+Full history is served in USD only. With `convert = "BTC"` (or any other
+quote currency) close, volume and market cap come from the API and cover
+the most recent 365 days.
 
 For complete OHLC over the full history (microstructure work,
 candlestick-based signals, intraday volatility models), see the Pro
@@ -129,8 +134,26 @@ data retrieval is current until YYYY-MM-DD”*.
 
 ``` r
 
-snap <- cg_listings(which = "latest", quote = TRUE, limit = 1000)
+snap <- cg_listings(limit = 1000)   # prices included by default
 ```
+
+The snapshot carries every `/coins/markets` field: price, 24h volume and
+range, price and market-cap changes, all-time high/low and ROI (see
+[`?cg_listings`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+for the column mapping). Two caveats:
+
+- `/coins/markets` no longer lists wrapped, staked or bridged tokens
+  (stETH, wstETH, WBTC, JitoSOL, bridged USDT, …). Their history is only
+  available through
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md).
+- Without a key the public endpoint allows only a few calls per minute,
+  and a full snapshot needs about 70 pages. Setting
+  `Sys.setenv(CG_DEMO_KEY = "...")` to a free Demo-API key raises the
+  limit to 30 calls per minute. Failed pages are retried with backoff;
+  if a page still fails,
+  [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+  warns with the page number instead of returning a silently truncated
+  snapshot.
 
 `which = "historical"` and `which = "new"` warn and coerce to `"latest"`
 – CG’s free tier does not expose the historical cross-section in a
@@ -142,7 +165,7 @@ periodically (cron) and accumulate the parquet output:
 ``` r
 
 arrow::write_dataset(
-  cg_listings(which = "latest", quote = TRUE),
+  cg_listings(),
   path        = "data/cg_listings",
   partitioning = "harvested_at"
 )
@@ -173,13 +196,14 @@ link fields. Same column conventions as
 
 ## What is NOT in the free tier
 
-The free tier covers every cell needed for daily asset-pricing work
-*except* the older end of the OHLC quartet:
+The free tier covers every cell needed for daily asset-pricing work in
+USD *except* the older end of the OHLC quartet:
 
-- **OHLC (open / high / low) older than ~365 days.** Close is fine
+- **OHLC (open / high / low) older than 30 days.** Close is fine
   (returned from the price stream), volume and market cap are fine, but
   the three intra-day extreme columns come back `NA` for any date more
-  than a year old. For a complete backfill, run the Pro recipes in
+  than a month old; CoinGecko offers longer windows only as 4-day
+  candles. For a complete backfill, run the Pro recipes in
   [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md)
   once – the recipes are kept inline in that vignette rather than
   exported from the package, so the package itself stays key-less.

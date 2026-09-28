@@ -35,12 +35,18 @@ cg_history_by_id(
 
 - what:
 
-  Subset of streams to fetch. Any combination of `"price"`,
-  `"market_cap"`, and `"ohlc"`. Default all three.
+  Subset of streams to fetch. Any combination of `"price"` (close +
+  volume), `"market_cap"`, and `"ohlc"`. Default all three. Coverage is
+  the same as for
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md):
+  full history for close, volume and market cap in USD, OHLC for the
+  last 30 days.
 
 - vs_currency:
 
-  Quote currency, default `"usd"`.
+  Quote currency, default `"usd"`. Other currencies are limited to the
+  last 365 days and need the coin's slug, so ids missing from
+  `coin_list` return no price series.
 
 - start_date, end_date:
 

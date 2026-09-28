@@ -41,6 +41,33 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.1.0.9000" id="crypto2-2109000-development-version">crypto2 2.1.0.9000 (development version)<a class="anchor" aria-label="anchor" href="#crypto2-2109000-development-version"></a></h2>
 <div class="section level3">
+<h3 id="complete-listings-no-silent-truncation-2-1-0-9000">Complete listings, no silent truncation<a class="anchor" aria-label="anchor" href="#complete-listings-no-silent-truncation-2-1-0-9000"></a></h3>
+<p>Two defaults silently returned incomplete data; both are fixed.</p>
+<ul><li>
+<code><a href="../reference/cg_listings.html">cg_listings()</a></code> now defaults to <code>quote = TRUE</code> and returns every field of <code>/coins/markets</code>: <code>price</code> (<code>current_price</code>), <code>volume_24h</code> (<code>total_volume</code>), <code>high_24h</code>, <code>low_24h</code>, <code>price_change_24h</code>, the <code>percent_change_*</code> windows, <code>market_cap_change_24h</code>, <code>market_cap_change_percentage_24h</code>, <code>ath</code>/<code>atl</code> with their dates, and the flattened <code>roi_times</code>, <code>roi_currency</code>, <code>roi_percentage</code>. <code>last_updated</code>, <code>ath_date</code> and <code>atl_date</code> are now POSIXct (UTC) rather than Date. Under the previous <code>quote = FALSE</code> default, snapshots carried no price, and deriving one as <code>market_cap / circulating_supply</code> is off by up to 16%.</li>
+<li>
+<code><a href="../reference/cg_listings.html">cg_listings()</a></code> defaults to <code>limit = NULL</code> (all coins, about 18,000 on 70+ pages). A page that still fails after the retries now stops paging with a warning naming the page, instead of returning a silently shortened snapshot.</li>
+<li>All <code>cg_*</code> functions send a CoinGecko Demo-API key as the <code>x-cg-demo-api-key</code> header when the environment variable <code>CG_DEMO_KEY</code> is set (30 instead of a handful of calls per minute). HTTP 408/502/503/504 are now retried with backoff like 429.</li>
+<li>
+<code><a href="../reference/cg_listings.html">?cg_listings</a></code> documents that <code>/coins/markets</code> no longer lists wrapped, staked or bridged tokens (stETH, wstETH, WBTC, JitoSOL, bridged USDT); their history is only available through <code><a href="../reference/cg_history.html">cg_history()</a></code>.</li>
+<li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>limit = NULL</code> (all coins). Since 2021-05-07 CMC lists more than 5,000 coins per day (9,002 on 2024-01-07), and the old default <code>limit = 5000</code> cut every day at rank 5,000 without a warning. <code>which = "historical"</code> now pages in blocks of 5,000, and a result that reaches an explicit <code>limit</code> warns that it may be truncated. <code><a href="../reference/crypto_history.html">crypto_history()</a></code> without <code>coin_list</code> now selects from the full latest listing rather than its top 5,000.</li>
+<li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> no longer loses a whole day when CMC lists an exact multiple of 5,000 coins (e.g. 10,000 on 2024-07-10 and 2024-07-11). The empty page that ends such a day made the page parser fail; for <code>which = "historical"</code> the day was then dropped without a warning, for <code>"latest"</code> / <code>"new"</code> the call errored. Empty pages now end the paging and keep the pages already loaded.</li>
+<li>
+<code>crypto_listings(which = "historical")</code> now warns and names every day that still fails after the retries; such days are missing from the result rather than truncated. <code><a href="../reference/cg_list.html">cg_list()</a></code> warns with the page number if <code>/coins/markets</code> paging stops on a failed page.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="cg_history-rebuilt-on-coingeckos-csv-export-2-1-0-9000">
+<code>cg_history()</code> rebuilt on CoinGecko’s CSV export<a class="anchor" aria-label="anchor" href="#cg_history-rebuilt-on-coingeckos-csv-export-2-1-0-9000"></a></h3>
+<p>CoinGecko retired the website endpoints <code>price_charts/&lt;coin&gt;/&lt;vs&gt;/max.json</code> and <code>market_cap/&lt;coin&gt;/&lt;vs&gt;/max.json</code> (HTTP 404). Since then <code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> silently returned no close, volume or market cap, only 4-day OHLC candles misread as daily bars.</p>
+<ul><li>Close, volume and market cap now come from the daily CSV export <code>price_charts/export/&lt;coin&gt;/usd.csv</code>: the full lifetime of each coin in a single request. Over the last 365 days the values are identical to the API’s <code>market_chart</code> series and within 0.05% of CMC for BTC. The export’s close is dated one day later than its market cap and volume; the package re-aligns them, so the <code>date_convention</code> semantics are unchanged.</li>
+<li>The export is USD-only. For any other <code>convert</code> / <code>vs_currency</code> the series come from the API <code>market_chart</code> endpoint and cover the most recent 365 days (a one-time warning says so).</li>
+<li>Daily OHLC is aggregated from 4-hour candles and covers the most recent 30 days (previously documented as 365 days, but those were 4-day candles). <code>close</code> now comes from the price series throughout, so the column no longer switches source 30 days back; OHLC candles only back-fill it.</li>
+<li>Only completed days are returned.</li>
+<li>If no series can be retrieved for any requested coin, the functions now stop with an error; partial failures warn and name the affected coins.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="coingecko-integration-2-1-0-9000">CoinGecko integration<a class="anchor" aria-label="anchor" href="#coingecko-integration-2-1-0-9000"></a></h3>
 <p>Added a CoinGecko-side counterpart to the CMC API as a second, independent source. Column names mirror the <code>crypto_*</code> functions, so downstream code that already consumes a CMC tibble works on a CG tibble too.</p>
 <ul><li>
@@ -119,7 +146,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

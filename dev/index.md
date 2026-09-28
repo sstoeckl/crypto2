@@ -2,6 +2,30 @@
 
 # Historical Cryptocurrency Prices for Active and Delisted Tokens!
 
+> **Experimental:** A CoinGecko integration is in active testing on the
+> [`dev`](https://github.com/sstoeckl/crypto2/tree/dev) branch. It adds
+> [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md),
+> [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md),
+> [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md),
+> [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md),
+> and
+> [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+> — CMC-column-compatible companions that pull from CoinGecko, **no API
+> key required**. Browse the dev docs at
+> <https://www.sebastianstoeckl.com/crypto2/dev/> (use the navbar
+> Release / Devel switcher) or install the dev branch directly:
+>
+> ``` r
+>
+> # install.packages("remotes")
+> remotes::install_github("sstoeckl/crypto2@dev")
+> ```
+>
+> CoinGecko’s free tier exposes only **active** coins; the package warns
+> when delisted-coin retrieval is impossible. Build a
+> survivorship-bias-free archive by snapshotting periodically
+> (daily/weekly) from your own cronjob.
+
 This is a modification of the original `crypto` package by [jesse
 vent](https://github.com/JesseVent/crypto). It is entirely set up to use
 means from the `tidyverse` and provides `tibble`s with all data
