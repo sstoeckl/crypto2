@@ -149,27 +149,27 @@ hourly intraday CG data; see `tools/check_cg_midnight_convention.R`).
   stream. The one-time warning now only fires when OHLC is actually
   requested over a window that exceeds the cap.
 
-# crypto 2.0.5
+# crypto2 2.0.5
 
 Slight change in api call outcome needed another modification in `crypto_info()`.
 
-# crypto 2.0.4
+# crypto2 2.0.4
 
 Slight change in api call outcome needed another modification in `crypto_info()`.
 
-# crypto 2.0.3
+# crypto2 2.0.3
 
 Slight change in api call outcome needed another modification in `crypto_info()`. Also corrected one failing tests to not check time zones.
 
-# crypto 2.0.2
+# crypto2 2.0.2
 
 Slight change in api call outcome needed another modification in `crypto_info()`.
 
-# crypto 2.0.1
+# crypto2 2.0.1
 
 Slight change in api call outcome needed a modification in `crypto_info()`.
 
-# crypto 2.0.0
+# crypto2 2.0.0
 
 After a major change in the api structure of coinmarketcap.com, the package had to be rewritten. As a result, many functions had to be rewritten, because data was not available any more in a similar format or with similar accuracy. Unfortunately, this will potentially break many users implementations. Here is a detailed list of changes:
 
@@ -182,27 +182,27 @@ After a major change in the api structure of coinmarketcap.com, the package had 
 - `crypto_global_quotes()` has been modified. It still produces a clear picture of the global market, but the data structure has somewhat slightly changed.
 
 
-# crypto 1.4.6 
+# crypto2 1.4.6 
 
 Added new options "sort" and "sort_dir" for `crypto_listings()` to allow for the sorting of results, which in combination with "limit" allows, for example, to only download the top 100 CCs according to market capitalization that were listed at a certain date. Correct missing last_historical_data date conversion due to the now missing field.
 
-# crypto 1.4.5 
+# crypto2 1.4.5 
 
 Added a new function `crypto_global_quotes()` which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.
 
-# crypto 1.4.4 
+# crypto2 1.4.4 
 
 A new function `crypto_listings()` is introduced to retrieve new/latest/historical listings and listing information at CMC. The option `finalWait = TRUE` does not seem to be necessary any more, also `sleep` can be set to '0' seconds.
 
-# crypto 1.4.3 
+# crypto2 1.4.3 
 
 change limit==1 bug, add interval parameter (offered by pull-request), also change the amount of id splits to allow for max url length 2000
 
-# crypto 1.4.2
+# crypto2 1.4.2
 
 Repaired the history retrieval due to the fact that one api call can only retrieve 1000 data points. Therefore we have to call more often on the api when retrieving the entire history.
 
-# crypto 1.4.1
+# crypto2 1.4.1
 
 Added and corrected a waiter function to wait an additional 60 seconds after the end of the history command before another command could be executed (to not accidentally retrieve the same outdated data). Fixed the waiter.
 
