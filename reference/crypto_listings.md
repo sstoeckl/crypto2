@@ -8,7 +8,7 @@ This code retrieves listing data (latest/new/historic).
 crypto_listings(
   which = "latest",
   convert = "USD",
-  limit = NULL,
+  limit = 5000,
   start_date = NULL,
   end_date = NULL,
   interval = "day",
@@ -31,16 +31,13 @@ crypto_listings(
 - convert:
 
   string (default: USD) to one of available fiat prices
-  ([`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/fiat_list.md)).
+  ([`fiat_list()`](https://sstoeckl.github.io/crypto2/reference/fiat_list.md)).
   If more than one are selected please separate by comma (e.g.
   "USD,BTC"), only necessary if 'quote=TRUE'
 
 - limit:
 
-  integer Return the top n records per listing (per day for
-  `which = "historical"`). `NULL` (default) returns all coins. If a
-  result reaches `limit` exactly, a warning flags it as possibly
-  truncated.
+  integer Return the top n records
 
 - start_date:
 
@@ -209,12 +206,5 @@ result may only contain some of the following variables):
 - percent_change_90d:
 
   90 day return
-
-## Details
-
-For `which = "historical"` each day is fetched in pages of 5,000 coins
-and retried as a whole if a page fails. A day is returned complete or
-not at all: a day that still fails after the retries is dropped and
-named in a warning, never returned truncated.
 
 ## Examples
