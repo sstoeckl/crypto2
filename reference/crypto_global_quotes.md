@@ -31,7 +31,7 @@ crypto_global_quotes(
 
   string (default: USD) to one or more of available fiat or precious
   metals prices
-  ([`fiat_list()`](https://sstoeckl.github.io/crypto2/reference/fiat_list.md)).
+  ([`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/reference/fiat_list.md)).
   If more than one are selected please separate by comma (e.g.
   "USD,BTC"), only necessary if 'quote=TRUE'
 
