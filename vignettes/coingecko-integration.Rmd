@@ -146,10 +146,8 @@ range, price and market-cap changes, all-time high/low and ROI (see
 * `/coins/markets` no longer lists wrapped, staked or bridged tokens
   (stETH, wstETH, WBTC, JitoSOL, bridged USDT, ...). Their history is
   only available through `cg_history()`.
-* Without a key the public endpoint allows only a few calls per minute,
-  and a full snapshot needs about 70 pages. Setting
-  `Sys.setenv(CG_DEMO_KEY = "...")` to a free Demo-API key raises the
-  limit to 30 calls per minute. Failed pages are retried with backoff;
+* The public endpoint allows only a few calls per minute, and a full
+  snapshot needs about 70 pages. Failed pages are retried with backoff;
   if a page still fails, `cg_listings()` warns with the page number
   instead of returning a silently truncated snapshot.
 

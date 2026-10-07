@@ -43,7 +43,7 @@ covers both, after a short comparison of what each source delivers.
 | Daily close, volume, market cap | full history | full history |
 | Daily open / high / low | full history | last 30 days |
 | Wrapped, staked, bridged tokens | in the listings, ranked at the bottom | missing from `cg_listings()`; history via `cg_history()` |
-| API key | none | none; optional free Demo key via `CG_DEMO_KEY` raises the rate limit |
+| API key | none | none |
 | Coin identifier | numeric `id` | `slug` (e.g. `"bitcoin"`) and numeric `id` |
 
 In short: CoinMarketCap is the stronger source for historical

@@ -102,17 +102,6 @@ test_that("transient 5xx responses are retryable, 500 is not", {
   expect_null(cg_get(cg_url("ping", host = "api")))
 })
 
-test_that("CG_DEMO_KEY is sent as a header to the API host only", {
-  withr::local_envvar(CG_DEMO_KEY = "")
-  expect_length(cg_demo_key_header(cg_url("coins/markets", host = "api")), 0L)
-
-  withr::local_envvar(CG_DEMO_KEY = "CG-test")
-  expect_equal(cg_demo_key_header(cg_url("coins/markets", host = "api")),
-               c(`x-cg-demo-api-key` = "CG-test"))
-  expect_length(cg_demo_key_header(cg_url("price_charts/bitcoin/usd/max.json",
-                                          host = "web")), 0L)
-})
-
 test_that("live: cg_listings() top 100 all carry a price and a volume", {
   skip_if_no_cg()
   skip_if_cg_rate_limited()

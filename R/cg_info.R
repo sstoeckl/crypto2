@@ -16,7 +16,7 @@
 #'   (CoinGecko endpoint is one coin per call).
 #' @param sleep integer (default `0`) Seconds to sleep between API requests.
 #'   The internal client enforces a polite floor (default `2.5s`) to stay
-#'   under the Demo-tier 30 req/min cap.
+#'   under the public API's rate limit.
 #' @param finalWait Sleep 60s after the last call (mirrors [crypto_info()]).
 #'
 #' @return Tibble with one row per coin:

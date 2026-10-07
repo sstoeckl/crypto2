@@ -19,11 +19,8 @@
 #' still available through [cg_history()], but they will not appear in a
 #' `cg_listings()` snapshot.
 #'
-#' **Rate limits and API key.** Without a key the public endpoint allows only
-#' a handful of calls per minute. Set the environment variable `CG_DEMO_KEY`
-#' to a (free) CoinGecko Demo-API key to raise this to 30 calls per minute
-#' (10,000 per month); it is sent as the `x-cg-demo-api-key` header to the
-#' documented API host only. HTTP 429 and transient 408/502/503/504 responses
+#' **Rate limits.** No API key is used; the public endpoint allows only a
+#' handful of calls per minute. HTTP 429 and transient 408/502/503/504 responses
 #' are retried with exponential backoff (see `wait` and the
 #' `crypto2.cg_max_retries` option). If a page still fails after the last
 #' retry, paging stops and a warning names the failed page, so an incomplete
@@ -47,7 +44,7 @@
 #'   on the underlying endpoint; the arguments are ignored.
 #' @param sleep integer (default `0`) Seconds to sleep between API requests.
 #'   Will be raised to at least `getOption("crypto2.cg_sleep", 2.5)`
-#'   internally to stay under the Demo-tier 30 req/min cap.
+#'   internally to stay under the public API's rate limit.
 #' @param wait Seconds to wait before retrying after a 429 (default `60`).
 #' @param finalWait Sleep 60s after the last call (mirrors
 #'   [crypto_listings()]).
@@ -78,8 +75,7 @@
 #' # Full current snapshot (all coins with a market cap), including prices
 #' latest <- cg_listings()
 #'
-#' # Top 1000 in BTC, with a Demo-API key for the higher rate limit
-#' Sys.setenv(CG_DEMO_KEY = "CG-...")
+#' # Top 1000 in BTC
 #' latest_btc <- cg_listings(convert = "BTC", limit = 1000)
 #' }
 #'

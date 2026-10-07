@@ -194,6 +194,7 @@ crypto_global_quotes <- function(which="latest", convert="USD", start_date = NUL
 
     # results
     global_quotes <- dplyr::bind_rows(global_quotes) |>  dplyr::arrange(timestamp)
+  }
   # wait xs before finishing (solving an earlier bug)
   if (finalWait){
     pb <- progress_bar$new(
@@ -205,6 +206,5 @@ crypto_global_quotes <- function(which="latest", convert="USD", start_date = NUL
     }
   }
   return(global_quotes)
-  }
 }
 

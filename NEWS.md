@@ -45,9 +45,7 @@ needed.
   labelled with the day that just ended, so `close[X] / close[X-1] - 1` is
   the return earned on date X. `date_convention = "raw"` keeps CoinGecko's
   labels.
-* A free CoinGecko Demo-API key in the environment variable `CG_DEMO_KEY`
-  is sent automatically and raises the rate limit to 30 calls per minute.
-  HTTP 429 and transient 408/502/503/504 responses are retried with
+* No API key is used anywhere. HTTP 429 and transient 408/502/503/504 responses are retried with
   backoff. Package options `crypto2.cg_sleep`, `crypto2.cg_wait`,
   `crypto2.cg_max_retries`, `crypto2.cg_top_n`, `crypto2.cg_what` and
   `crypto2.cg_vs_currency` tune rate limits, retries and streams.
@@ -72,6 +70,8 @@ needed.
   case used to error. A day that still fails after the retries is left
   out and named in a warning, never returned truncated, and a day that
   reaches an explicit `limit` is flagged as possibly truncated.
+* `crypto_global_quotes()` with the default `which = "latest"` returned
+  `NULL`; it now returns the current global market metrics.
 * `crypto_info()` and `exchange_info()` keep an allowlist of known columns,
   so new or list-type fields in the CoinMarketCap response no longer break
   them.

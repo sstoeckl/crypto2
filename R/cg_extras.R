@@ -37,28 +37,10 @@ cg_user_agent <- function() {
   )
 }
 
-#' Optional CoinGecko Demo-API key header
-#'
-#' Returns `c(`x-cg-demo-api-key` = key)` when the environment variable
-#' `CG_DEMO_KEY` is set and `url` targets the documented API host, else an
-#' empty character vector. The key is never sent to any other host.
-#'
-#' @param url Full request URL.
-#' @keywords internal
-#' @noRd
-cg_demo_key_header <- function(url) {
-  key <- Sys.getenv("CG_DEMO_KEY")
-  if (!nzchar(key) || !startsWith(url, cg_url("", host = "api"))) {
-    return(character())
-  }
-  c(`x-cg-demo-api-key` = key)
-}
-
 #' Safe HTTP GET
 #'
 #' Wraps `httr::GET` with a browser-like User-Agent, follows redirects, and
-#' returns the response body as text. Adds the Demo-API key header when
-#' `CG_DEMO_KEY` is set (see `cg_demo_key_header()`).
+#' returns the response body as text.
 #'
 #' Failure semantics -- designed to interact correctly with the
 #' `cg_make_client()` retry wrapper:
@@ -104,8 +86,7 @@ cg_get <- function(url, query = NULL,
       httr::add_headers(.headers = c(
         Accept = accept,
         `Accept-Language` = "en-US,en;q=0.9",
-        `Cache-Control` = "no-cache",
-        cg_demo_key_header(url)
+        `Cache-Control` = "no-cache"
       )),
       httr::timeout(60)
     ),
@@ -203,8 +184,8 @@ cg_parse_json <- function(txt, ...) {
 #' return `NULL` immediately and do not consume retry budget.
 #'
 #' @param sleep Seconds between successive successful calls (default 0.6;
-#'   the Demo-tier API needs `sleep >= 2.5` to stay safely below its
-#'   30 req/min cap).
+#'   the public API needs `sleep >= 2.5` to stay safely below its
+#'   rate limit).
 #' @param wait Seconds to wait before the first retry after a 429 / network
 #'   error. Defaults to 60 so the CoinGecko 60-second rate-limit window
 #'   fully resets before the retry fires. Exponential backoff applies for

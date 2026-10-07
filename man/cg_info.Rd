@@ -24,7 +24,7 @@ cg_info(
 
 \item{sleep}{integer (default \code{0}) Seconds to sleep between API requests.
 The internal client enforces a polite floor (default \verb{2.5s}) to stay
-under the Demo-tier 30 req/min cap.}
+under the public API's rate limit.}
 
 \item{finalWait}{Sleep 60s after the last call (mirrors \code{\link[=crypto_info]{crypto_info()}}).}
 }
