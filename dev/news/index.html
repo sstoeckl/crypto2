@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">crypto2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,83 +39,57 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.1.0.9000" id="crypto2-2109000-development-version">crypto2 2.1.0.9000 (development version)<a class="anchor" aria-label="anchor" href="#crypto2-2109000-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="3.0.0" id="crypto2-300">crypto2 3.0.0<a class="anchor" aria-label="anchor" href="#crypto2-300"></a></h2>
+<p>A major release. crypto2 now draws on two sources: CoinMarketCap (the <code>crypto_*</code> functions, as before) and CoinGecko (the new <code>cg_*</code> functions), with a crosswalk that links the two id systems. Several defaults of <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> change, so code that relied on them returns different (complete) data; see “Breaking changes”.</p>
 <div class="section level3">
-<h3 id="cmc-coingecko-crosswalk-2-1-0-9000">CMC-CoinGecko crosswalk<a class="anchor" aria-label="anchor" href="#cmc-coingecko-crosswalk-2-1-0-9000"></a></h3>
-<ul><li>New <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code> links CoinMarketCap ids (<code>crypto_*</code>) to CoinGecko slugs and numeric ids (<code>cg_*</code>), including dead coins, from the weekly Open Crypto Pricing crosswalk (Stoeckl &amp; Pukrop 2026, <a href="https://opencryptopricing.com" class="external-link uri">https://opencryptopricing.com</a>, CC BY 4.0). Pairs are matched on contracts, project links, name/symbol and slug and confirmed on both providers’ prices; <code>min_confidence</code> (high / medium / low) filters by match quality and <code>include_unmatched = TRUE</code> adds coins listed by one provider only. The file is cached per session; Parquet is used when <code>arrow</code> is installed, CSV otherwise.</li>
-<li>
-<code><a href="../articles/cg-vs-cmc.html">vignette("cg-vs-cmc")</a></code> is now “CMC vs CoinGecko: matching and reconciling”: a side-by-side of what each source delivers, matching coins with <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code>, and a reconciliation of the CMC top 20.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="listings-return-prices-by-default-2-1-0-9000">Listings return prices by default<a class="anchor" aria-label="anchor" href="#listings-return-prices-by-default-2-1-0-9000"></a></h3>
+<h3 id="breaking-changes-3-0-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-3-0-0"></a></h3>
 <ul><li>
-<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> now defaults to <code>quote = TRUE</code>, like <code><a href="../reference/cg_listings.html">cg_listings()</a></code>. Under the old <code>quote = FALSE</code> default a call returned no <code>price</code>, volume or market-cap columns and no error, which is easy to miss in an automated pipeline. The quotes come with the same API response, so the default costs no extra requests. Pass <code>quote = FALSE</code> for identifiers, ranks and supply only.</li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>limit = NULL</code> (all coins) instead of <code>limit = 5000</code>. Since 2021-05-07 CoinMarketCap lists more than 5,000 coins per day (9,002 on 2024-01-07), and the old default cut every historical day at rank 5,000 without a warning.</li>
+<li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>quote = TRUE</code>: price, volume, market-cap and percent-change columns are returned unless <code>quote = FALSE</code>. They come with the same API response, so the default costs no extra requests.</li>
+<li>
+<code><a href="../reference/crypto_history.html">crypto_history()</a></code> without <code>coin_list</code> selects from the full latest listing rather than its top 5,000.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="complete-listings-no-silent-truncation-2-1-0-9000">Complete listings, no silent truncation<a class="anchor" aria-label="anchor" href="#complete-listings-no-silent-truncation-2-1-0-9000"></a></h3>
-<p>Two defaults silently returned incomplete data; both are fixed.</p>
+<h3 id="coingecko-as-a-second-source-3-0-0">CoinGecko as a second source<a class="anchor" aria-label="anchor" href="#coingecko-as-a-second-source-3-0-0"></a></h3>
+<p>New functions with the same column conventions as their <code>crypto_*</code> counterparts, so downstream code consumes either tibble. No API key is needed.</p>
 <ul><li>
-<code><a href="../reference/cg_listings.html">cg_listings()</a></code> now defaults to <code>quote = TRUE</code> and returns every field of <code>/coins/markets</code>: <code>price</code> (<code>current_price</code>), <code>volume_24h</code> (<code>total_volume</code>), <code>high_24h</code>, <code>low_24h</code>, <code>price_change_24h</code>, the <code>percent_change_*</code> windows, <code>market_cap_change_24h</code>, <code>market_cap_change_percentage_24h</code>, <code>ath</code>/<code>atl</code> with their dates, and the flattened <code>roi_times</code>, <code>roi_currency</code>, <code>roi_percentage</code>. <code>last_updated</code>, <code>ath_date</code> and <code>atl_date</code> are now POSIXct (UTC) rather than Date. Under the previous <code>quote = FALSE</code> default, snapshots carried no price, and deriving one as <code>market_cap / circulating_supply</code> is off by up to 16%.</li>
+<code><a href="../reference/cg_list.html">cg_list()</a></code> – coin universe; with <code>only_active = FALSE</code> it adds dead coins from <code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code>.</li>
 <li>
-<code><a href="../reference/cg_listings.html">cg_listings()</a></code> defaults to <code>limit = NULL</code> (all coins, about 18,000 on 70+ pages). A page that still fails after the retries now stops paging with a warning naming the page, instead of returning a silently shortened snapshot.</li>
-<li>All <code>cg_*</code> functions send a CoinGecko Demo-API key as the <code>x-cg-demo-api-key</code> header when the environment variable <code>CG_DEMO_KEY</code> is set (30 instead of a handful of calls per minute). HTTP 408/502/503/504 are now retried with backoff like 429.</li>
+<code><a href="../reference/cg_listings.html">cg_listings()</a></code> – current snapshot with every <code>/coins/markets</code> field (price, volume, 24h range, price and market-cap changes, all-time high/low, ROI). CoinGecko’s free tier has no historical cross-section; snapshot this function periodically to build one. Wrapped, staked and bridged tokens are not listed by <code>/coins/markets</code>.</li>
 <li>
-<code><a href="../reference/cg_listings.html">?cg_listings</a></code> documents that <code>/coins/markets</code> no longer lists wrapped, staked or bridged tokens (stETH, wstETH, WBTC, JitoSOL, bridged USDT); their history is only available through <code><a href="../reference/cg_history.html">cg_history()</a></code>.</li>
+<code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> – daily close, volume and market cap for the full lifetime of each coin in USD (from CoinGecko’s daily CSV export, one request per coin); other quote currencies cover the last 365 days. Daily open/high/low are built from 4-hour candles and cover the last 30 days.</li>
 <li>
-<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>limit = NULL</code> (all coins). Since 2021-05-07 CMC lists more than 5,000 coins per day (9,002 on 2024-01-07), and the old default <code>limit = 5000</code> cut every day at rank 5,000 without a warning. <code>which = "historical"</code> now pages in blocks of 5,000, and a day that reaches an explicit <code>limit</code> warns that it may be truncated. <code><a href="../reference/crypto_history.html">crypto_history()</a></code> without <code>coin_list</code> now selects from the full latest listing rather than its top 5,000.</li>
+<code><a href="../reference/cg_info.html">cg_info()</a></code> – coin metadata.</li>
 <li>
-<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> no longer loses a whole day when CMC lists an exact multiple of 5,000 coins (e.g. 10,000 on 2024-07-10 and 2024-07-11). The empty page that ends such a day made the page parser fail; for <code>which = "historical"</code> the day was then dropped without a warning, for <code>"latest"</code> / <code>"new"</code> the call errored. Empty pages now end the paging and keep the pages already loaded.</li>
-<li>
-<code>crypto_listings(which = "historical")</code> now warns and names every day that still fails after the retries; such days are missing from the result rather than truncated. <code><a href="../reference/cg_list.html">cg_list()</a></code> warns with the page number if <code>/coins/markets</code> paging stops on a failed page.</li>
+<code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code> – archive of CoinGecko ids including dead coins, cached per session with a small bundled fallback.</li>
+<li>Dates follow the CMC / CRSP convention by default (<code>date_convention = "end_of_day"</code>): CoinGecko’s midnight-UTC ticks are labelled with the day that just ended, so <code>close[X] / close[X-1] - 1</code> is the return earned on date X. <code>date_convention = "raw"</code> keeps CoinGecko’s labels.</li>
+<li>A free CoinGecko Demo-API key in the environment variable <code>CG_DEMO_KEY</code> is sent automatically and raises the rate limit to 30 calls per minute. HTTP 429 and transient 408/502/503/504 responses are retried with backoff. Package options <code>crypto2.cg_sleep</code>, <code>crypto2.cg_wait</code>, <code>crypto2.cg_max_retries</code>, <code>crypto2.cg_top_n</code>, <code>crypto2.cg_what</code> and <code>crypto2.cg_vs_currency</code> tune rate limits, retries and streams.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="cg_history-rebuilt-on-coingeckos-csv-export-2-1-0-9000">
-<code>cg_history()</code> rebuilt on CoinGecko’s CSV export<a class="anchor" aria-label="anchor" href="#cg_history-rebuilt-on-coingeckos-csv-export-2-1-0-9000"></a></h3>
-<p>CoinGecko retired the website endpoints <code>price_charts/&lt;coin&gt;/&lt;vs&gt;/max.json</code> and <code>market_cap/&lt;coin&gt;/&lt;vs&gt;/max.json</code> (HTTP 404). Since then <code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> silently returned no close, volume or market cap, only 4-day OHLC candles misread as daily bars.</p>
-<ul><li>Close, volume and market cap now come from the daily CSV export <code>price_charts/export/&lt;coin&gt;/usd.csv</code>: the full lifetime of each coin in a single request. Over the last 365 days the values are identical to the API’s <code>market_chart</code> series and within 0.05% of CMC for BTC. The export’s close is dated one day later than its market cap and volume; the package re-aligns them, so the <code>date_convention</code> semantics are unchanged.</li>
-<li>The export is USD-only. For any other <code>convert</code> / <code>vs_currency</code> the series come from the API <code>market_chart</code> endpoint and cover the most recent 365 days (a one-time warning says so).</li>
-<li>Daily OHLC is aggregated from 4-hour candles and covers the most recent 30 days (previously documented as 365 days, but those were 4-day candles). <code>close</code> now comes from the price series throughout, so the column no longer switches source 30 days back; OHLC candles only back-fill it.</li>
-<li>Only completed days are returned.</li>
-<li>If no series can be retrieved for any requested coin, the functions now stop with an error; partial failures warn and name the affected coins.</li>
+<h3 id="cmc-coingecko-crosswalk-3-0-0">CMC-CoinGecko crosswalk<a class="anchor" aria-label="anchor" href="#cmc-coingecko-crosswalk-3-0-0"></a></h3>
+<ul><li>New <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code> links CoinMarketCap ids to CoinGecko slugs and numeric ids, including dead coins, from the weekly Open Crypto Pricing crosswalk (Stoeckl &amp; Pukrop 2026, <a href="https://opencryptopricing.com" class="external-link uri">https://opencryptopricing.com</a>, CC BY 4.0). Pairs are matched on contracts, project links, name/symbol and slug and confirmed on both providers’ prices; <code>min_confidence</code> (high / medium / low) filters by match quality and <code>include_unmatched = TRUE</code> adds coins listed by one provider only. The file is cached per session; Parquet is used when <code>arrow</code> is installed, CSV otherwise.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="coingecko-integration-2-1-0-9000">CoinGecko integration<a class="anchor" aria-label="anchor" href="#coingecko-integration-2-1-0-9000"></a></h3>
-<p>Added a CoinGecko-side counterpart to the CMC API as a second, independent source. Column names mirror the <code>crypto_*</code> functions, so downstream code that already consumes a CMC tibble works on a CG tibble too.</p>
+<h3 id="no-silent-data-loss-3-0-0">No silent data loss<a class="anchor" aria-label="anchor" href="#no-silent-data-loss-3-0-0"></a></h3>
 <ul><li>
-<code><a href="../reference/cg_list.html">cg_list()</a></code> – active coin universe; signature matches <code><a href="../reference/crypto_list.html">crypto_list()</a></code>. With <code>only_active = FALSE</code>, transparently extends the universe with the historic mapping from <code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code> and prints one line indicating how current that mapping is.</li>
+<code>crypto_listings(which = "historical")</code> pages in blocks of 5,000 and no longer loses a whole day when CoinMarketCap lists an exact multiple of 5,000 coins (e.g. 10,000 on 2024-07-10); for <code>"latest"</code> / <code>"new"</code> that case used to error. A day that still fails after the retries is left out and named in a warning, never returned truncated, and a day that reaches an explicit <code>limit</code> is flagged as possibly truncated.</li>
 <li>
-<code><a href="../reference/cg_listings.html">cg_listings()</a></code> – current cross-sectional snapshot; signature matches <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code>. Only <code>which = "latest"</code> is supported on the free tier; <code>"new"</code> / <code>"historical"</code> warn and coerce.</li>
-<li>
-<code><a href="../reference/cg_history.html">cg_history()</a></code> – daily OHLC + volume + market-cap history; signature matches <code><a href="../reference/crypto_history.html">crypto_history()</a></code>. Missing numeric ids are silently backfilled from the historic mapping.</li>
-<li>
-<code><a href="../reference/cg_info.html">cg_info()</a></code> – per-coin metadata; signature matches <code><a href="../reference/crypto_info.html">crypto_info()</a></code>.</li>
-<li>
-<code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> – companion to <code><a href="../reference/cg_history.html">cg_history()</a></code> that addresses coins by their numeric CoinGecko id rather than slug, useful for refreshing coins whose slug no longer resolves.</li>
-<li>
-<code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code> – reads a periodically-refreshed <code>(id, slug, symbol, name, harvested_at)</code> archive (cached in <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>, with a small bundled fallback in <code>inst/extdata/</code>). Used internally by <code>cg_list(only_active = FALSE)</code> and <code><a href="../reference/cg_history.html">cg_history()</a></code>; can also be called directly.</li>
-</ul><p>CG-specific knobs that have no CMC counterpart (rate-limit floor, retry budget, OHLC-stream selection) move to package options: <code>crypto2.cg_sleep</code>, <code>crypto2.cg_wait</code>, <code>crypto2.cg_max_retries</code>, <code>crypto2.cg_top_n</code>, <code>crypto2.cg_what</code>, <code>crypto2.cg_vs_currency</code>. This keeps the public signatures aligned with the CMC functions.</p>
-</div>
-<div class="section level3">
-<h3 id="date-convention-behavioural-change-in-cg_history-2-1-0-9000">Date convention (behavioural change in <code>cg_history()</code>)<a class="anchor" aria-label="anchor" href="#date-convention-behavioural-change-in-cg_history-2-1-0-9000"></a></h3>
-<p><code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> now harmonize their date labels with <code><a href="../reference/crypto_history.html">crypto_history()</a></code> by default. CoinGecko’s native daily series timestamps each point at 00:00:00 UTC of date X, which is the same physical instant as 23:59:59 UTC of date X-1 – but CMC (and the standard asset-pricing convention used by CRSP / Compustat / Liu, Tsyvinski &amp; Wu 2022) labels that instant as date X-1, while CG labels it as date X. Empirically, CG’s row labelled date X agrees with CMC’s row labelled date X-1 to within sub-dollar precision (verified against hourly intraday CG data; see <code>tools/check_cg_midnight_convention.R</code>).</p>
-<ul><li>New argument <code>date_convention = c("end_of_day", "raw")</code> on both <code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code>, defaulting to <code>"end_of_day"</code>. Under the default, midnight-UTC ticks are attributed to the previous date so <code>close[X] / close[X-1] - 1</code> is the return earned during date X, matching CMC.</li>
-<li>Pass <code>date_convention = "raw"</code> to keep CG’s native start-of-day labels.</li>
+<code><a href="../reference/crypto_info.html">crypto_info()</a></code> and <code><a href="../reference/exchange_info.html">exchange_info()</a></code> keep an allowlist of known columns, so new or list-type fields in the CoinMarketCap response no longer break them.</li>
+<li>The <code>cg_*</code> functions warn with the page number when paging stops on a failed page, and <code><a href="../reference/cg_history.html">cg_history()</a></code> / <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> stop with an error when CoinGecko returns no series for any requested coin (the source has most likely changed); partial failures name the affected coins.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="vignettes-2-1-0-9000">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes-2-1-0-9000"></a></h3>
-<ul><li>New <code>coingecko-integration.Rmd</code> – the user-facing walkthrough.</li>
-<li>New <code>coingecko-pro-backfill.Rmd</code> – recipes for the optional one-shot Pro-tier bootstrap of a complete historic universe. Functions are kept inline in the vignette rather than exported from the package.</li>
-<li>New <code>cg-vs-cmc.Rmd</code> – cross-source reconciliation, the date-convention story in detail, and guidance on which fields are expected to agree vs. expected to differ between the two providers.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="tests-2-1-0-9000">Tests<a class="anchor" aria-label="anchor" href="#tests-2-1-0-9000"></a></h3>
-<ul><li>New <code>test-cg-vs-cmc.R</code> – reconciles <code>cg_history(BTC)</code> against <code>crypto_history(BTC)</code> over a 7-day window, asserts |pct diff| &lt; 1% per day. Will fail loudly if the date conventions ever drift out of alignment again or if either provider switches its underlying exchange basket enough to break the tolerance.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="other-2-1-0-9000">Other<a class="anchor" aria-label="anchor" href="#other-2-1-0-9000"></a></h3>
+<h3 id="vignettes-3-0-0">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes-3-0-0"></a></h3>
 <ul><li>
-<code><a href="../reference/crypto_info.html">crypto_info()</a></code> and <code><a href="../reference/exchange_info.html">exchange_info()</a></code> now use a column allowlist instead of a denylist when processing API responses. New or unknown fields from CMC – including list-type fields that would previously break <code><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble()</a></code> – are silently ignored, making both functions robust to future CMC additions without a patch release.</li>
-<li>Coverage clarification (and tightened warning in <code><a href="../reference/cg_history.html">cg_history()</a></code>): close, volume and market cap are returned for the full lifetime of each coin on the free tier. The OHLC quartet (open / high / low) is capped at the most recent 365 days; for older windows those three columns come back <code>NA</code> while close remains populated from the price stream. The one-time warning now only fires when OHLC is actually requested over a window that exceeds the cap.</li>
+<code><a href="../articles/coingecko-integration.html">vignette("coingecko-integration")</a></code> – walkthrough of the <code>cg_*</code> functions and a survivorship-bias-free price history in three lines.</li>
+<li>
+<code><a href="../articles/cg-vs-cmc.html">vignette("cg-vs-cmc")</a></code> – what each source delivers, matching coins with <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code>, the date conventions, and a reconciliation of the CMC top 20 across both sources.</li>
+<li>
+<code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code> – optional one-shot recipes for a complete historic universe with a CoinGecko Pro key.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="tests-3-0-0">Tests<a class="anchor" aria-label="anchor" href="#tests-3-0-0"></a></h3>
+<ul><li>Offline tests with simulated API responses cover paging, retries, failure warnings, the CSV re-alignment and the crosswalk, and run on CRAN. Live tests (skipped on CRAN) reconcile BTC across both sources and fail when a CoinGecko endpoint is retired rather than skipping.</li>
 </ul></div>
 </div>
     <div class="section level2">

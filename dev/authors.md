@@ -13,16 +13,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/sstoeckl/crypto2/blob/dev/DESCRIPTION)
+[`inst/CITATION`](https://github.com/sstoeckl/crypto2/blob/dev/inst/CITATION)
 
-Stoeckl S (2026). *crypto2: Download Crypto Currency Data from
-'CoinMarketCap' without 'API'*. R package version 2.1.0.9000,
-<https://github.com/sstoeckl/crypto2>.
+Stöckl S (2026). *crypto2: Download Crypto Currency Data from
+'CoinMarketCap' and 'CoinGecko'*. R package version 3.0.0,
+<https://CRAN.R-project.org/package=crypto2>.
 
     @Manual{,
-      title = {crypto2: Download Crypto Currency Data from 'CoinMarketCap' without 'API'},
-      author = {Sebastian Stoeckl},
+      title = {crypto2: Download Crypto Currency Data from 'CoinMarketCap' and 'CoinGecko'},
+      author = {Sebastian Stöckl},
       year = {2026},
-      note = {R package version 2.1.0.9000},
-      url = {https://github.com/sstoeckl/crypto2},
+      note = {R package version 3.0.0},
+      url = {https://CRAN.R-project.org/package=crypto2},
     }

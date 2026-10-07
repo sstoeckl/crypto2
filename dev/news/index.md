@@ -1,229 +1,125 @@
 # Changelog
 
-## crypto2 2.1.0.9000 (development version)
+## crypto2 3.0.0
+
+A major release. crypto2 now draws on two sources: CoinMarketCap (the
+`crypto_*` functions, as before) and CoinGecko (the new `cg_*`
+functions), with a crosswalk that links the two id systems. Several
+defaults of
+[`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+change, so code that relied on them returns different (complete) data;
+see “Breaking changes”.
+
+### Breaking changes
+
+- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+  defaults to `limit = NULL` (all coins) instead of `limit = 5000`.
+  Since 2021-05-07 CoinMarketCap lists more than 5,000 coins per day
+  (9,002 on 2024-01-07), and the old default cut every historical day at
+  rank 5,000 without a warning.
+- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+  defaults to `quote = TRUE`: price, volume, market-cap and
+  percent-change columns are returned unless `quote = FALSE`. They come
+  with the same API response, so the default costs no extra requests.
+- [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
+  without `coin_list` selects from the full latest listing rather than
+  its top 5,000.
+
+### CoinGecko as a second source
+
+New functions with the same column conventions as their `crypto_*`
+counterparts, so downstream code consumes either tibble. No API key is
+needed.
+
+- [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
+  – coin universe; with `only_active = FALSE` it adds dead coins from
+  [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md).
+- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+  – current snapshot with every `/coins/markets` field (price, volume,
+  24h range, price and market-cap changes, all-time high/low, ROI).
+  CoinGecko’s free tier has no historical cross-section; snapshot this
+  function periodically to build one. Wrapped, staked and bridged tokens
+  are not listed by `/coins/markets`.
+- [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  and
+  [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+  – daily close, volume and market cap for the full lifetime of each
+  coin in USD (from CoinGecko’s daily CSV export, one request per coin);
+  other quote currencies cover the last 365 days. Daily open/high/low
+  are built from 4-hour candles and cover the last 30 days.
+- [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md)
+  – coin metadata.
+- [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
+  – archive of CoinGecko ids including dead coins, cached per session
+  with a small bundled fallback.
+- Dates follow the CMC / CRSP convention by default
+  (`date_convention = "end_of_day"`): CoinGecko’s midnight-UTC ticks are
+  labelled with the day that just ended, so `close[X] / close[X-1] - 1`
+  is the return earned on date X. `date_convention = "raw"` keeps
+  CoinGecko’s labels.
+- A free CoinGecko Demo-API key in the environment variable
+  `CG_DEMO_KEY` is sent automatically and raises the rate limit to 30
+  calls per minute. HTTP 429 and transient 408/502/503/504 responses are
+  retried with backoff. Package options `crypto2.cg_sleep`,
+  `crypto2.cg_wait`, `crypto2.cg_max_retries`, `crypto2.cg_top_n`,
+  `crypto2.cg_what` and `crypto2.cg_vs_currency` tune rate limits,
+  retries and streams.
 
 ### CMC-CoinGecko crosswalk
 
 - New
   [`crypto_crosswalk()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_crosswalk.md)
-  links CoinMarketCap ids (`crypto_*`) to CoinGecko slugs and numeric
-  ids (`cg_*`), including dead coins, from the weekly Open Crypto
-  Pricing crosswalk (Stoeckl & Pukrop 2026,
-  <https://opencryptopricing.com>, CC BY 4.0). Pairs are matched on
-  contracts, project links, name/symbol and slug and confirmed on both
-  providers’ prices; `min_confidence` (high / medium / low) filters by
-  match quality and `include_unmatched = TRUE` adds coins listed by one
-  provider only. The file is cached per session; Parquet is used when
-  `arrow` is installed, CSV otherwise.
-- [`vignette("cg-vs-cmc")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/cg-vs-cmc.md)
-  is now “CMC vs CoinGecko: matching and reconciling”: a side-by-side of
-  what each source delivers, matching coins with
-  [`crypto_crosswalk()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_crosswalk.md),
-  and a reconciliation of the CMC top 20.
+  links CoinMarketCap ids to CoinGecko slugs and numeric ids, including
+  dead coins, from the weekly Open Crypto Pricing crosswalk (Stoeckl &
+  Pukrop 2026, <https://opencryptopricing.com>, CC BY 4.0). Pairs are
+  matched on contracts, project links, name/symbol and slug and
+  confirmed on both providers’ prices; `min_confidence` (high / medium /
+  low) filters by match quality and `include_unmatched = TRUE` adds
+  coins listed by one provider only. The file is cached per session;
+  Parquet is used when `arrow` is installed, CSV otherwise.
 
-### Listings return prices by default
+### No silent data loss
 
-- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
-  now defaults to `quote = TRUE`, like
-  [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md).
-  Under the old `quote = FALSE` default a call returned no `price`,
-  volume or market-cap columns and no error, which is easy to miss in an
-  automated pipeline. The quotes come with the same API response, so the
-  default costs no extra requests. Pass `quote = FALSE` for identifiers,
-  ranks and supply only.
-
-### Complete listings, no silent truncation
-
-Two defaults silently returned incomplete data; both are fixed.
-
-- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
-  now defaults to `quote = TRUE` and returns every field of
-  `/coins/markets`: `price` (`current_price`), `volume_24h`
-  (`total_volume`), `high_24h`, `low_24h`, `price_change_24h`, the
-  `percent_change_*` windows, `market_cap_change_24h`,
-  `market_cap_change_percentage_24h`, `ath`/`atl` with their dates, and
-  the flattened `roi_times`, `roi_currency`, `roi_percentage`.
-  `last_updated`, `ath_date` and `atl_date` are now POSIXct (UTC) rather
-  than Date. Under the previous `quote = FALSE` default, snapshots
-  carried no price, and deriving one as
-  `market_cap / circulating_supply` is off by up to 16%.
-- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
-  defaults to `limit = NULL` (all coins, about 18,000 on 70+ pages). A
-  page that still fails after the retries now stops paging with a
-  warning naming the page, instead of returning a silently shortened
-  snapshot.
-- All `cg_*` functions send a CoinGecko Demo-API key as the
-  `x-cg-demo-api-key` header when the environment variable `CG_DEMO_KEY`
-  is set (30 instead of a handful of calls per minute). HTTP
-  408/502/503/504 are now retried with backoff like 429.
-- [`?cg_listings`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
-  documents that `/coins/markets` no longer lists wrapped, staked or
-  bridged tokens (stETH, wstETH, WBTC, JitoSOL, bridged USDT); their
-  history is only available through
-  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md).
-- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
-  defaults to `limit = NULL` (all coins). Since 2021-05-07 CMC lists
-  more than 5,000 coins per day (9,002 on 2024-01-07), and the old
-  default `limit = 5000` cut every day at rank 5,000 without a warning.
-  `which = "historical"` now pages in blocks of 5,000, and a day that
-  reaches an explicit `limit` warns that it may be truncated.
-  [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
-  without `coin_list` now selects from the full latest listing rather
-  than its top 5,000.
-- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
-  no longer loses a whole day when CMC lists an exact multiple of 5,000
-  coins (e.g. 10,000 on 2024-07-10 and 2024-07-11). The empty page that
-  ends such a day made the page parser fail; for `which = "historical"`
-  the day was then dropped without a warning, for `"latest"` / `"new"`
-  the call errored. Empty pages now end the paging and keep the pages
-  already loaded.
-- `crypto_listings(which = "historical")` now warns and names every day
-  that still fails after the retries; such days are missing from the
-  result rather than truncated.
-  [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
-  warns with the page number if `/coins/markets` paging stops on a
-  failed page.
-
-### `cg_history()` rebuilt on CoinGecko’s CSV export
-
-CoinGecko retired the website endpoints
-`price_charts/<coin>/<vs>/max.json` and
-`market_cap/<coin>/<vs>/max.json` (HTTP 404). Since then
-[`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-and
-[`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-silently returned no close, volume or market cap, only 4-day OHLC
-candles misread as daily bars.
-
-- Close, volume and market cap now come from the daily CSV export
-  `price_charts/export/<coin>/usd.csv`: the full lifetime of each coin
-  in a single request. Over the last 365 days the values are identical
-  to the API’s `market_chart` series and within 0.05% of CMC for BTC.
-  The export’s close is dated one day later than its market cap and
-  volume; the package re-aligns them, so the `date_convention` semantics
-  are unchanged.
-- The export is USD-only. For any other `convert` / `vs_currency` the
-  series come from the API `market_chart` endpoint and cover the most
-  recent 365 days (a one-time warning says so).
-- Daily OHLC is aggregated from 4-hour candles and covers the most
-  recent 30 days (previously documented as 365 days, but those were
-  4-day candles). `close` now comes from the price series throughout, so
-  the column no longer switches source 30 days back; OHLC candles only
-  back-fill it.
-- Only completed days are returned.
-- If no series can be retrieved for any requested coin, the functions
-  now stop with an error; partial failures warn and name the affected
-  coins.
-
-### CoinGecko integration
-
-Added a CoinGecko-side counterpart to the CMC API as a second,
-independent source. Column names mirror the `crypto_*` functions, so
-downstream code that already consumes a CMC tibble works on a CG tibble
-too.
-
-- [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
-  – active coin universe; signature matches
-  [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md).
-  With `only_active = FALSE`, transparently extends the universe with
-  the historic mapping from
-  [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
-  and prints one line indicating how current that mapping is.
-- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
-  – current cross-sectional snapshot; signature matches
-  [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md).
-  Only `which = "latest"` is supported on the free tier; `"new"` /
-  `"historical"` warn and coerce.
-- [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-  – daily OHLC + volume + market-cap history; signature matches
-  [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md).
-  Missing numeric ids are silently backfilled from the historic mapping.
-- [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md)
-  – per-coin metadata; signature matches
-  [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
-- [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-  – companion to
-  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-  that addresses coins by their numeric CoinGecko id rather than slug,
-  useful for refreshing coins whose slug no longer resolves.
-- [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
-  – reads a periodically-refreshed
-  `(id, slug, symbol, name, harvested_at)` archive (cached in
-  [`tempdir()`](https://rdrr.io/r/base/tempfile.html), with a small
-  bundled fallback in `inst/extdata/`). Used internally by
-  `cg_list(only_active = FALSE)` and
-  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md);
-  can also be called directly.
-
-CG-specific knobs that have no CMC counterpart (rate-limit floor, retry
-budget, OHLC-stream selection) move to package options:
-`crypto2.cg_sleep`, `crypto2.cg_wait`, `crypto2.cg_max_retries`,
-`crypto2.cg_top_n`, `crypto2.cg_what`, `crypto2.cg_vs_currency`. This
-keeps the public signatures aligned with the CMC functions.
-
-### Date convention (behavioural change in `cg_history()`)
-
-[`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-and
-[`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-now harmonize their date labels with
-[`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
-by default. CoinGecko’s native daily series timestamps each point at
-00:00:00 UTC of date X, which is the same physical instant as 23:59:59
-UTC of date X-1 – but CMC (and the standard asset-pricing convention
-used by CRSP / Compustat / Liu, Tsyvinski & Wu 2022) labels that instant
-as date X-1, while CG labels it as date X. Empirically, CG’s row
-labelled date X agrees with CMC’s row labelled date X-1 to within
-sub-dollar precision (verified against hourly intraday CG data; see
-`tools/check_cg_midnight_convention.R`).
-
-- New argument `date_convention = c("end_of_day", "raw")` on both
-  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
-  and
-  [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md),
-  defaulting to `"end_of_day"`. Under the default, midnight-UTC ticks
-  are attributed to the previous date so `close[X] / close[X-1] - 1` is
-  the return earned during date X, matching CMC.
-- Pass `date_convention = "raw"` to keep CG’s native start-of-day
-  labels.
-
-### Vignettes
-
-- New `coingecko-integration.Rmd` – the user-facing walkthrough.
-- New `coingecko-pro-backfill.Rmd` – recipes for the optional one-shot
-  Pro-tier bootstrap of a complete historic universe. Functions are kept
-  inline in the vignette rather than exported from the package.
-- New `cg-vs-cmc.Rmd` – cross-source reconciliation, the date-convention
-  story in detail, and guidance on which fields are expected to agree
-  vs. expected to differ between the two providers.
-
-### Tests
-
-- New `test-cg-vs-cmc.R` – reconciles `cg_history(BTC)` against
-  `crypto_history(BTC)` over a 7-day window, asserts \|pct diff\| \< 1%
-  per day. Will fail loudly if the date conventions ever drift out of
-  alignment again or if either provider switches its underlying exchange
-  basket enough to break the tolerance.
-
-### Other
-
+- `crypto_listings(which = "historical")` pages in blocks of 5,000 and
+  no longer loses a whole day when CoinMarketCap lists an exact multiple
+  of 5,000 coins (e.g. 10,000 on 2024-07-10); for `"latest"` / `"new"`
+  that case used to error. A day that still fails after the retries is
+  left out and named in a warning, never returned truncated, and a day
+  that reaches an explicit `limit` is flagged as possibly truncated.
 - [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
   and
   [`exchange_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_info.md)
-  now use a column allowlist instead of a denylist when processing API
-  responses. New or unknown fields from CMC – including list-type fields
-  that would previously break
-  [`as_tibble()`](https://tibble.tidyverse.org/reference/as_tibble.html)
-  – are silently ignored, making both functions robust to future CMC
-  additions without a patch release.
-- Coverage clarification (and tightened warning in
-  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)):
-  close, volume and market cap are returned for the full lifetime of
-  each coin on the free tier. The OHLC quartet (open / high / low) is
-  capped at the most recent 365 days; for older windows those three
-  columns come back `NA` while close remains populated from the price
-  stream. The one-time warning now only fires when OHLC is actually
-  requested over a window that exceeds the cap.
+  keep an allowlist of known columns, so new or list-type fields in the
+  CoinMarketCap response no longer break them.
+- The `cg_*` functions warn with the page number when paging stops on a
+  failed page, and
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  /
+  [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+  stop with an error when CoinGecko returns no series for any requested
+  coin (the source has most likely changed); partial failures name the
+  affected coins.
+
+### Vignettes
+
+- [`vignette("coingecko-integration")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-integration.md)
+  – walkthrough of the `cg_*` functions and a survivorship-bias-free
+  price history in three lines.
+- [`vignette("cg-vs-cmc")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/cg-vs-cmc.md)
+  – what each source delivers, matching coins with
+  [`crypto_crosswalk()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_crosswalk.md),
+  the date conventions, and a reconciliation of the CMC top 20 across
+  both sources.
+- [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md)
+  – optional one-shot recipes for a complete historic universe with a
+  CoinGecko Pro key.
+
+### Tests
+
+- Offline tests with simulated API responses cover paging, retries,
+  failure warnings, the CSV re-alignment and the crosswalk, and run on
+  CRAN. Live tests (skipped on CRAN) reconcile BTC across both sources
+  and fail when a CoinGecko endpoint is retired rather than skipping.
 
 ## crypto2 2.0.5
 

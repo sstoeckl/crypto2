@@ -2,30 +2,6 @@
 
 # Historical Cryptocurrency Prices for Active and Delisted Tokens!
 
-> **Experimental:** A CoinGecko integration is in active testing on the
-> [`dev`](https://github.com/sstoeckl/crypto2/tree/dev) branch. It adds
-> [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md),
-> [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md),
-> [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md),
-> [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md),
-> and
-> [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
-> — CMC-column-compatible companions that pull from CoinGecko, **no API
-> key required**. Browse the dev docs at
-> <https://www.sebastianstoeckl.com/crypto2/dev/> (use the navbar
-> Release / Devel switcher) or install the dev branch directly:
->
-> ``` r
->
-> # install.packages("remotes")
-> remotes::install_github("sstoeckl/crypto2@dev")
-> ```
->
-> CoinGecko’s free tier exposes only **active** coins; the package warns
-> when delisted-coin retrieval is impossible. Build a
-> survivorship-bias-free archive by snapshotting periodically
-> (daily/weekly) from your own cronjob.
-
 This is a modification of the original `crypto` package by [jesse
 vent](https://github.com/JesseVent/crypto). It is entirely set up to use
 means from the `tidyverse` and provides `tibble`s with all data
@@ -40,50 +16,81 @@ It allows the user to retrieve
 - [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
   a list of all coins that were historically listed on CMC (main dataset
   to avoid delisting bias) according to the [CMC API
-  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyListingsHistorical)
+  documentation](https://coinmarketcap.com/api/documentation/#operation/getV1CryptocurrencyListingsHistorical)
 - [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md)
   a list of all coins that are listed as either being *active*,
   *delisted* or *untracked* according to the [CMC API
-  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyMap)
+  documentation](https://coinmarketcap.com/api/documentation/#operation/getV1CryptocurrencyMap)
 - [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
   a list of all information available for all available coins according
   to the [CMC API
-  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyInfo)
+  documentation](https://coinmarketcap.com/api/documentation/#operation/getV1CryptocurrencyInfo)
 - [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
   the **most powerful** function of this package that allows to download
   the entire available history for all coins covered by CMC according to
   the [CMC API
-  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyOhlcvHistorical)
+  documentation](https://coinmarketcap.com/api/documentation/#operation/getV1CryptocurrencyOhlcvHistorical)
 - [`crypto_global_quotes()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_global_quotes.md)
   a dataset of historical global crypto currency market metrics to the
   [CMC API
-  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1GlobalmetricsQuotesHistorical)
+  documentation](https://coinmarketcap.com/api/documentation/#operation/getV1GlobalmetricsQuotesHistorical)
 - [`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/fiat_list.md)
   a mapping of all fiat currencies available via the [CMC WEB
-  API](https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap)
+  API](https://coinmarketcap.com/api/documentation/#operation/getV1FiatMap)
   (note: since v2.0.0 only USD is available)
 - [`exchange_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_list.md)
   a list of all exchanges available as either being *active*, *delisted*
   or *untracked* according to the [CMC API
-  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMap)
+  documentation](https://coinmarketcap.com/api/documentation/#operation/getV1ExchangeMap)
 - [`exchange_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_info.md)
   a list of all information available for all given exchanges according
   to the [CMC API
-  documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeInfo)
+  documentation](https://coinmarketcap.com/api/documentation/#operation/getV1ExchangeInfo)
+
+Since version 3.0.0 the package also draws on
+[CoinGecko](https://www.coingecko.com/) as a second, independent source,
+again **without an API key**. The `cg_*` functions return tibbles with
+the same column names as their CMC counterparts:
+
+- [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md),
+  [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md),
+  [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md)
+  the CoinGecko coin universe (including dead coins via
+  [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)),
+  a full current snapshot with prices, and coin metadata
+- [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  and
+  [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+  daily close, volume and market cap for the full lifetime of each coin
+  (USD), plus daily OHLC for the last 30 days
+- [`crypto_crosswalk()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_crosswalk.md)
+  links CoinMarketCap ids to CoinGecko ids, including dead coins, from
+  the weekly [Open Crypto Pricing](https://opencryptopricing.com)
+  crosswalk (CC BY 4.0)
+
+See
+[`vignette("coingecko-integration")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-integration.md)
+for a walkthrough and
+[`vignette("cg-vs-cmc")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/cg-vs-cmc.md)
+for matching and reconciling the two sources.
 
 # Changelog
 
-## Version 2.0.5.99 (development)
+## Version 3.0.0 (October 2026)
 
+CoinGecko becomes a second data source (`cg_*` functions), and
+[`crypto_crosswalk()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_crosswalk.md)
+links CoinMarketCap and CoinGecko ids.
+[`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+now returns all coins and their prices by default (`limit = NULL`,
+`quote = TRUE`); the old default `limit = 5000` cut every historical day
+at rank 5,000 since 2021.
 [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
 and
 [`exchange_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_info.md)
-have been made more robust against CMC API changes. Both functions now
-use a column **allowlist** instead of a denylist: only known, documented
-columns are retained, so any new or unknown fields added by CMC —
-including list-type fields that would previously break the output — are
-silently ignored. This should eliminate the recurring patch releases
-caused by CMC adding new columns.
+use a column allowlist and no longer break when CMC adds fields. See
+[NEWS](https://github.com/sstoeckl/crypto2/blob/master/NEWS.md) for the
+full list.
 
 ## Version 2.0.2/2.0.3/2.0.4/2.0.5 (September 2025)
 
