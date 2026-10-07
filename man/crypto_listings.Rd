@@ -26,8 +26,9 @@ crypto_listings(
 than one are selected please separate by comma (e.g. "USD,BTC"), only necessary if 'quote=TRUE'}
 
 \item{limit}{integer Return the top n records per listing (per day for
-\code{which = "historical"}). \code{NULL} (default) returns all coins. If a result
-reaches \code{limit} exactly, a warning flags it as possibly truncated.}
+\code{which = "historical"}). \code{NULL} (default) returns all coins. For
+\code{which = "historical"}, a day that reaches \code{limit} exactly is flagged as
+possibly truncated in a warning.}
 
 \item{start_date}{string Start date to retrieve data from, format 'yyyymmdd'}
 

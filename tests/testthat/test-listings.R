@@ -1,10 +1,9 @@
 # Test different listing types
 test_that("Fetching different types of listings works correctly", {
   skip_on_cran()
-  expect_warning(latest_data <- crypto_listings(which="latest", quote=FALSE,limit=2),
-                 "possibly truncated")
-  expect_warning(new_data <- crypto_listings(which="new", quote=TRUE, convert="BTC",limit=2),
-                 "possibly truncated")
+  # an explicit top-n for latest/new is intended and does not warn
+  expect_no_warning(latest_data <- crypto_listings(which="latest", quote=FALSE,limit=2))
+  expect_no_warning(new_data <- crypto_listings(which="new", quote=TRUE, convert="BTC",limit=2))
   expect_warning(historical_data <- crypto_listings(which="historical", quote=TRUE, start_date="20240101", end_date="20240107",limit=2),
                  "7 of 7 day\\(s\\) reached limit = 2")
 

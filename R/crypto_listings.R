@@ -11,8 +11,9 @@
 #' @param convert string (default: USD) to one of available fiat prices (`fiat_list()`). If more
 #' than one are selected please separate by comma (e.g. "USD,BTC"), only necessary if 'quote=TRUE'
 #' @param limit integer Return the top n records per listing (per day for
-#' `which = "historical"`). `NULL` (default) returns all coins. If a result
-#' reaches `limit` exactly, a warning flags it as possibly truncated.
+#' `which = "historical"`). `NULL` (default) returns all coins. For
+#' `which = "historical"`, a day that reaches `limit` exactly is flagged as
+#' possibly truncated in a warning.
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
 #' @param interval string Interval with which to sample data according to what `seq()` needs
@@ -132,7 +133,6 @@ crypto_listings <- function(which="latest", convert="USD", limit = NULL, start_d
     }
     if (is.null(listing_raw)) return(empty_result("the new listing"))
     listing_raw <- trim(listing_raw)
-    warn_capped(nrow(listing_raw), "the new listing")
     listing <- listing_raw %>% dplyr::select(-price_change) %>% unique()
     if (quote){
       lquote <- listing_raw %>% dplyr::select(price_change) %>% tidyr::unnest(price_change) %>% tidyr::unnest(everything(), names_sep="_") |> janitor::clean_names() |>
@@ -158,7 +158,6 @@ crypto_listings <- function(which="latest", convert="USD", limit = NULL, start_d
     }
     if (is.null(listing_raw)) return(empty_result("the latest listing"))
     listing_raw <- trim(listing_raw)
-    warn_capped(nrow(listing_raw), "the latest listing")
     listing <- listing_raw %>% dplyr::select(-quotes,-tags) %>% unique()
     if (quote){
       lquote <- listing_raw %>% dplyr::select(quotes) %>% tidyr::unnest(quotes) %>% tidyr::unnest(everything(), names_sep="_") |> janitor::clean_names() |>

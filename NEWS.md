@@ -12,6 +12,9 @@
   provider only. The
   file is cached per session; Parquet is used when `arrow` is installed,
   CSV otherwise.
+* `vignette("cg-vs-cmc")` is now "CMC vs CoinGecko: matching and
+  reconciling": a side-by-side of what each source delivers, matching
+  coins with `crypto_crosswalk()`, and a reconciliation of the CMC top 20.
 
 ## Listings return prices by default
 
@@ -50,7 +53,7 @@ Two defaults silently returned incomplete data; both are fixed.
   2021-05-07 CMC lists more than 5,000 coins per day (9,002 on 2024-01-07),
   and the old default `limit = 5000` cut every day at rank 5,000 without a
   warning. `which = "historical"` now pages in blocks of 5,000, and a
-  result that reaches an explicit `limit` warns that it may be truncated.
+  day that reaches an explicit `limit` warns that it may be truncated.
   `crypto_history()` without `coin_list` now selects from the full latest
   listing rather than its top 5,000.
 * `crypto_listings()` no longer loses a whole day when CMC lists an exact
