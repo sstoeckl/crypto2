@@ -58,8 +58,8 @@ cg_listings(
   logical (default `TRUE`). The `/coins/markets` endpoint always returns
   prices at no extra cost, so they are included by default. Set to
   `FALSE` to keep only the identifier, rank, market-cap and supply
-  columns. Note that this default differs from
-  [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md).
+  columns (same default as
+  [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)).
 
 - sort, sort_dir:
 

@@ -1,6 +1,251 @@
 # Changelog
 
-## crypto2 (development version)
+## crypto2 3.0.0
+
+A major release. crypto2 now draws on two sources: CoinMarketCap (the
+`crypto_*` functions, as before) and CoinGecko (the new `cg_*`
+functions), with a crosswalk that links the two id systems. Several
+defaults of
+[`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+change, so code that relied on them returns different (complete) data;
+see “Breaking changes”.
+
+### Breaking changes
+
+- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+  defaults to `limit = NULL` (all coins) instead of `limit = 5000`.
+  Since 2021-05-07 CoinMarketCap lists more than 5,000 coins per day
+  (9,002 on 2024-01-07), and the old default cut every historical day at
+  rank 5,000 without a warning.
+- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+  defaults to `quote = TRUE`: price, volume, market-cap and
+  percent-change columns are returned unless `quote = FALSE`. They come
+  with the same API response, so the default costs no extra requests.
+- [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
+  without `coin_list` selects from the full latest listing rather than
+  its top 5,000.
+
+### CoinGecko as a second source
+
+New functions with the same column conventions as their `crypto_*`
+counterparts, so downstream code consumes either tibble. No API key is
+needed.
+
+- [`cg_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_list.md)
+  – coin universe; with `only_active = FALSE` it adds dead coins from
+  [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md).
+- [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
+  – current snapshot with every `/coins/markets` field (price, volume,
+  24h range, price and market-cap changes, all-time high/low, ROI).
+  CoinGecko’s free tier has no historical cross-section; snapshot this
+  function periodically to build one. Wrapped, staked and bridged tokens
+  are not listed by `/coins/markets`.
+- [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  and
+  [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+  – daily close, volume and market cap for the full lifetime of each
+  coin in USD (from CoinGecko’s daily CSV export, one request per coin);
+  other quote currencies cover the last 365 days. Daily open/high/low
+  are built from 4-hour candles and cover the last 30 days.
+- [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md)
+  – coin metadata.
+- [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
+  – archive of CoinGecko ids including dead coins, cached per session
+  with a small bundled fallback.
+- Dates follow the CMC / CRSP convention by default
+  (`date_convention = "end_of_day"`): CoinGecko’s midnight-UTC ticks are
+  labelled with the day that just ended, so `close[X] / close[X-1] - 1`
+  is the return earned on date X. `date_convention = "raw"` keeps
+  CoinGecko’s labels.
+- A free CoinGecko Demo-API key in the environment variable
+  `CG_DEMO_KEY` is sent automatically and raises the rate limit to 30
+  calls per minute. HTTP 429 and transient 408/502/503/504 responses are
+  retried with backoff. Package options `crypto2.cg_sleep`,
+  `crypto2.cg_wait`, `crypto2.cg_max_retries`, `crypto2.cg_top_n`,
+  `crypto2.cg_what` and `crypto2.cg_vs_currency` tune rate limits,
+  retries and streams.
+
+### CMC-CoinGecko crosswalk
+
+- New
+  [`crypto_crosswalk()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_crosswalk.md)
+  links CoinMarketCap ids to CoinGecko slugs and numeric ids, including
+  dead coins, from the weekly Open Crypto Pricing crosswalk (Stoeckl &
+  Pukrop 2026, <https://opencryptopricing.com>, CC BY 4.0). Pairs are
+  matched on contracts, project links, name/symbol and slug and
+  confirmed on both providers’ prices; `min_confidence` (high / medium /
+  low) filters by match quality and `include_unmatched = TRUE` adds
+  coins listed by one provider only. The file is cached per session;
+  Parquet is used when `arrow` is installed, CSV otherwise.
+
+### No silent data loss
+
+- `crypto_listings(which = "historical")` pages in blocks of 5,000 and
+  no longer loses a whole day when CoinMarketCap lists an exact multiple
+  of 5,000 coins (e.g. 10,000 on 2024-07-10); for `"latest"` / `"new"`
+  that case used to error. A day that still fails after the retries is
+  left out and named in a warning, never returned truncated, and a day
+  that reaches an explicit `limit` is flagged as possibly truncated.
+- [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
+  and
+  [`exchange_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_info.md)
+  keep an allowlist of known columns, so new or list-type fields in the
+  CoinMarketCap response no longer break them.
+- The `cg_*` functions warn with the page number when paging stops on a
+  failed page, and
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  /
+  [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+  stop with an error when CoinGecko returns no series for any requested
+  coin (the source has most likely changed); partial failures name the
+  affected coins.
+
+### Vignettes
+
+- [`vignette("coingecko-integration")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-integration.md)
+  – walkthrough of the `cg_*` functions and a survivorship-bias-free
+  price history in three lines.
+- [`vignette("cg-vs-cmc")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/cg-vs-cmc.md)
+  – what each source delivers, matching coins with
+  [`crypto_crosswalk()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_crosswalk.md),
+  the date conventions, and a reconciliation of the CMC top 20 across
+  both sources.
+- [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md)
+  – optional one-shot recipes for a complete historic universe with a
+  CoinGecko Pro key.
+
+### Tests
+
+- Offline tests with simulated API responses cover paging, retries,
+  failure warnings, the CSV re-alignment and the crosswalk, and run on
+  CRAN. Live tests (skipped on CRAN) reconcile BTC across both sources
+  and fail when a CoinGecko endpoint is retired rather than skipping.
+
+## crypto2 2.0.5
+
+CRAN release: 2025-09-11
+
+Slight change in api call outcome needed another modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+
+## crypto2 2.0.4
+
+Slight change in api call outcome needed another modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+
+## crypto2 2.0.3
+
+CRAN release: 2024-10-11
+
+Slight change in api call outcome needed another modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+Also corrected one failing tests to not check time zones.
+
+## crypto2 2.0.2
+
+CRAN release: 2024-09-02
+
+Slight change in api call outcome needed another modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+
+## crypto2 2.0.1
+
+CRAN release: 2024-07-03
+
+Slight change in api call outcome needed a modification in
+[`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md).
+
+## crypto2 2.0.0
+
+CRAN release: 2024-06-13
+
+After a major change in the api structure of coinmarketcap.com, the
+package had to be rewritten. As a result, many functions had to be
+rewritten, because data was not available any more in a similar format
+or with similar accuracy. Unfortunately, this will potentially break
+many users implementations. Here is a detailed list of changes:
+
+- [`crypto_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_list.md)
+  has been modified and delivers the same data as before.
+- [`exchange_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_list.md)
+  has been modified and delivers the same data as before.
+- [`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/fiat_list.md)
+  has been modified and no longer delivers all available currencies and
+  precious metals (therefore only USD and Bitcoin are available any
+  more).
+- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+  needed to be modified, as multiple base currencies are not available
+  any more. Also some of the fields downloaded from CMC might have
+  changed. It still retrieves the latest listings, the new listings as
+  well as historical listings. The fields returned have somewhat
+  slightly changed. Also, no sorting is available any more, so if you
+  want to download the top x CCs by market cap, you have to download all
+  CCs and then sort them in R.
+- [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
+  has been modified, as the data structure has changed. The fields
+  returned have somewhat slightly changed.
+- [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
+  has been modified. It still retrieves all the OHLC history of all the
+  coins, but is slower due to an increased number of necessary api
+  calls. The number of available intervals is strongly limited, but
+  hourly and daily data is still available. Currently only USD and BTC
+  are available as quote currencies through this library.
+- [`crypto_global_quotes()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_global_quotes.md)
+  has been modified. It still produces a clear picture of the global
+  market, but the data structure has somewhat slightly changed.
+
+## crypto2 1.4.6
+
+CRAN release: 2024-01-29
+
+Added new options “sort” and “sort_dir” for
+[`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+to allow for the sorting of results, which in combination with “limit”
+allows, for example, to only download the top 100 CCs according to
+market capitalization that were listed at a certain date. Correct
+missing last_historical_data date conversion due to the now missing
+field.
+
+## crypto2 1.4.5
+
+CRAN release: 2022-10-19
+
+Added a new function
+[`crypto_global_quotes()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_global_quotes.md)
+which retrieves global aggregate market statistics for CMC. There also
+were some bugs fixed.
+
+## crypto2 1.4.4
+
+CRAN release: 2022-07-18
+
+A new function
+[`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+is introduced to retrieve new/latest/historical listings and listing
+information at CMC. The option `finalWait = TRUE` does not seem to be
+necessary any more, also `sleep` can be set to ‘0’ seconds.
+
+## crypto2 1.4.3
+
+CRAN release: 2022-01-25
+
+change limit==1 bug, add interval parameter (offered by pull-request),
+also change the amount of id splits to allow for max url length 2000
+
+## crypto2 1.4.2
+
+CRAN release: 2022-01-11
+
+Repaired the history retrieval due to the fact that one api call can
+only retrieve 1000 data points. Therefore we have to call more often on
+the api when retrieving the entire history.
+
+## crypto2 1.4.1
+
+Added and corrected a waiter function to wait an additional 60 seconds
+after the end of the history command before another command could be
+executed (to not accidentally retrieve the same outdated data). Fixed
+the waiter.
 
 ## crypto2 1.4.0
 

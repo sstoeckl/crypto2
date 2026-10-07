@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">crypto2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,6 +16,12 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cg-vs-cmc.html">CMC vs CoinGecko: matching and reconciling</a></li>
+    <li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: a second source for crypto2</a></li>
+    <li><a class="dropdown-item" href="../articles/coingecko-pro-backfill.html">CoinGecko Pro backfill: one-shot survivorship-bias archive</a></li>
+  </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -29,11 +35,124 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/sstoeckl/crypto2/blob/v2.0.5/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/sstoeckl/crypto2/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="crypto2-development-version">crypto2 (development version)<a class="anchor" aria-label="anchor" href="#crypto2-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="3.0.0" id="crypto2-300">crypto2 3.0.0<a class="anchor" aria-label="anchor" href="#crypto2-300"></a></h2>
+<p>A major release. crypto2 now draws on two sources: CoinMarketCap (the <code>crypto_*</code> functions, as before) and CoinGecko (the new <code>cg_*</code> functions), with a crosswalk that links the two id systems. Several defaults of <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> change, so code that relied on them returns different (complete) data; see “Breaking changes”.</p>
+<div class="section level3">
+<h3 id="breaking-changes-3-0-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-3-0-0"></a></h3>
+<ul><li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>limit = NULL</code> (all coins) instead of <code>limit = 5000</code>. Since 2021-05-07 CoinMarketCap lists more than 5,000 coins per day (9,002 on 2024-01-07), and the old default cut every historical day at rank 5,000 without a warning.</li>
+<li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>quote = TRUE</code>: price, volume, market-cap and percent-change columns are returned unless <code>quote = FALSE</code>. They come with the same API response, so the default costs no extra requests.</li>
+<li>
+<code><a href="../reference/crypto_history.html">crypto_history()</a></code> without <code>coin_list</code> selects from the full latest listing rather than its top 5,000.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="coingecko-as-a-second-source-3-0-0">CoinGecko as a second source<a class="anchor" aria-label="anchor" href="#coingecko-as-a-second-source-3-0-0"></a></h3>
+<p>New functions with the same column conventions as their <code>crypto_*</code> counterparts, so downstream code consumes either tibble. No API key is needed.</p>
+<ul><li>
+<code><a href="../reference/cg_list.html">cg_list()</a></code> – coin universe; with <code>only_active = FALSE</code> it adds dead coins from <code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code>.</li>
+<li>
+<code><a href="../reference/cg_listings.html">cg_listings()</a></code> – current snapshot with every <code>/coins/markets</code> field (price, volume, 24h range, price and market-cap changes, all-time high/low, ROI). CoinGecko’s free tier has no historical cross-section; snapshot this function periodically to build one. Wrapped, staked and bridged tokens are not listed by <code>/coins/markets</code>.</li>
+<li>
+<code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> – daily close, volume and market cap for the full lifetime of each coin in USD (from CoinGecko’s daily CSV export, one request per coin); other quote currencies cover the last 365 days. Daily open/high/low are built from 4-hour candles and cover the last 30 days.</li>
+<li>
+<code><a href="../reference/cg_info.html">cg_info()</a></code> – coin metadata.</li>
+<li>
+<code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code> – archive of CoinGecko ids including dead coins, cached per session with a small bundled fallback.</li>
+<li>Dates follow the CMC / CRSP convention by default (<code>date_convention = "end_of_day"</code>): CoinGecko’s midnight-UTC ticks are labelled with the day that just ended, so <code>close[X] / close[X-1] - 1</code> is the return earned on date X. <code>date_convention = "raw"</code> keeps CoinGecko’s labels.</li>
+<li>A free CoinGecko Demo-API key in the environment variable <code>CG_DEMO_KEY</code> is sent automatically and raises the rate limit to 30 calls per minute. HTTP 429 and transient 408/502/503/504 responses are retried with backoff. Package options <code>crypto2.cg_sleep</code>, <code>crypto2.cg_wait</code>, <code>crypto2.cg_max_retries</code>, <code>crypto2.cg_top_n</code>, <code>crypto2.cg_what</code> and <code>crypto2.cg_vs_currency</code> tune rate limits, retries and streams.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="cmc-coingecko-crosswalk-3-0-0">CMC-CoinGecko crosswalk<a class="anchor" aria-label="anchor" href="#cmc-coingecko-crosswalk-3-0-0"></a></h3>
+<ul><li>New <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code> links CoinMarketCap ids to CoinGecko slugs and numeric ids, including dead coins, from the weekly Open Crypto Pricing crosswalk (Stoeckl &amp; Pukrop 2026, <a href="https://opencryptopricing.com" class="external-link uri">https://opencryptopricing.com</a>, CC BY 4.0). Pairs are matched on contracts, project links, name/symbol and slug and confirmed on both providers’ prices; <code>min_confidence</code> (high / medium / low) filters by match quality and <code>include_unmatched = TRUE</code> adds coins listed by one provider only. The file is cached per session; Parquet is used when <code>arrow</code> is installed, CSV otherwise.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="no-silent-data-loss-3-0-0">No silent data loss<a class="anchor" aria-label="anchor" href="#no-silent-data-loss-3-0-0"></a></h3>
+<ul><li>
+<code>crypto_listings(which = "historical")</code> pages in blocks of 5,000 and no longer loses a whole day when CoinMarketCap lists an exact multiple of 5,000 coins (e.g. 10,000 on 2024-07-10); for <code>"latest"</code> / <code>"new"</code> that case used to error. A day that still fails after the retries is left out and named in a warning, never returned truncated, and a day that reaches an explicit <code>limit</code> is flagged as possibly truncated.</li>
+<li>
+<code><a href="../reference/crypto_info.html">crypto_info()</a></code> and <code><a href="../reference/exchange_info.html">exchange_info()</a></code> keep an allowlist of known columns, so new or list-type fields in the CoinMarketCap response no longer break them.</li>
+<li>The <code>cg_*</code> functions warn with the page number when paging stops on a failed page, and <code><a href="../reference/cg_history.html">cg_history()</a></code> / <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> stop with an error when CoinGecko returns no series for any requested coin (the source has most likely changed); partial failures name the affected coins.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="vignettes-3-0-0">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes-3-0-0"></a></h3>
+<ul><li>
+<code><a href="../articles/coingecko-integration.html">vignette("coingecko-integration")</a></code> – walkthrough of the <code>cg_*</code> functions and a survivorship-bias-free price history in three lines.</li>
+<li>
+<code><a href="../articles/cg-vs-cmc.html">vignette("cg-vs-cmc")</a></code> – what each source delivers, matching coins with <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code>, the date conventions, and a reconciliation of the CMC top 20 across both sources.</li>
+<li>
+<code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code> – optional one-shot recipes for a complete historic universe with a CoinGecko Pro key.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="tests-3-0-0">Tests<a class="anchor" aria-label="anchor" href="#tests-3-0-0"></a></h3>
+<ul><li>Offline tests with simulated API responses cover paging, retries, failure warnings, the CSV re-alignment and the crosswalk, and run on CRAN. Live tests (skipped on CRAN) reconcile BTC across both sources and fail when a CoinGecko endpoint is retired rather than skipping.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.5" id="crypto2-205">crypto2 2.0.5<a class="anchor" aria-label="anchor" href="#crypto2-205"></a></h2><p class="text-muted">CRAN release: 2025-09-11</p>
+<p>Slight change in api call outcome needed another modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.4" id="crypto2-204">crypto2 2.0.4<a class="anchor" aria-label="anchor" href="#crypto2-204"></a></h2>
+<p>Slight change in api call outcome needed another modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.3" id="crypto2-203">crypto2 2.0.3<a class="anchor" aria-label="anchor" href="#crypto2-203"></a></h2><p class="text-muted">CRAN release: 2024-10-11</p>
+<p>Slight change in api call outcome needed another modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>. Also corrected one failing tests to not check time zones.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.2" id="crypto2-202">crypto2 2.0.2<a class="anchor" aria-label="anchor" href="#crypto2-202"></a></h2><p class="text-muted">CRAN release: 2024-09-02</p>
+<p>Slight change in api call outcome needed another modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.1" id="crypto2-201">crypto2 2.0.1<a class="anchor" aria-label="anchor" href="#crypto2-201"></a></h2><p class="text-muted">CRAN release: 2024-07-03</p>
+<p>Slight change in api call outcome needed a modification in <code><a href="../reference/crypto_info.html">crypto_info()</a></code>.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.0.0" id="crypto2-200">crypto2 2.0.0<a class="anchor" aria-label="anchor" href="#crypto2-200"></a></h2><p class="text-muted">CRAN release: 2024-06-13</p>
+<p>After a major change in the api structure of coinmarketcap.com, the package had to be rewritten. As a result, many functions had to be rewritten, because data was not available any more in a similar format or with similar accuracy. Unfortunately, this will potentially break many users implementations. Here is a detailed list of changes:</p>
+<ul><li>
+<code><a href="../reference/crypto_list.html">crypto_list()</a></code> has been modified and delivers the same data as before.</li>
+<li>
+<code><a href="../reference/exchange_list.html">exchange_list()</a></code> has been modified and delivers the same data as before.</li>
+<li>
+<code><a href="../reference/fiat_list.html">fiat_list()</a></code> has been modified and no longer delivers all available currencies and precious metals (therefore only USD and Bitcoin are available any more).</li>
+<li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> needed to be modified, as multiple base currencies are not available any more. Also some of the fields downloaded from CMC might have changed. It still retrieves the latest listings, the new listings as well as historical listings. The fields returned have somewhat slightly changed. Also, no sorting is available any more, so if you want to download the top x CCs by market cap, you have to download all CCs and then sort them in R.</li>
+<li>
+<code><a href="../reference/crypto_info.html">crypto_info()</a></code> has been modified, as the data structure has changed. The fields returned have somewhat slightly changed.</li>
+<li>
+<code><a href="../reference/crypto_history.html">crypto_history()</a></code> has been modified. It still retrieves all the OHLC history of all the coins, but is slower due to an increased number of necessary api calls. The number of available intervals is strongly limited, but hourly and daily data is still available. Currently only USD and BTC are available as quote currencies through this library.</li>
+<li>
+<code><a href="../reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> has been modified. It still produces a clear picture of the global market, but the data structure has somewhat slightly changed.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.6" id="crypto2-146">crypto2 1.4.6<a class="anchor" aria-label="anchor" href="#crypto2-146"></a></h2><p class="text-muted">CRAN release: 2024-01-29</p>
+<p>Added new options “sort” and “sort_dir” for <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> to allow for the sorting of results, which in combination with “limit” allows, for example, to only download the top 100 CCs according to market capitalization that were listed at a certain date. Correct missing last_historical_data date conversion due to the now missing field.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.5" id="crypto2-145">crypto2 1.4.5<a class="anchor" aria-label="anchor" href="#crypto2-145"></a></h2><p class="text-muted">CRAN release: 2022-10-19</p>
+<p>Added a new function <code><a href="../reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> which retrieves global aggregate market statistics for CMC. There also were some bugs fixed.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.4" id="crypto2-144">crypto2 1.4.4<a class="anchor" aria-label="anchor" href="#crypto2-144"></a></h2><p class="text-muted">CRAN release: 2022-07-18</p>
+<p>A new function <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> is introduced to retrieve new/latest/historical listings and listing information at CMC. The option <code>finalWait = TRUE</code> does not seem to be necessary any more, also <code>sleep</code> can be set to ‘0’ seconds.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.3" id="crypto2-143">crypto2 1.4.3<a class="anchor" aria-label="anchor" href="#crypto2-143"></a></h2><p class="text-muted">CRAN release: 2022-01-25</p>
+<p>change limit==1 bug, add interval parameter (offered by pull-request), also change the amount of id splits to allow for max url length 2000</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.2" id="crypto2-142">crypto2 1.4.2<a class="anchor" aria-label="anchor" href="#crypto2-142"></a></h2><p class="text-muted">CRAN release: 2022-01-11</p>
+<p>Repaired the history retrieval due to the fact that one api call can only retrieve 1000 data points. Therefore we have to call more often on the api when retrieving the entire history.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.1" id="crypto2-141">crypto2 1.4.1<a class="anchor" aria-label="anchor" href="#crypto2-141"></a></h2>
+<p>Added and corrected a waiter function to wait an additional 60 seconds after the end of the history command before another command could be executed (to not accidentally retrieve the same outdated data). Fixed the waiter.</p>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.4.0" id="crypto2-140">crypto2 1.4.0<a class="anchor" aria-label="anchor" href="#crypto2-140"></a></h2><p class="text-muted">CRAN release: 2022-01-10</p>

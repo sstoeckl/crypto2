@@ -17,7 +17,7 @@ works on this tibble too."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">crypto2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,7 +28,7 @@ works on this tibble too."></head><body>
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cg-vs-cmc.html">Cross-source reconciliation: CMC vs CoinGecko</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cg-vs-cmc.html">CMC vs CoinGecko: matching and reconciling</a></li>
     <li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: a second source for crypto2</a></li>
     <li><a class="dropdown-item" href="../articles/coingecko-pro-backfill.html">CoinGecko Pro backfill: one-shot survivorship-bias archive</a></li>
   </ul></li>
@@ -106,8 +106,7 @@ endpoint on the free tier).</p></dd>
 <dd><p>logical (default <code>TRUE</code>). The <code>/coins/markets</code> endpoint
 always returns prices at no extra cost, so they are included by
 default. Set to <code>FALSE</code> to keep only the identifier, rank, market-cap
-and supply columns. Note that this default differs from
-<code><a href="crypto_listings.html">crypto_listings()</a></code>.</p></dd>
+and supply columns (same default as <code><a href="crypto_listings.html">crypto_listings()</a></code>).</p></dd>
 
 
 <dt id="arg-sort-sort-dir">sort, sort_dir<a class="anchor" aria-label="anchor" href="#arg-sort-sort-dir"></a></dt>

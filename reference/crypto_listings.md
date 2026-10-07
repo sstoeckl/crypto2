@@ -8,11 +8,11 @@ This code retrieves listing data (latest/new/historic).
 crypto_listings(
   which = "latest",
   convert = "USD",
-  limit = 5000,
+  limit = NULL,
   start_date = NULL,
   end_date = NULL,
   interval = "day",
-  quote = FALSE,
+  quote = TRUE,
   sort = "cmc_rank",
   sort_dir = "asc",
   sleep = 0,
@@ -31,13 +31,16 @@ crypto_listings(
 - convert:
 
   string (default: USD) to one of available fiat prices
-  ([`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/reference/fiat_list.md)).
+  ([`fiat_list()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/fiat_list.md)).
   If more than one are selected please separate by comma (e.g.
   "USD,BTC"), only necessary if 'quote=TRUE'
 
 - limit:
 
-  integer Return the top n records
+  integer Return the top n records per listing (per day for
+  `which = "historical"`). `NULL` (default) returns all coins. For
+  `which = "historical"`, a day that reaches `limit` exactly is flagged
+  as possibly truncated in a warning.
 
 - start_date:
 
@@ -55,7 +58,10 @@ crypto_listings(
 
 - quote:
 
-  logical set to TRUE if you want to include price data (FALSE=default)
+  logical (default `TRUE`): include price, volume, market-cap and
+  percent-change columns. They come with the same API response at no
+  extra cost. With `FALSE` only identifiers, ranks, dates and supply are
+  returned, and there is no `price` column.
 
 - sort:
 
@@ -206,5 +212,12 @@ result may only contain some of the following variables):
 - percent_change_90d:
 
   90 day return
+
+## Details
+
+For `which = "historical"` each day is fetched in pages of 5,000 coins
+and retried as a whole if a page fails. A day is returned complete or
+not at all: a day that still fails after the retries is dropped and
+named in a warning, never returned truncated.
 
 ## Examples
