@@ -149,7 +149,7 @@ Crypto currency historic OHLC market data in a tibble:
 No API key is required. When the requested coin's numeric id is missing
 in `coin_list`,
 [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
-is consulted to recover it (the id is only needed for OHLC).
+is consulted to fill the `id` column.
 
 Free-tier coverage:
 
@@ -160,10 +160,12 @@ Free-tier coverage:
   and market cap come from the API's `market_chart` endpoint and cover
   the **most recent 365 days** only.
 
-- **OHLC** (`open` / `high` / `low`) is built from 4-hour candles and
-  covers the **most recent 30 days**; older rows have `NA` there. Longer
-  windows are only offered as 4-day candles, which are not daily bars.
-  For a one-shot complete OHLC backfill see
+- **OHLC** (`open` / `high` / `low`) is built from the API's 4-hour
+  candles (one extra API call per coin) and covers the **most recent 30
+  days**; older rows have `NA` there. Longer windows are only offered as
+  4-day candles, which are not daily bars. Leave `"ohlc"` out of
+  `options(crypto2.cg_what)` for large universes. For a one-shot
+  complete OHLC backfill see
   [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md).
 
 Only completed days are returned. If no close/volume/market-cap series

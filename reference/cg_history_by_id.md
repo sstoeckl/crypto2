@@ -40,7 +40,8 @@ cg_history_by_id(
   the same as for
   [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md):
   full history for close, volume and market cap in USD, OHLC for the
-  last 30 days.
+  last 30 days. OHLC needs the coin's slug, so ids missing from
+  `coin_list` return none.
 
 - vs_currency:
 
