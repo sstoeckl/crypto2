@@ -170,6 +170,12 @@ can be retrieved for any requested coin, the function stops with an
 error (the source has most likely changed); if it fails for some coins
 only, a warning names them.
 
+**Fallback (opt-in).** With `options(crypto2.cg_api_fallback = TRUE)`,
+coins the website cannot serve are fetched from CoinGecko's public API
+instead, still without a key. Its daily history covers only the **last
+365 days**, so this is off by default: a call that falls back warns and
+lists the affected coins in `attr(result, "cg_api_fallback")`.
+
 ## Examples
 
 ``` r

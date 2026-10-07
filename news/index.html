@@ -64,7 +64,8 @@
 <li>
 <code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code> – archive of CoinGecko ids including dead coins, cached per session with a small bundled fallback.</li>
 <li>Dates follow the CMC / CRSP convention by default (<code>date_convention = "end_of_day"</code>): CoinGecko’s midnight-UTC ticks are labelled with the day that just ended, so <code>close[X] / close[X-1] - 1</code> is the return earned on date X. <code>date_convention = "raw"</code> keeps CoinGecko’s labels.</li>
-<li>No API key is used anywhere. HTTP 429 and transient 408/502/503/504 responses are retried with backoff. Package options <code>crypto2.cg_sleep</code>, <code>crypto2.cg_wait</code>, <code>crypto2.cg_max_retries</code>, <code>crypto2.cg_top_n</code>, <code>crypto2.cg_what</code> and <code>crypto2.cg_vs_currency</code> tune rate limits, retries and streams.</li>
+<li>The package never requires or sends an API key. HTTP 429 and transient 408/502/503/504 responses are retried with backoff. Package options <code>crypto2.cg_sleep</code>, <code>crypto2.cg_wait</code>, <code>crypto2.cg_max_retries</code>, <code>crypto2.cg_top_n</code>, <code>crypto2.cg_what</code> and <code>crypto2.cg_vs_currency</code> tune rate limits, retries and streams.</li>
+<li>Opt-in fallback: with <code>options(crypto2.cg_api_fallback = TRUE)</code>, <code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> fetch coins the website cannot serve from CoinGecko’s public API (no key), which covers only the last 365 days. Off by default; a call that falls back warns and records the coins in <code>attr(result, "cg_api_fallback")</code>. <code><a href="../reference/cg_list.html">cg_list()</a></code>, <code><a href="../reference/cg_listings.html">cg_listings()</a></code> and <code><a href="../reference/cg_info.html">cg_info()</a></code> use the public API (no key) directly.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="cmc-coingecko-crosswalk-3-0-0">CMC-CoinGecko crosswalk<a class="anchor" aria-label="anchor" href="#cmc-coingecko-crosswalk-3-0-0"></a></h3>
@@ -79,6 +80,8 @@
 <li>
 <code><a href="../reference/crypto_info.html">crypto_info()</a></code> and <code><a href="../reference/exchange_info.html">exchange_info()</a></code> keep an allowlist of known columns, so new or list-type fields in the CoinMarketCap response no longer break them.</li>
 <li>The <code>cg_*</code> functions warn with the page number when paging stops on a failed page, and <code><a href="../reference/cg_history.html">cg_history()</a></code> / <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> stop with an error when CoinGecko returns no series for any requested coin (the source has most likely changed); partial failures name the affected coins.</li>
+<li>
+<code><a href="../reference/crypto_listings.html">?crypto_listings</a></code> documents that CoinMarketCap itself has served a historical day incomplete without an error (2,552 instead of 9,002 coins for 2024-01-07 to GitHub Actions runners); compare daily row counts when running large downloads from a server.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="vignettes-3-0-0">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes-3-0-0"></a></h3>
@@ -87,11 +90,12 @@
 <li>
 <code><a href="../articles/cg-vs-cmc.html">vignette("cg-vs-cmc")</a></code> – what each source delivers, matching coins with <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code>, the date conventions, and a reconciliation of the CMC top 20 across both sources.</li>
 <li>
-<code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code> – optional one-shot recipes for a complete historic universe with a CoinGecko Pro key.</li>
+<code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code> – optional one-shot recipes for a complete historic universe with a CoinGecko Pro key. The recipes live in the vignette only; the package itself never uses a key.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="tests-3-0-0">Tests<a class="anchor" aria-label="anchor" href="#tests-3-0-0"></a></h3>
-<ul><li>Offline tests with simulated API responses cover paging, retries, failure warnings, the CSV re-alignment and the crosswalk, and run on CRAN. Live tests (skipped on CRAN) reconcile BTC across both sources and fail when a CoinGecko endpoint is retired rather than skipping.</li>
+<ul><li>Offline tests with simulated API responses cover paging, retries, failure warnings, the CSV re-alignment, the API fallback and the crosswalk, and run on CRAN. Live tests (skipped on CRAN) reconcile BTC across both sources and fail when a CoinGecko endpoint is retired rather than skipping.</li>
+<li>A weekly GitHub Actions workflow (<code>endpoint-check</code>) calls every CoinMarketCap function and fetches every CoinGecko and Hugging Face source the package uses, checks the shape of each answer and fails when an endpoint is retired or its format changes. Run it locally with <code>Rscript .github/scripts/check_endpoints.R</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">

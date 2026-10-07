@@ -190,6 +190,11 @@ backfill see <code><a href="../articles/coingecko-pro-backfill.html">vignette("c
 can be retrieved for any requested coin, the function stops with an
 error (the source has most likely changed); if it fails for some coins
 only, a warning names them.</p>
+<p><strong>Fallback (opt-in).</strong> With <code>options(crypto2.cg_api_fallback = TRUE)</code>,
+coins the website cannot serve are fetched from CoinGecko's public API
+instead, still without a key. Its daily history covers only the <strong>last
+365 days</strong>, so this is off by default: a call that falls back warns and
+lists the affected coins in <code>attr(result, "cg_api_fallback")</code>.</p>
     </div>
 
     <div class="section level2">

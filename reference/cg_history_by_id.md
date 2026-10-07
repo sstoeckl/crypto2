@@ -44,7 +44,10 @@ cg_history_by_id(
 
 - vs_currency:
 
-  Quote currency, default `"usd"`.
+  Quote currency, default `"usd"`. The opt-in API fallback of
+  [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  (`options(crypto2.cg_api_fallback = TRUE)`) applies here too, for ids
+  whose slug is known from `coin_list`.
 
 - start_date, end_date:
 
