@@ -7,15 +7,16 @@ cff-version: 1.2.0
 message: 'To cite package "crypto2" in publications use:'
 type: software
 license: MIT
-title: 'crypto2: Download Crypto Currency Data from ''CoinMarketCap'' without ''API'''
-version: 2.0.5
+title: 'crypto2: Download Crypto Currency Data from ''CoinMarketCap'' and ''CoinGecko'''
+version: 3.0.0
 identifiers:
 - type: doi
   value: 10.32614/CRAN.package.crypto2
 abstract: Retrieves crypto currency information and historical prices as well as information
   on the exchanges they are listed on. Historical data contains daily open, high,
-  low and close values for all crypto currencies. All data is scraped from <https://coinmarketcap.com>
-  via their 'web-api'.
+  low and close values for all crypto currencies. The package draws on two complementary
+  sources, 'CoinMarketCap' <https://coinmarketcap.com> and 'CoinGecko' <https://www.coingecko.com>,
+  both queried without an 'API' key.
 authors:
 - family-names: Stoeckl
   given-names: Sebastian
@@ -23,19 +24,19 @@ authors:
   orcid: https://orcid.org/0000-0002-4196-6093
 preferred-citation:
   type: manual
-  title: 'crypto2: Download Crypto Currency Data from ''CoinMarketCap'' without ''API'''
+  title: 'crypto2: Download Crypto Currency Data from ''CoinMarketCap'' and ''CoinGecko'''
   authors:
   - family-names: Stöckl
     given-names: Sebastian
     email: sebastian.stoeckl@uni.li
     orcid: https://orcid.org/0000-0002-4196-6093
-  year: '2025'
-  notes: R package version 2.0.5
+  year: '2026'
+  notes: R package version 3.0.0
   url: https://CRAN.R-project.org/package=crypto2
 repository: https://CRAN.R-project.org/package=crypto2
 repository-code: https://github.com/sstoeckl/crypto2
 url: https://www.sebastianstoeckl.com/crypto2/
-date-released: '2025-08-31'
+date-released: '2026-10-07'
 contact:
 - family-names: Stoeckl
   given-names: Sebastian

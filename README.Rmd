@@ -35,20 +35,28 @@ This is a modification of the original `crypto` package by [jesse vent](https://
 
 It allows the user to retrieve
 
-- `crypto_listings()` a list of all coins that were historically listed on CMC (main dataset to avoid delisting bias) according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyListingsHistorical)
-- `crypto_list()` a list of all coins that are listed as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyMap)
-- `crypto_info()` a list of all information available for all available coins according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyInfo)
-- `crypto_history()` the **most powerful** function of this package that allows to download the entire available history for all coins covered by CMC according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyOhlcvHistorical)
-- `crypto_global_quotes()` a dataset of historical global crypto currency market metrics to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1GlobalmetricsQuotesHistorical)
-- `fiat_list()` a mapping of all fiat currencies available via the [CMC WEB API](https://coinmarketcap.com/api/documentation/v1/#operation/getV1FiatMap) (note: since v2.0.0 only USD is available)
-- `exchange_list()` a list of all exchanges available as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMap)
-- `exchange_info()` a list of all information available for all given exchanges according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeInfo)
+- `crypto_listings()` a list of all coins that were historically listed on CMC (main dataset to avoid delisting bias) according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/#operation/getV1CryptocurrencyListingsHistorical)
+- `crypto_list()` a list of all coins that are listed as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/#operation/getV1CryptocurrencyMap)
+- `crypto_info()` a list of all information available for all available coins according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/#operation/getV1CryptocurrencyInfo)
+- `crypto_history()` the **most powerful** function of this package that allows to download the entire available history for all coins covered by CMC according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/#operation/getV1CryptocurrencyOhlcvHistorical)
+- `crypto_global_quotes()` a dataset of historical global crypto currency market metrics to the [CMC API documentation](https://coinmarketcap.com/api/documentation/#operation/getV1GlobalmetricsQuotesHistorical)
+- `fiat_list()` a mapping of all fiat currencies available via the [CMC WEB API](https://coinmarketcap.com/api/documentation/#operation/getV1FiatMap) (note: since v2.0.0 only USD is available)
+- `exchange_list()` a list of all exchanges available as either being *active*, *delisted* or *untracked* according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/#operation/getV1ExchangeMap)
+- `exchange_info()` a list of all information available for all given exchanges according to the [CMC API documentation](https://coinmarketcap.com/api/documentation/#operation/getV1ExchangeInfo)
+
+Since version 3.0.0 the package also draws on [CoinGecko](https://www.coingecko.com/) as a second, independent source, again **without an API key**. The `cg_*` functions return tibbles with the same column names as their CMC counterparts:
+
+- `cg_list()`, `cg_listings()`, `cg_info()` the CoinGecko coin universe (including dead coins via `cg_id_mapping()`), a full current snapshot with prices, and coin metadata
+- `cg_history()` and `cg_history_by_id()` daily close, volume and market cap for the full lifetime of each coin (USD), plus daily OHLC for the last 30 days
+- `crypto_crosswalk()` links CoinMarketCap ids to CoinGecko ids, including dead coins, from the weekly [Open Crypto Pricing](https://opencryptopricing.com) crosswalk (CC BY 4.0)
+
+See `vignette("coingecko-integration")` for a walkthrough and `vignette("cg-vs-cmc")` for matching and reconciling the two sources.
 
 # Changelog
 
-## Version 2.0.5.99 (development)
+## Version 3.0.0 (October 2026)
 
-`crypto_info()` and `exchange_info()` have been made more robust against CMC API changes. Both functions now use a column **allowlist** instead of a denylist: only known, documented columns are retained, so any new or unknown fields added by CMC — including list-type fields that would previously break the output — are silently ignored. This should eliminate the recurring patch releases caused by CMC adding new columns.
+CoinGecko becomes a second data source (`cg_*` functions), and `crypto_crosswalk()` links CoinMarketCap and CoinGecko ids. `crypto_listings()` now returns all coins and their prices by default (`limit = NULL`, `quote = TRUE`); the old default `limit = 5000` cut every historical day at rank 5,000 since 2021. `crypto_info()` and `exchange_info()` use a column allowlist and no longer break when CMC adds fields. See [NEWS](https://github.com/sstoeckl/crypto2/blob/master/NEWS.md) for the full list.
 
 ## Version 2.0.2/2.0.3/2.0.4/2.0.5 (September 2025)
 
