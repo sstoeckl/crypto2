@@ -41,6 +41,15 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.1.0.9000" id="crypto2-2109000-development-version">crypto2 2.1.0.9000 (development version)<a class="anchor" aria-label="anchor" href="#crypto2-2109000-development-version"></a></h2>
 <div class="section level3">
+<h3 id="cmc-coingecko-crosswalk-2-1-0-9000">CMC-CoinGecko crosswalk<a class="anchor" aria-label="anchor" href="#cmc-coingecko-crosswalk-2-1-0-9000"></a></h3>
+<ul><li>New <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code> links CoinMarketCap ids (<code>crypto_*</code>) to CoinGecko slugs and numeric ids (<code>cg_*</code>), including dead coins, from the weekly Open Crypto Pricing crosswalk (Stoeckl &amp; Pukrop 2026, <a href="https://opencryptopricing.com" class="external-link uri">https://opencryptopricing.com</a>, CC BY 4.0). Pairs are matched on contracts, project links, name/symbol and slug and confirmed on both providers’ prices; <code>min_confidence</code> (high / medium / low) filters by match quality and <code>include_unmatched = TRUE</code> adds coins listed by one provider only. The file is cached per session; Parquet is used when <code>arrow</code> is installed, CSV otherwise.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="listings-return-prices-by-default-2-1-0-9000">Listings return prices by default<a class="anchor" aria-label="anchor" href="#listings-return-prices-by-default-2-1-0-9000"></a></h3>
+<ul><li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> now defaults to <code>quote = TRUE</code>, like <code><a href="../reference/cg_listings.html">cg_listings()</a></code>. Under the old <code>quote = FALSE</code> default a call returned no <code>price</code>, volume or market-cap columns and no error, which is easy to miss in an automated pipeline. The quotes come with the same API response, so the default costs no extra requests. Pass <code>quote = FALSE</code> for identifiers, ranks and supply only.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="complete-listings-no-silent-truncation-2-1-0-9000">Complete listings, no silent truncation<a class="anchor" aria-label="anchor" href="#complete-listings-no-silent-truncation-2-1-0-9000"></a></h3>
 <p>Two defaults silently returned incomplete data; both are fixed.</p>
 <ul><li>

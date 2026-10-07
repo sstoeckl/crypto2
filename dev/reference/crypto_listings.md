@@ -12,7 +12,7 @@ crypto_listings(
   start_date = NULL,
   end_date = NULL,
   interval = "day",
-  quote = FALSE,
+  quote = TRUE,
   sort = "cmc_rank",
   sort_dir = "asc",
   sleep = 0,
@@ -58,7 +58,10 @@ crypto_listings(
 
 - quote:
 
-  logical set to TRUE if you want to include price data (FALSE=default)
+  logical (default `TRUE`): include price, volume, market-cap and
+  percent-change columns. They come with the same API response at no
+  extra cost. With `FALSE` only identifiers, ranks, dates and supply are
+  returned, and there is no `price` column.
 
 - sort:
 

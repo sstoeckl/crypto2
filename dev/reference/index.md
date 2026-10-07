@@ -17,6 +17,8 @@
 - [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
   : Retrieves name, CG id, symbol, slug, rank, and quote data for
   current listings (CoinGecko)
+- [`crypto_crosswalk()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_crosswalk.md)
+  : Crosswalk between CoinMarketCap and CoinGecko coin ids
 - [`crypto_global_quotes()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_global_quotes.md)
   : Retrieves historical quotes for the global aggregate market
 - [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
