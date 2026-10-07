@@ -38,9 +38,9 @@ crypto_listings(
 - limit:
 
   integer Return the top n records per listing (per day for
-  `which = "historical"`). `NULL` (default) returns all coins. If a
-  result reaches `limit` exactly, a warning flags it as possibly
-  truncated.
+  `which = "historical"`). `NULL` (default) returns all coins. For
+  `which = "historical"`, a day that reaches `limit` exactly is flagged
+  as possibly truncated in a warning.
 
 - start_date:
 

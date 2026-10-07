@@ -15,6 +15,11 @@
   match quality and `include_unmatched = TRUE` adds coins listed by one
   provider only. The file is cached per session; Parquet is used when
   `arrow` is installed, CSV otherwise.
+- [`vignette("cg-vs-cmc")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/cg-vs-cmc.md)
+  is now “CMC vs CoinGecko: matching and reconciling”: a side-by-side of
+  what each source delivers, matching coins with
+  [`crypto_crosswalk()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_crosswalk.md),
+  and a reconciliation of the CMC top 20.
 
 ### Listings return prices by default
 
@@ -60,7 +65,7 @@ Two defaults silently returned incomplete data; both are fixed.
   defaults to `limit = NULL` (all coins). Since 2021-05-07 CMC lists
   more than 5,000 coins per day (9,002 on 2024-01-07), and the old
   default `limit = 5000` cut every day at rank 5,000 without a warning.
-  `which = "historical"` now pages in blocks of 5,000, and a result that
+  `which = "historical"` now pages in blocks of 5,000, and a day that
   reaches an explicit `limit` warns that it may be truncated.
   [`crypto_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_history.md)
   without `coin_list` now selects from the full latest listing rather

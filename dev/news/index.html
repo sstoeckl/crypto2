@@ -18,7 +18,7 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cg-vs-cmc.html">Cross-source reconciliation: CMC vs CoinGecko</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/cg-vs-cmc.html">CMC vs CoinGecko: matching and reconciling</a></li>
     <li><a class="dropdown-item" href="../articles/coingecko-integration.html">CoinGecko integration: a second source for crypto2</a></li>
     <li><a class="dropdown-item" href="../articles/coingecko-pro-backfill.html">CoinGecko Pro backfill: one-shot survivorship-bias archive</a></li>
   </ul></li>
@@ -43,6 +43,8 @@
 <div class="section level3">
 <h3 id="cmc-coingecko-crosswalk-2-1-0-9000">CMC-CoinGecko crosswalk<a class="anchor" aria-label="anchor" href="#cmc-coingecko-crosswalk-2-1-0-9000"></a></h3>
 <ul><li>New <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code> links CoinMarketCap ids (<code>crypto_*</code>) to CoinGecko slugs and numeric ids (<code>cg_*</code>), including dead coins, from the weekly Open Crypto Pricing crosswalk (Stoeckl &amp; Pukrop 2026, <a href="https://opencryptopricing.com" class="external-link uri">https://opencryptopricing.com</a>, CC BY 4.0). Pairs are matched on contracts, project links, name/symbol and slug and confirmed on both providers’ prices; <code>min_confidence</code> (high / medium / low) filters by match quality and <code>include_unmatched = TRUE</code> adds coins listed by one provider only. The file is cached per session; Parquet is used when <code>arrow</code> is installed, CSV otherwise.</li>
+<li>
+<code><a href="../articles/cg-vs-cmc.html">vignette("cg-vs-cmc")</a></code> is now “CMC vs CoinGecko: matching and reconciling”: a side-by-side of what each source delivers, matching coins with <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code>, and a reconciliation of the CMC top 20.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="listings-return-prices-by-default-2-1-0-9000">Listings return prices by default<a class="anchor" aria-label="anchor" href="#listings-return-prices-by-default-2-1-0-9000"></a></h3>
@@ -60,7 +62,7 @@
 <li>
 <code><a href="../reference/cg_listings.html">?cg_listings</a></code> documents that <code>/coins/markets</code> no longer lists wrapped, staked or bridged tokens (stETH, wstETH, WBTC, JitoSOL, bridged USDT); their history is only available through <code><a href="../reference/cg_history.html">cg_history()</a></code>.</li>
 <li>
-<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>limit = NULL</code> (all coins). Since 2021-05-07 CMC lists more than 5,000 coins per day (9,002 on 2024-01-07), and the old default <code>limit = 5000</code> cut every day at rank 5,000 without a warning. <code>which = "historical"</code> now pages in blocks of 5,000, and a result that reaches an explicit <code>limit</code> warns that it may be truncated. <code><a href="../reference/crypto_history.html">crypto_history()</a></code> without <code>coin_list</code> now selects from the full latest listing rather than its top 5,000.</li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>limit = NULL</code> (all coins). Since 2021-05-07 CMC lists more than 5,000 coins per day (9,002 on 2024-01-07), and the old default <code>limit = 5000</code> cut every day at rank 5,000 without a warning. <code>which = "historical"</code> now pages in blocks of 5,000, and a day that reaches an explicit <code>limit</code> warns that it may be truncated. <code><a href="../reference/crypto_history.html">crypto_history()</a></code> without <code>coin_list</code> now selects from the full latest listing rather than its top 5,000.</li>
 <li>
 <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> no longer loses a whole day when CMC lists an exact multiple of 5,000 coins (e.g. 10,000 on 2024-07-10 and 2024-07-11). The empty page that ends such a day made the page parser fail; for <code>which = "historical"</code> the day was then dropped without a warning, for <code>"latest"</code> / <code>"new"</code> the call errored. Empty pages now end the paging and keep the pages already loaded.</li>
 <li>
