@@ -117,7 +117,7 @@ on the underlying endpoint; the arguments are ignored.</p></dd>
 <dt id="arg-sleep">sleep<a class="anchor" aria-label="anchor" href="#arg-sleep"></a></dt>
 <dd><p>integer (default <code>0</code>) Seconds to sleep between API requests.
 Will be raised to at least <code>getOption("crypto2.cg_sleep", 2.5)</code>
-internally to stay under the Demo-tier 30 req/min cap.</p></dd>
+internally to stay under the public API's rate limit.</p></dd>
 
 
 <dt id="arg-wait">wait<a class="anchor" aria-label="anchor" href="#arg-wait"></a></dt>
@@ -181,13 +181,10 @@ weekly via a cron job) to accumulate a survivorship-bias-corrected
 archive over time.</p>
 <p><strong>Coverage.</strong> <code>/coins/markets</code> no longer lists wrapped, staked or bridged
 tokens (e.g. stETH, wstETH, WBTC, JitoSOL, bridged USDT). Their history is
-still available through <code><a href="cg_history.html">cg_history()</a></code> (the <code>market_chart</code> endpoint), but
-they will not appear in a <code>cg_listings()</code> snapshot.</p>
-<p><strong>Rate limits and API key.</strong> Without a key the public endpoint allows only
-a handful of calls per minute. Set the environment variable <code>CG_DEMO_KEY</code>
-to a (free) CoinGecko Demo-API key to raise this to 30 calls per minute
-(10,000 per month); it is sent as the <code>x-cg-demo-api-key</code> header to the
-documented API host only. HTTP 429 and transient 408/502/503/504 responses
+still available through <code><a href="cg_history.html">cg_history()</a></code>, but they will not appear in a
+<code>cg_listings()</code> snapshot.</p>
+<p><strong>Rate limits.</strong> No API key is used; the public endpoint allows only a
+handful of calls per minute. HTTP 429 and transient 408/502/503/504 responses
 are retried with exponential backoff (see <code>wait</code> and the
 <code>crypto2.cg_max_retries</code> option). If a page still fails after the last
 retry, paging stops and a warning names the failed page, so an incomplete
@@ -200,8 +197,7 @@ result is never returned silently.</p>
 <span class="r-in"><span><span class="co"># Full current snapshot (all coins with a market cap), including prices</span></span></span>
 <span class="r-in"><span><span class="va">latest</span> <span class="op">&lt;-</span> <span class="fu">cg_listings</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Top 1000 in BTC, with a Demo-API key for the higher rate limit</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>CG_DEMO_KEY <span class="op">=</span> <span class="st">"CG-..."</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Top 1000 in BTC</span></span></span>
 <span class="r-in"><span><span class="va">latest_btc</span> <span class="op">&lt;-</span> <span class="fu">cg_listings</span><span class="op">(</span>convert <span class="op">=</span> <span class="st">"BTC"</span>, limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

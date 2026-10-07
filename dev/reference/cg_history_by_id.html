@@ -79,14 +79,11 @@ your accumulated snapshots.</p></dd>
 <dd><p>Subset of streams to fetch. Any combination of
 <code>"price"</code> (close + volume), <code>"market_cap"</code>, and <code>"ohlc"</code>. Default all
 three. Coverage is the same as for <code><a href="cg_history.html">cg_history()</a></code>: full history for
-close, volume and market cap in USD, OHLC for the last 30 days. OHLC
-needs the coin's slug, so ids missing from <code>coin_list</code> return none.</p></dd>
+close, volume and market cap, OHLC for the last 30 days.</p></dd>
 
 
 <dt id="arg-vs-currency">vs_currency<a class="anchor" aria-label="anchor" href="#arg-vs-currency"></a></dt>
-<dd><p>Quote currency, default <code>"usd"</code>. Other currencies are
-limited to the last 365 days and need the coin's slug, so ids missing
-from <code>coin_list</code> return no price series.</p></dd>
+<dd><p>Quote currency, default <code>"usd"</code>.</p></dd>
 
 
 <dt id="arg-start-date-end-date">start_date, end_date<a class="anchor" aria-label="anchor" href="#arg-start-date-end-date"></a></dt>

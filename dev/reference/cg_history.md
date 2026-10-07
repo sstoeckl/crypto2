@@ -38,9 +38,8 @@ cg_history(
 
 - convert:
 
-  (default: `"USD"`). Full history is available for `"USD"` only; any
-  other CoinGecko `vs_currency` (e.g. `"BTC"`, `"EUR"`) is limited to
-  the last 365 days.
+  (default: `"USD"`). Any CoinGecko quote currency, e.g. `"BTC"`,
+  `"ETH"` or `"EUR"`.
 
 - limit:
 
@@ -151,21 +150,19 @@ in `coin_list`,
 [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
 is consulted to fill the `id` column.
 
-Free-tier coverage:
+All data come from CoinGecko's website chart endpoints; no API and no
+key are used. Coverage:
 
-- **USD: close, volume and market cap for the full lifetime of each
-  coin**, from CoinGecko's daily CSV export (one request per coin).
+- **Close, volume and market cap for the full lifetime of each coin**,
+  in any quote currency. In USD they come from CoinGecko's daily CSV
+  export (one request per coin), otherwise from the website's chart data
+  (two requests per coin).
 
-- **Other quote currencies:** the export is USD-only, so close, volume
-  and market cap come from the API's `market_chart` endpoint and cover
-  the **most recent 365 days** only.
-
-- **OHLC** (`open` / `high` / `low`) is built from the API's 4-hour
-  candles (one extra API call per coin) and covers the **most recent 30
-  days**; older rows have `NA` there. Longer windows are only offered as
-  4-day candles, which are not daily bars. Leave `"ohlc"` out of
-  `options(crypto2.cg_what)` for large universes. For a one-shot
-  complete OHLC backfill see
+- **OHLC** (`open` / `high` / `low`) is built from 4-hour candles (one
+  extra request per coin) and covers the **most recent 30 days**; older
+  rows have `NA` there. Longer windows are only offered as 4-day
+  candles, which are not daily bars. For a one-shot complete OHLC
+  backfill see
   [`vignette("coingecko-pro-backfill")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/coingecko-pro-backfill.md).
 
 Only completed days are returned. If no close/volume/market-cap series

@@ -58,13 +58,13 @@
 <li>
 <code><a href="../reference/cg_listings.html">cg_listings()</a></code> – current snapshot with every <code>/coins/markets</code> field (price, volume, 24h range, price and market-cap changes, all-time high/low, ROI). CoinGecko’s free tier has no historical cross-section; snapshot this function periodically to build one. Wrapped, staked and bridged tokens are not listed by <code>/coins/markets</code>.</li>
 <li>
-<code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> – daily close, volume and market cap for the full lifetime of each coin in USD (from CoinGecko’s daily CSV export, one request per coin); other quote currencies cover the last 365 days. Daily open/high/low are built from 4-hour candles and cover the last 30 days.</li>
+<code><a href="../reference/cg_history.html">cg_history()</a></code> and <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> – daily close, volume and market cap for the full lifetime of each coin in any quote currency, from CoinGecko’s website chart data (in USD from its daily CSV export, one request per coin). Daily open/high/low are built from 4-hour candles and cover the last 30 days; CoinGecko offers longer windows only as 4-day candles.</li>
 <li>
 <code><a href="../reference/cg_info.html">cg_info()</a></code> – coin metadata.</li>
 <li>
 <code><a href="../reference/cg_id_mapping.html">cg_id_mapping()</a></code> – archive of CoinGecko ids including dead coins, cached per session with a small bundled fallback.</li>
 <li>Dates follow the CMC / CRSP convention by default (<code>date_convention = "end_of_day"</code>): CoinGecko’s midnight-UTC ticks are labelled with the day that just ended, so <code>close[X] / close[X-1] - 1</code> is the return earned on date X. <code>date_convention = "raw"</code> keeps CoinGecko’s labels.</li>
-<li>A free CoinGecko Demo-API key in the environment variable <code>CG_DEMO_KEY</code> is sent automatically and raises the rate limit to 30 calls per minute. HTTP 429 and transient 408/502/503/504 responses are retried with backoff. Package options <code>crypto2.cg_sleep</code>, <code>crypto2.cg_wait</code>, <code>crypto2.cg_max_retries</code>, <code>crypto2.cg_top_n</code>, <code>crypto2.cg_what</code> and <code>crypto2.cg_vs_currency</code> tune rate limits, retries and streams.</li>
+<li>No API key is used anywhere. HTTP 429 and transient 408/502/503/504 responses are retried with backoff. Package options <code>crypto2.cg_sleep</code>, <code>crypto2.cg_wait</code>, <code>crypto2.cg_max_retries</code>, <code>crypto2.cg_top_n</code>, <code>crypto2.cg_what</code> and <code>crypto2.cg_vs_currency</code> tune rate limits, retries and streams.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="cmc-coingecko-crosswalk-3-0-0">CMC-CoinGecko crosswalk<a class="anchor" aria-label="anchor" href="#cmc-coingecko-crosswalk-3-0-0"></a></h3>
@@ -74,6 +74,8 @@
 <h3 id="no-silent-data-loss-3-0-0">No silent data loss<a class="anchor" aria-label="anchor" href="#no-silent-data-loss-3-0-0"></a></h3>
 <ul><li>
 <code>crypto_listings(which = "historical")</code> pages in blocks of 5,000 and no longer loses a whole day when CoinMarketCap lists an exact multiple of 5,000 coins (e.g. 10,000 on 2024-07-10); for <code>"latest"</code> / <code>"new"</code> that case used to error. A day that still fails after the retries is left out and named in a warning, never returned truncated, and a day that reaches an explicit <code>limit</code> is flagged as possibly truncated.</li>
+<li>
+<code><a href="../reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> with the default <code>which = "latest"</code> returned <code>NULL</code>; it now returns the current global market metrics.</li>
 <li>
 <code><a href="../reference/crypto_info.html">crypto_info()</a></code> and <code><a href="../reference/exchange_info.html">exchange_info()</a></code> keep an allowlist of known columns, so new or list-type fields in the CoinMarketCap response no longer break them.</li>
 <li>The <code>cg_*</code> functions warn with the page number when paging stops on a failed page, and <code><a href="../reference/cg_history.html">cg_history()</a></code> / <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> stop with an error when CoinGecko returns no series for any requested coin (the source has most likely changed); partial failures name the affected coins.</li>

@@ -78,9 +78,8 @@ the crypto2 CMC output.</p>
 
 
 <dt id="arg-convert">convert<a class="anchor" aria-label="anchor" href="#arg-convert"></a></dt>
-<dd><p>(default: <code>"USD"</code>). Full history is available for <code>"USD"</code>
-only; any other CoinGecko <code>vs_currency</code> (e.g. <code>"BTC"</code>, <code>"EUR"</code>) is
-limited to the last 365 days.</p></dd>
+<dd><p>(default: <code>"USD"</code>). Any CoinGecko quote currency, e.g.
+<code>"BTC"</code>, <code>"ETH"</code> or <code>"EUR"</code>.</p></dd>
 
 
 <dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
@@ -177,18 +176,16 @@ not expose intra-day OHLC timestamps in these endpoints.</p></dd>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>No API key is required. When the requested coin's numeric id is missing
 in <code>coin_list</code>, <code><a href="cg_id_mapping.html">cg_id_mapping()</a></code> is consulted to fill the <code>id</code> column.</p>
-<p>Free-tier coverage:</p><ul><li><p><strong>USD: close, volume and market cap for the full lifetime of each
-coin</strong>, from CoinGecko's daily CSV export (one request per coin).</p></li>
-<li><p><strong>Other quote currencies:</strong> the export is USD-only, so close, volume
-and market cap come from the API's <code>market_chart</code> endpoint and cover
-the <strong>most recent 365 days</strong> only.</p></li>
-<li><p><strong>OHLC</strong> (<code>open</code> / <code>high</code> / <code>low</code>) is built from the API's 4-hour
-candles (one extra API call per coin) and covers the <strong>most recent 30
-days</strong>; older rows have <code>NA</code> there. Longer windows are only offered as
-4-day candles, which are not daily bars. Leave <code>"ohlc"</code> out of
-<code>options(crypto2.cg_what)</code> for large universes.
-For a one-shot complete OHLC backfill see
-<code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code>.</p></li>
+<p>All data come from CoinGecko's website chart endpoints; no API and no
+key are used. Coverage:</p><ul><li><p><strong>Close, volume and market cap for the full lifetime of each coin</strong>,
+in any quote currency. In USD they come from CoinGecko's daily CSV
+export (one request per coin), otherwise from the website's chart data
+(two requests per coin).</p></li>
+<li><p><strong>OHLC</strong> (<code>open</code> / <code>high</code> / <code>low</code>) is built from 4-hour candles (one
+extra request per coin) and covers the <strong>most recent 30 days</strong>; older
+rows have <code>NA</code> there. Longer windows are only offered as 4-day
+candles, which are not daily bars. For a one-shot complete OHLC
+backfill see <code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code>.</p></li>
 </ul><p>Only completed days are returned. If no close/volume/market-cap series
 can be retrieved for any requested coin, the function stops with an
 error (the source has most likely changed); if it fails for some coins
