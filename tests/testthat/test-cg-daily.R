@@ -131,3 +131,54 @@ test_that("cg_history() stops when the history source is gone", {
                wait = 0.01),
     "no close/volume/market-cap series for any of the 2")
 })
+
+# ---- opt-in API fallback ---------------------------------------------------
+
+fake_api_chart <- function(url, query = NULL, ...) {
+  if (grepl("market_chart", url)) {
+    as.character(jsonlite::toJSON(list(
+      prices        = rbind(c(day_ms("2026-09-27"), 7.1), c(day_ms("2026-09-28"), 7.2)),
+      market_caps   = rbind(c(day_ms("2026-09-27"), 71), c(day_ms("2026-09-28"), 72)),
+      total_volumes = rbind(c(day_ms("2026-09-27"), 1), c(day_ms("2026-09-28"), 2))),
+      digits = NA))
+  }
+}
+dead_web <- function(url, ...) NULL
+
+test_that("without the opt-in the API is never used", {
+  api_called <- FALSE
+  api <- function(...) { api_called <<- TRUE; NULL }
+  r <- cg_fetch_daily("bitcoin", "usd", c("price", "market_cap"), dead_web,
+                      "end_of_day", slug = "bitcoin", api_client = NULL)
+  expect_false(r$price_ok)
+  expect_false(r$used_api)
+  expect_false(api_called)
+})
+
+test_that("with an api_client, coins the website cannot serve come from the API", {
+  r <- cg_fetch_daily("bitcoin", "usd", c("price", "market_cap"), dead_web,
+                      "end_of_day", slug = "bitcoin", api_client = fake_api_chart)
+  expect_true(r$price_ok)
+  expect_true(r$used_api)
+  expect_equal(r$data$close, c(7.1, 7.2))
+})
+
+test_that("cg_history() falls back only when opted in, and says so", {
+  withr::local_options(crypto2.cg_sleep = 0, crypto2.cg_sleep_web = 0,
+                       crypto2.cg_max_retries = 1,
+                       crypto2.cg_what = c("price", "market_cap"))
+  local_mocked_bindings(cg_get = function(url, query = NULL, ...) {
+    if (grepl("api.coingecko.com", url, fixed = TRUE)) fake_api_chart(url, query) else NULL
+  })
+  coins <- tibble::tibble(slug = "bitcoin", id = 1L)
+
+  withr::local_options(crypto2.cg_api_fallback = FALSE)
+  expect_error(cg_history(coins, wait = 0.01),
+               "crypto2.cg_api_fallback = TRUE.*365 days")
+
+  withr::local_options(crypto2.cg_api_fallback = TRUE)
+  expect_warning(h <- cg_history(coins, wait = 0.01),
+                 "fetched from the public API instead.*365 days")
+  expect_equal(attr(h, "cg_api_fallback"), "bitcoin")
+  expect_equal(h$close, c(7.1, 7.2))
+})

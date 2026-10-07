@@ -11,6 +11,11 @@
 # * Daily OHLC: aggregated from the 4-hour candles of
 #   `etl2/ohlc/<coin>/series/<vs>/30_days.json` -- longer windows only come
 #   as 4-day candles, which are not daily bars and are not used.
+#
+# Opt-in fallback, `options(crypto2.cg_api_fallback = TRUE)`: when the
+# website returns nothing for a coin, use CoinGecko's public API (no key):
+# `/coins/<slug>/market_chart` covers only the last 365 days, and
+# `/coins/<slug>/ohlc?days=30` gives the same 4-hour candles.
 
 # Collapse a (timestamp, value...) tibble to daily bars on the UTC calendar.
 # CoinGecko's daily ticks sit at 00:00 UTC of date X, i.e. the close of date
@@ -87,13 +92,38 @@ cg_ticks <- function(key, vs, web_client) {
   ticks
 }
 
-# Daily OHLC from intraday candles. Candle timestamps are close times, so
-# a candle closing in (D 00:00, D+1 00:00] belongs to trading day D. Only
-# days fully covered by candles are returned.
+cg_ticks_api <- function(slug, vs, api_client) {
+  pj <- cg_parse_json(api_client(
+    cg_url(sprintf("coins/%s/market_chart", slug), host = "api"),
+    query = list(vs_currency = vs, days = 365, interval = "daily")))
+  if (is.null(pj) || !length(pj$prices)) return(NULL)
+  mk <- function(m, col) {
+    if (!is.matrix(m) || !nrow(m)) return(NULL)
+    tb <- tibble::tibble(timestamp = cg_ms_to_posix(m[, 1]))
+    tb[[col]] <- as.numeric(m[, 2])
+    tb[as.numeric(tb$timestamp) %% 86400 == 0, ]
+  }
+  list(close      = mk(pj$prices, "close"),
+       volume     = mk(pj$total_volumes, "volume"),
+       market_cap = mk(pj$market_caps, "market_cap"))
+}
+
 cg_ohlc_daily <- function(key, vs, web_client, date_convention) {
   oj <- cg_parse_json(web_client(
     cg_url(sprintf("etl2/ohlc/%s/series/%s/30_days.json", key, vs))))
-  m <- oj$ohlc
+  cg_ohlc_aggregate(oj$ohlc, date_convention)
+}
+
+cg_ohlc_daily_api <- function(slug, vs, api_client, date_convention) {
+  cg_ohlc_aggregate(cg_parse_json(api_client(
+    cg_url(sprintf("coins/%s/ohlc", slug), host = "api"),
+    query = list(vs_currency = vs, days = 30))), date_convention)
+}
+
+# Daily OHLC from intraday candles. Candle timestamps are close times, so
+# a candle closing in (D 00:00, D+1 00:00] belongs to trading day D. Only
+# days fully covered by candles are returned.
+cg_ohlc_aggregate <- function(m, date_convention) {
   if (!is.matrix(m) || ncol(m) != 5L || !nrow(m)) return(NULL)
   m <- m[order(m[, 1]), , drop = FALSE]
   ts <- cg_ms_to_posix(m[, 1])
@@ -117,13 +147,22 @@ cg_ohlc_daily <- function(key, vs, web_client, date_convention) {
   out
 }
 
-# One coin's daily bars; `key` is the slug or the numeric id.
-# Returns list(data = tibble or NULL, price_ok, ohlc_ok).
-cg_fetch_daily <- function(key, vs, what, web_client, date_convention) {
+# One coin's daily bars; `key` is the slug or the numeric id. With an
+# `api_client` (opt-in fallback) and a known `slug`, coins the website
+# cannot serve are fetched from the public API instead.
+# Returns list(data = tibble or NULL, price_ok, ohlc_ok, used_api).
+cg_fetch_daily <- function(key, vs, what, web_client, date_convention,
+                           slug = NA_character_, api_client = NULL) {
   out <- NULL
   price_ok <- NA
+  used_api <- FALSE
+  use_api <- !is.null(api_client) && !is.na(slug)
   if (any(c("price", "market_cap") %in% what)) {
     ticks <- cg_ticks(key, vs, web_client)
+    if (use_api && (is.null(ticks) || !NROW(ticks$close))) {
+      ticks <- cg_ticks_api(slug, vs, api_client)
+      used_api <- !is.null(ticks) && NROW(ticks$close) > 0
+    }
     price_ok <- !is.null(ticks) && NROW(ticks$close) > 0
     if (price_ok) {
       streams <- c(if ("price" %in% what) c("close", "volume"),
@@ -142,6 +181,10 @@ cg_fetch_daily <- function(key, vs, what, web_client, date_convention) {
   ohlc_ok <- NA
   if ("ohlc" %in% what) {
     ohlc <- cg_ohlc_daily(key, vs, web_client, date_convention)
+    if (is.null(ohlc) && use_api) {
+      ohlc <- cg_ohlc_daily_api(slug, vs, api_client, date_convention)
+      used_api <- used_api || !is.null(ohlc)
+    }
     ohlc_ok <- !is.null(ohlc)
     if (ohlc_ok) {
       if (is.null(out)) {
@@ -163,7 +206,7 @@ cg_fetch_daily <- function(key, vs, what, web_client, date_convention) {
   } else {
     out <- NULL
   }
-  list(data = out, price_ok = price_ok, ohlc_ok = ohlc_ok)
+  list(data = out, price_ok = price_ok, ohlc_ok = ohlc_ok, used_api = used_api)
 }
 
 # Once-per-session notes on what the free tier cannot deliver.
@@ -198,14 +241,15 @@ cg_report_daily_failures <- function(fn, keys, price_ok, ohlc_ok,
   if (any(tried) && !any(price_ok[tried]) && !isTRUE(source_alive())) {
     stop(sprintf(paste0(
       "%s(): CoinGecko returned no close/volume/market-cap series for any of ",
-      "the %d requested coin(s) (%s). The endpoint may have changed; please ",
-      "report at https://github.com/sstoeckl/crypto2/issues."),
-      fn, sum(tried), show(keys[tried])), call. = FALSE)
+      "the %d requested coin(s) (%s). The website endpoint may have changed; ",
+      "please report at https://github.com/sstoeckl/crypto2/issues.%s"),
+      fn, sum(tried), show(keys[tried]), cg_api_fallback_hint()), call. = FALSE)
   }
   failed <- tried & !price_ok
   if (any(failed)) {
-    warning(sprintf("%s(): no close/volume/market-cap series for %d of %d coin(s): %s",
-                    fn, sum(failed), sum(tried), show(keys[failed])),
+    warning(sprintf("%s(): no close/volume/market-cap series for %d of %d coin(s): %s.%s",
+                    fn, sum(failed), sum(tried), show(keys[failed]),
+                    cg_api_fallback_hint()),
             call. = FALSE)
   }
   tried_o <- !is.na(ohlc_ok)
@@ -213,4 +257,23 @@ cg_report_daily_failures <- function(fn, keys, price_ok, ohlc_ok,
     warning(sprintf("%s(): no daily OHLC for any of the %d coin(s); open/high/low are NA.",
                     fn, sum(tried_o)), call. = FALSE)
   }
+}
+
+cg_api_fallback_hint <- function() {
+  if (isTRUE(getOption("crypto2.cg_api_fallback", FALSE))) return("")
+  paste0(" Setting options(crypto2.cg_api_fallback = TRUE) falls back to ",
+         "CoinGecko's public API (no key), which covers only the last 365 days.")
+}
+
+# Warn about, and record, coins served by the opt-in API fallback.
+cg_flag_api_fallback <- function(fn, hist, keys) {
+  if (!length(keys)) return(hist)
+  warning(sprintf(paste0(
+    "%s(): the CoinGecko website returned no data for %d coin(s) (%s); ",
+    "they were fetched from the public API instead, which covers only the ",
+    "last 365 days. See attr(<result>, \"cg_api_fallback\")."),
+    fn, length(keys), paste(utils::head(keys, 10), collapse = ", ")),
+    call. = FALSE)
+  attr(hist, "cg_api_fallback") <- keys
+  hist
 }

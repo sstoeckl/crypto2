@@ -34,7 +34,9 @@
 #'   `"price"` (close + volume), `"market_cap"`, and `"ohlc"`. Default all
 #'   three. Coverage is the same as for [cg_history()]: full history for
 #'   close, volume and market cap, OHLC for the last 30 days.
-#' @param vs_currency Quote currency, default `"usd"`.
+#' @param vs_currency Quote currency, default `"usd"`. The opt-in API
+#'   fallback of [cg_history()] (`options(crypto2.cg_api_fallback = TRUE)`)
+#'   applies here too, for ids whose slug is known from `coin_list`.
 #' @param start_date,end_date Client-side date filter applied after fetch.
 #'   `NULL` returns full history.
 #' @param coin_list Optional `cg_list()` output used to join `slug` /
@@ -110,6 +112,10 @@ cg_history_by_id <- function(ids = NULL,
 
   web_client <- cg_make_client(sleep = sleep, wait = wait,
                                max_retries = max_retries)
+  api_client <- if (isTRUE(getOption("crypto2.cg_api_fallback", FALSE))) {
+    cg_make_client(sleep = max(sleep, getOption("crypto2.cg_sleep", 2.5)),
+                   wait = wait, max_retries = max_retries)
+  }
   cg_warn_history_coverage(what, start_date)
 
   # Slug lookup, joined onto the output
@@ -126,6 +132,9 @@ cg_history_by_id <- function(ids = NULL,
     }
   }
 
+  slugs <- if (is.null(lookup)) rep(NA_character_, length(ids)) else
+    lookup$slug[match(ids, lookup$id)]
+
   n <- length(ids)
   pb <- if (!quiet) {
     progress::progress_bar$new(
@@ -141,15 +150,19 @@ cg_history_by_id <- function(ids = NULL,
 
   results  <- vector("list", n)
   price_ok <- ohlc_ok <- rep(NA, n)
+  used_api <- rep(FALSE, n)
   for (i in seq_along(ids)) {
     if (!quiet) pb$tick()
     r <- tryCatch(
       cg_fetch_daily(key = ids[i], vs = vs, what = what,
                      web_client = web_client,
-                     date_convention = date_convention),
-      error = function(e) list(data = NULL, price_ok = FALSE, ohlc_ok = NA))
+                     date_convention = date_convention,
+                     slug = slugs[i], api_client = api_client),
+      error = function(e) list(data = NULL, price_ok = FALSE, ohlc_ok = NA,
+                               used_api = FALSE))
     price_ok[i] <- r$price_ok
     ohlc_ok[i]  <- r$ohlc_ok
+    used_api[i] <- isTRUE(r$used_api)
     if (is.null(r$data)) next
     results[[i]] <- r$data %>%
       dplyr::mutate(
@@ -202,5 +215,5 @@ cg_history_by_id <- function(ids = NULL,
     for (i in 1:60) { pb2$tick(); Sys.sleep(1) }
   }
 
-  hist
+  cg_flag_api_fallback("cg_history_by_id", hist, as.character(ids[used_api]))
 }

@@ -45,10 +45,17 @@ needed.
   labelled with the day that just ended, so `close[X] / close[X-1] - 1` is
   the return earned on date X. `date_convention = "raw"` keeps CoinGecko's
   labels.
-* No API key is used anywhere. HTTP 429 and transient 408/502/503/504 responses are retried with
-  backoff. Package options `crypto2.cg_sleep`, `crypto2.cg_wait`,
+* The package never requires or sends an API key. HTTP 429 and transient
+  408/502/503/504 responses are retried with backoff. Package options
+  `crypto2.cg_sleep`, `crypto2.cg_wait`,
   `crypto2.cg_max_retries`, `crypto2.cg_top_n`, `crypto2.cg_what` and
   `crypto2.cg_vs_currency` tune rate limits, retries and streams.
+* Opt-in fallback: with `options(crypto2.cg_api_fallback = TRUE)`,
+  `cg_history()` and `cg_history_by_id()` fetch coins the website cannot
+  serve from CoinGecko's public API (no key), which covers only the last
+  365 days. Off by default; a call that falls back warns and records the
+  coins in `attr(result, "cg_api_fallback")`. `cg_list()`, `cg_listings()`
+  and `cg_info()` use the public API (no key) directly.
 
 ## CMC-CoinGecko crosswalk
 
@@ -79,6 +86,10 @@ needed.
   failed page, and `cg_history()` / `cg_history_by_id()` stop with an error
   when CoinGecko returns no series for any requested coin (the source has
   most likely changed); partial failures name the affected coins.
+* `?crypto_listings` documents that CoinMarketCap itself has served a
+  historical day incomplete without an error (2,552 instead of 9,002 coins
+  for 2024-01-07 to GitHub Actions runners); compare daily row counts when
+  running large downloads from a server.
 
 ## Vignettes
 
@@ -88,14 +99,21 @@ needed.
   with `crypto_crosswalk()`, the date conventions, and a reconciliation of
   the CMC top 20 across both sources.
 * `vignette("coingecko-pro-backfill")` -- optional one-shot recipes for a
-  complete historic universe with a CoinGecko Pro key.
+  complete historic universe with a CoinGecko Pro key. The recipes live in
+  the vignette only; the package itself never uses a key.
 
 ## Tests
 
 * Offline tests with simulated API responses cover paging, retries,
-  failure warnings, the CSV re-alignment and the crosswalk, and run on
-  CRAN. Live tests (skipped on CRAN) reconcile BTC across both sources and
-  fail when a CoinGecko endpoint is retired rather than skipping.
+  failure warnings, the CSV re-alignment, the API fallback and the
+  crosswalk, and run on CRAN. Live tests (skipped on CRAN) reconcile BTC
+  across both sources and fail when a CoinGecko endpoint is retired rather
+  than skipping.
+* A weekly GitHub Actions workflow (`endpoint-check`) calls every
+  CoinMarketCap function and fetches every CoinGecko and Hugging Face
+  source the package uses, checks the shape of each answer and fails when
+  an endpoint is retired or its format changes. Run it locally with
+  `Rscript .github/scripts/check_endpoints.R`.
 
 # crypto2 2.0.5
 

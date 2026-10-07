@@ -24,6 +24,12 @@
 #' error (the source has most likely changed); if it fails for some coins
 #' only, a warning names them.
 #'
+#' **Fallback (opt-in).** With `options(crypto2.cg_api_fallback = TRUE)`,
+#' coins the website cannot serve are fetched from CoinGecko's public API
+#' instead, still without a key. Its daily history covers only the **last
+#' 365 days**, so this is off by default: a call that falls back warns and
+#' lists the affected coins in `attr(result, "cg_api_fallback")`.
+#'
 #' @param coin_list string if NULL retrieve all currently existing coins
 #'   ([cg_list()]), or provide list of crypto currencies in the [cg_list()] /
 #'   [cg_listings()] format.
@@ -134,6 +140,10 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
 
   web_client <- cg_make_client(sleep = sleep_eff, wait = wait,
                                max_retries = max_retries)
+  api_client <- if (isTRUE(getOption("crypto2.cg_api_fallback", FALSE))) {
+    cg_make_client(sleep = max(sleep, getOption("crypto2.cg_sleep", 2.5)),
+                   wait = wait, max_retries = max_retries)
+  }
 
   n <- nrow(coin_list)
   pb <- progress::progress_bar$new(
@@ -149,16 +159,20 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
 
   results  <- vector("list", n)
   price_ok <- ohlc_ok <- rep(NA, n)
+  used_api <- rep(FALSE, n)
   for (i in seq_len(n)) {
     pb$tick()
     slug <- coin_list$slug[i]
     r <- tryCatch(
       cg_fetch_daily(key = slug, vs = vs, what = what,
                      web_client = web_client,
-                     date_convention = date_convention),
-      error = function(e) list(data = NULL, price_ok = FALSE, ohlc_ok = NA))
+                     date_convention = date_convention,
+                     slug = slug, api_client = api_client),
+      error = function(e) list(data = NULL, price_ok = FALSE, ohlc_ok = NA,
+                               used_api = FALSE))
     price_ok[i] <- r$price_ok
     ohlc_ok[i]  <- r$ohlc_ok
+    used_api[i] <- isTRUE(r$used_api)
     if (is.null(r$data)) next
     results[[i]] <- r$data %>%
       dplyr::mutate(
@@ -210,5 +224,5 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
     for (i in 1:60) { pb2$tick(); Sys.sleep(1) }
   }
 
-  hist
+  cg_flag_api_fallback("cg_history", hist, coin_list$slug[used_api])
 }

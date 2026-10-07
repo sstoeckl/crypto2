@@ -105,6 +105,12 @@ Only completed days are returned. If no close/volume/market-cap series
 can be retrieved for any requested coin, the function stops with an
 error (the source has most likely changed); if it fails for some coins
 only, a warning names them.
+
+\strong{Fallback (opt-in).} With \code{options(crypto2.cg_api_fallback = TRUE)},
+coins the website cannot serve are fetched from CoinGecko's public API
+instead, still without a key. Its daily history covers only the \strong{last
+365 days}, so this is off by default: a call that falls back warns and
+lists the affected coins in \code{attr(result, "cg_api_fallback")}.
 }
 \examples{
 \dontrun{

@@ -31,7 +31,9 @@ your accumulated snapshots.}
 three. Coverage is the same as for \code{\link[=cg_history]{cg_history()}}: full history for
 close, volume and market cap, OHLC for the last 30 days.}
 
-\item{vs_currency}{Quote currency, default \code{"usd"}.}
+\item{vs_currency}{Quote currency, default \code{"usd"}. The opt-in API
+fallback of \code{\link[=cg_history]{cg_history()}} (\code{options(crypto2.cg_api_fallback = TRUE)})
+applies here too, for ids whose slug is known from \code{coin_list}.}
 
 \item{start_date, end_date}{Client-side date filter applied after fetch.
 \code{NULL} returns full history.}
