@@ -16,8 +16,8 @@
 #'
 #' **Coverage.** `/coins/markets` no longer lists wrapped, staked or bridged
 #' tokens (e.g. stETH, wstETH, WBTC, JitoSOL, bridged USDT). Their history is
-#' still available through [cg_history()] (the `market_chart` endpoint), but
-#' they will not appear in a `cg_listings()` snapshot.
+#' still available through [cg_history()], but they will not appear in a
+#' `cg_listings()` snapshot.
 #'
 #' **Rate limits and API key.** Without a key the public endpoint allows only
 #' a handful of calls per minute. Set the environment variable `CG_DEMO_KEY`

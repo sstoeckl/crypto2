@@ -24,9 +24,8 @@ cg_history(
 (\code{\link[=cg_list]{cg_list()}}), or provide list of crypto currencies in the \code{\link[=cg_list]{cg_list()}} /
 \code{\link[=cg_listings]{cg_listings()}} format.}
 
-\item{convert}{(default: \code{"USD"}). Full history is available for \code{"USD"}
-only; any other CoinGecko \code{vs_currency} (e.g. \code{"BTC"}, \code{"EUR"}) is
-limited to the last 365 days.}
+\item{convert}{(default: \code{"USD"}). Any CoinGecko quote currency, e.g.
+\code{"BTC"}, \code{"ETH"} or \code{"EUR"}.}
 
 \item{limit}{integer Return the top n records, default is all tokens.}
 
@@ -88,20 +87,18 @@ the crypto2 CMC output.
 No API key is required. When the requested coin's numeric id is missing
 in \code{coin_list}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted to fill the \code{id} column.
 
-Free-tier coverage:
+All data come from CoinGecko's website chart endpoints; no API and no
+key are used. Coverage:
 \itemize{
-\item \strong{USD: close, volume and market cap for the full lifetime of each
-coin}, from CoinGecko's daily CSV export (one request per coin).
-\item \strong{Other quote currencies:} the export is USD-only, so close, volume
-and market cap come from the API's \code{market_chart} endpoint and cover
-the \strong{most recent 365 days} only.
-\item \strong{OHLC} (\code{open} / \code{high} / \code{low}) is built from the API's 4-hour
-candles (one extra API call per coin) and covers the \strong{most recent 30
-days}; older rows have \code{NA} there. Longer windows are only offered as
-4-day candles, which are not daily bars. Leave \code{"ohlc"} out of
-\code{options(crypto2.cg_what)} for large universes.
-For a one-shot complete OHLC backfill see
-\code{vignette("coingecko-pro-backfill")}.
+\item \strong{Close, volume and market cap for the full lifetime of each coin},
+in any quote currency. In USD they come from CoinGecko's daily CSV
+export (one request per coin), otherwise from the website's chart data
+(two requests per coin).
+\item \strong{OHLC} (\code{open} / \code{high} / \code{low}) is built from 4-hour candles (one
+extra request per coin) and covers the \strong{most recent 30 days}; older
+rows have \code{NA} there. Longer windows are only offered as 4-day
+candles, which are not daily bars. For a one-shot complete OHLC
+backfill see \code{vignette("coingecko-pro-backfill")}.
 }
 
 Only completed days are returned. If no close/volume/market-cap series

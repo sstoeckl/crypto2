@@ -1,15 +1,16 @@
 # Internal: daily series shared by cg_history() and cg_history_by_id().
 #
-# Sources (free tier, no key):
-# * USD close / volume / market cap, full history: the website CSV export
-#   `price_charts/export/<slug-or-numeric-id>/usd.csv`. It is USD-only
-#   (other currency paths return the same USD values).
-# * Other quote currencies: the documented API
-#   `/coins/<slug>/market_chart?interval=daily`, limited to the last 365
-#   days without a paid plan.
-# * Daily OHLC: aggregated from the 4-hour candles of the API's
-#   `/coins/<slug>/ohlc?days=30` -- longer windows only come as 4-day
-#   candles, which are not daily bars and are not used.
+# All sources are CoinGecko website endpoints; no API, no key. `<coin>` is
+# the slug or the numeric id.
+# * Close / volume / market cap, full history:
+#   - USD: the CSV export `price_charts/export/<coin>/usd.csv` (one request);
+#   - any quote currency, and fallback for USD:
+#     `etl2/price_charts/<coin>/<vs>/max.json` (close, volume) and
+#     `etl2/market_cap/<coin>/<vs>/max.json` (market cap).
+#   Both give identical values on the same midnight-UTC tick grid.
+# * Daily OHLC: aggregated from the 4-hour candles of
+#   `etl2/ohlc/<coin>/series/<vs>/30_days.json` -- longer windows only come
+#   as 4-day candles, which are not daily bars and are not used.
 
 # Collapse a (timestamp, value...) tibble to daily bars on the UTC calendar.
 # CoinGecko's daily ticks sit at 00:00 UTC of date X, i.e. the close of date
@@ -36,7 +37,7 @@ floor_daily_ <- function(df, value_cols,
 # row dated X carries the market cap and 24h volume observed at 00:00 X,
 # but the close observed at 00:00 X+1 (the latest row, the running day, has
 # no close yet). Re-timing the close by +1 day puts all three streams on the
-# same tick grid as the API's market_chart series.
+# same tick grid as the etl2 JSON charts.
 cg_parse_export_csv <- function(txt) {
   if (is.null(txt) || !nzchar(txt)) return(NULL)
   d <- tryCatch(utils::read.csv(text = txt, stringsAsFactors = FALSE),
@@ -61,31 +62,38 @@ cg_ticks_export <- function(key, web_client) {
     accept = "text/csv, */*"))
 }
 
-# Only completed days are kept: the trailing non-midnight "now" point is
-# dropped so the API path returns the same days as the CSV path.
-cg_ticks_api <- function(slug, vs, api_client) {
-  pj <- cg_parse_json(api_client(
-    cg_url(sprintf("coins/%s/market_chart", slug), host = "api"),
-    query = list(vs_currency = vs, days = 365, interval = "daily")))
-  if (is.null(pj) || !length(pj$prices)) return(NULL)
+# Midnight ticks from the etl2 JSON charts. A trailing non-midnight "now"
+# point, if present, is dropped so that only completed days are returned.
+cg_ticks_web <- function(key, vs, web_client) {
+  pj <- cg_parse_json(web_client(
+    cg_url(sprintf("etl2/price_charts/%s/%s/max.json", key, vs))))
+  if (is.null(pj) || !length(pj$stats)) return(NULL)
+  mj <- cg_parse_json(web_client(
+    cg_url(sprintf("etl2/market_cap/%s/%s/max.json", key, vs))))
   mk <- function(m, col) {
-    if (!length(m)) return(NULL)
+    if (!is.matrix(m) || !nrow(m)) return(NULL)
     tb <- tibble::tibble(timestamp = cg_ms_to_posix(m[, 1]))
     tb[[col]] <- as.numeric(m[, 2])
     tb[as.numeric(tb$timestamp) %% 86400 == 0, ]
   }
-  list(close      = mk(pj$prices, "close"),
+  list(close      = mk(pj$stats, "close"),
        volume     = mk(pj$total_volumes, "volume"),
-       market_cap = mk(pj$market_caps, "market_cap"))
+       market_cap = mk(mj$stats, "market_cap"))
+}
+
+cg_ticks <- function(key, vs, web_client) {
+  ticks <- if (vs == "usd") cg_ticks_export(key, web_client)
+  if (is.null(ticks) || !NROW(ticks$close)) ticks <- cg_ticks_web(key, vs, web_client)
+  ticks
 }
 
 # Daily OHLC from intraday candles. Candle timestamps are close times, so
 # a candle closing in (D 00:00, D+1 00:00] belongs to trading day D. Only
 # days fully covered by candles are returned.
-cg_ohlc_daily <- function(slug, vs, api_client, date_convention) {
-  m <- cg_parse_json(api_client(
-    cg_url(sprintf("coins/%s/ohlc", slug), host = "api"),
-    query = list(vs_currency = vs, days = 30)))
+cg_ohlc_daily <- function(key, vs, web_client, date_convention) {
+  oj <- cg_parse_json(web_client(
+    cg_url(sprintf("etl2/ohlc/%s/series/%s/30_days.json", key, vs))))
+  m <- oj$ohlc
   if (!is.matrix(m) || ncol(m) != 5L || !nrow(m)) return(NULL)
   m <- m[order(m[, 1]), , drop = FALSE]
   ts <- cg_ms_to_posix(m[, 1])
@@ -109,19 +117,13 @@ cg_ohlc_daily <- function(slug, vs, api_client, date_convention) {
   out
 }
 
-# One coin's daily bars. `key` addresses the CSV export (slug or numeric
-# id); `slug` is needed for the API paths (non-USD series and OHLC).
+# One coin's daily bars; `key` is the slug or the numeric id.
 # Returns list(data = tibble or NULL, price_ok, ohlc_ok).
-cg_fetch_daily <- function(key, slug, vs, what,
-                           web_client, api_client, date_convention) {
+cg_fetch_daily <- function(key, vs, what, web_client, date_convention) {
   out <- NULL
   price_ok <- NA
   if (any(c("price", "market_cap") %in% what)) {
-    ticks <- if (vs == "usd") {
-      cg_ticks_export(key, web_client)
-    } else if (!is.na(slug)) {
-      cg_ticks_api(slug, vs, api_client)
-    }
+    ticks <- cg_ticks(key, vs, web_client)
     price_ok <- !is.null(ticks) && NROW(ticks$close) > 0
     if (price_ok) {
       streams <- c(if ("price" %in% what) c("close", "volume"),
@@ -138,8 +140,8 @@ cg_fetch_daily <- function(key, slug, vs, what,
   }
 
   ohlc_ok <- NA
-  if ("ohlc" %in% what && !is.na(slug)) {
-    ohlc <- cg_ohlc_daily(slug, vs, api_client, date_convention)
+  if ("ohlc" %in% what) {
+    ohlc <- cg_ohlc_daily(key, vs, web_client, date_convention)
     ohlc_ok <- !is.null(ohlc)
     if (ohlc_ok) {
       if (is.null(out)) {
@@ -165,14 +167,7 @@ cg_fetch_daily <- function(key, slug, vs, what,
 }
 
 # Once-per-session notes on what the free tier cannot deliver.
-cg_warn_history_coverage <- function(vs, what, start_date) {
-  if (vs != "usd" && any(c("price", "market_cap") %in% what) &&
-      !isTRUE(getOption("crypto2.cg_non_usd_warned", FALSE))) {
-    warning("CoinGecko's free full-history export is USD-only. For '",
-            toupper(vs), "' close, volume and market cap come from the API ",
-            "and cover the most recent 365 days only.", call. = FALSE)
-    options(crypto2.cg_non_usd_warned = TRUE)
-  }
+cg_warn_history_coverage <- function(what, start_date) {
   if ("ohlc" %in% what &&
       !is.null(start_date) && as.Date(start_date) < Sys.Date() - 30L &&
       !isTRUE(getOption("crypto2.cg_long_window_warned", FALSE))) {
@@ -186,9 +181,8 @@ cg_warn_history_coverage <- function(vs, what, start_date) {
 }
 
 # Does the close/volume/market-cap source still answer for Bitcoin?
-cg_source_alive <- function(vs, web_client, api_client) {
-  ticks <- if (vs == "usd") cg_ticks_export("bitcoin", web_client) else
-    cg_ticks_api("bitcoin", vs, api_client)
+cg_source_alive <- function(vs, web_client) {
+  ticks <- cg_ticks("bitcoin", vs, web_client)
   !is.null(ticks) && NROW(ticks$close) > 0
 }
 

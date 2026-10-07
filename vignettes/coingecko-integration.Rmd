@@ -92,14 +92,14 @@ date X (see `vignette("cg-vs-cmc")` for the date-convention story).
 
 | Column | Coverage on free tier |
 |---|---|
-| `close` | full lifetime of each coin (daily, USD) |
-| `volume` | full lifetime of each coin (daily, USD) |
-| `market_cap` | full lifetime of each coin (daily, USD) |
+| `close` | full lifetime of each coin (daily) |
+| `volume` | full lifetime of each coin (daily) |
+| `market_cap` | full lifetime of each coin (daily) |
 | `open`, `high`, `low` | **only the most recent 30 days**; older rows have `NA` here |
 
-Full history is served in USD only. With `convert = "BTC"` (or any other
-quote currency) close, volume and market cap come from the API and cover
-the most recent 365 days.
+Full history is available in any quote currency (`convert = "BTC"`,
+`"EUR"`, ...). All of it comes from CoinGecko's website, without an API
+key.
 
 For complete OHLC over the full history (microstructure work,
 candlestick-based signals, intraday volatility models), see the Pro

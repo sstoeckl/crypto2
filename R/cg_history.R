@@ -7,19 +7,17 @@
 #' No API key is required. When the requested coin's numeric id is missing
 #' in `coin_list`, [cg_id_mapping()] is consulted to fill the `id` column.
 #'
-#' Free-tier coverage:
-#' * **USD: close, volume and market cap for the full lifetime of each
-#'   coin**, from CoinGecko's daily CSV export (one request per coin).
-#' * **Other quote currencies:** the export is USD-only, so close, volume
-#'   and market cap come from the API's `market_chart` endpoint and cover
-#'   the **most recent 365 days** only.
-#' * **OHLC** (`open` / `high` / `low`) is built from the API's 4-hour
-#'   candles (one extra API call per coin) and covers the **most recent 30
-#'   days**; older rows have `NA` there. Longer windows are only offered as
-#'   4-day candles, which are not daily bars. Leave `"ohlc"` out of
-#'   `options(crypto2.cg_what)` for large universes.
-#'   For a one-shot complete OHLC backfill see
-#'   `vignette("coingecko-pro-backfill")`.
+#' All data come from CoinGecko's website chart endpoints; no API and no
+#' key are used. Coverage:
+#' * **Close, volume and market cap for the full lifetime of each coin**,
+#'   in any quote currency. In USD they come from CoinGecko's daily CSV
+#'   export (one request per coin), otherwise from the website's chart data
+#'   (two requests per coin).
+#' * **OHLC** (`open` / `high` / `low`) is built from 4-hour candles (one
+#'   extra request per coin) and covers the **most recent 30 days**; older
+#'   rows have `NA` there. Longer windows are only offered as 4-day
+#'   candles, which are not daily bars. For a one-shot complete OHLC
+#'   backfill see `vignette("coingecko-pro-backfill")`.
 #'
 #' Only completed days are returned. If no close/volume/market-cap series
 #' can be retrieved for any requested coin, the function stops with an
@@ -29,9 +27,8 @@
 #' @param coin_list string if NULL retrieve all currently existing coins
 #'   ([cg_list()]), or provide list of crypto currencies in the [cg_list()] /
 #'   [cg_listings()] format.
-#' @param convert (default: `"USD"`). Full history is available for `"USD"`
-#'   only; any other CoinGecko `vs_currency` (e.g. `"BTC"`, `"EUR"`) is
-#'   limited to the last 365 days.
+#' @param convert (default: `"USD"`). Any CoinGecko quote currency, e.g.
+#'   `"BTC"`, `"ETH"` or `"EUR"`.
 #' @param limit integer Return the top n records, default is all tokens.
 #' @param start_date,end_date date Filter the returned timeseries to this
 #'   date window after fetching.
@@ -133,12 +130,10 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
     }
   }
 
-  cg_warn_history_coverage(vs, what, start_date)
+  cg_warn_history_coverage(what, start_date)
 
   web_client <- cg_make_client(sleep = sleep_eff, wait = wait,
                                max_retries = max_retries)
-  api_client <- cg_make_client(sleep = max(sleep, getOption("crypto2.cg_sleep", 2.5)),
-                               wait = wait, max_retries = max_retries)
 
   n <- nrow(coin_list)
   pb <- progress::progress_bar$new(
@@ -158,9 +153,8 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
     pb$tick()
     slug <- coin_list$slug[i]
     r <- tryCatch(
-      cg_fetch_daily(key = slug, slug = slug, vs = vs,
-                     what = what, web_client = web_client,
-                     api_client = api_client,
+      cg_fetch_daily(key = slug, vs = vs, what = what,
+                     web_client = web_client,
                      date_convention = date_convention),
       error = function(e) list(data = NULL, price_ok = FALSE, ohlc_ok = NA))
     price_ok[i] <- r$price_ok
@@ -189,7 +183,7 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
   }
   cg_report_daily_failures(
     "cg_history", coin_list$slug, price_ok, ohlc_ok,
-    source_alive = function() cg_source_alive(vs, web_client, api_client))
+    source_alive = function() cg_source_alive(vs, web_client))
   results <- Filter(Negate(is.null), results)
 
   if (!length(results)) {

@@ -40,7 +40,7 @@ covers both, after a short comparison of what each source delivers.
 |---|---|---|
 | Coin universe incl. dead coins | `crypto_list(only_active = FALSE)` | `cg_list(only_active = FALSE)` (via `cg_id_mapping()`) |
 | Historical cross-section | `crypto_listings(which = "historical")`, daily since 2013-04-28 | not on the free tier; snapshot `cg_listings()` yourself |
-| Daily close, volume, market cap | full history | full history in USD; other quote currencies: last 365 days |
+| Daily close, volume, market cap | full history | full history |
 | Daily open / high / low | full history | last 30 days |
 | Wrapped, staked, bridged tokens | in the listings, ranked at the bottom | missing from `cg_listings()`; history via `cg_history()` |
 | API key | none | none; optional free Demo key via `CG_DEMO_KEY` raises the rate limit |

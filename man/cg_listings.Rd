@@ -91,8 +91,8 @@ archive over time.
 
 \strong{Coverage.} \verb{/coins/markets} no longer lists wrapped, staked or bridged
 tokens (e.g. stETH, wstETH, WBTC, JitoSOL, bridged USDT). Their history is
-still available through \code{\link[=cg_history]{cg_history()}} (the \code{market_chart} endpoint), but
-they will not appear in a \code{cg_listings()} snapshot.
+still available through \code{\link[=cg_history]{cg_history()}}, but they will not appear in a
+\code{cg_listings()} snapshot.
 
 \strong{Rate limits and API key.} Without a key the public endpoint allows only
 a handful of calls per minute. Set the environment variable \code{CG_DEMO_KEY}

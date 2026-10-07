@@ -32,10 +32,11 @@ needed.
   snapshot this function periodically to build one. Wrapped, staked and
   bridged tokens are not listed by `/coins/markets`.
 * `cg_history()` and `cg_history_by_id()` -- daily close, volume and market
-  cap for the full lifetime of each coin in USD (from CoinGecko's daily
-  CSV export, one request per coin); other quote currencies cover the last
-  365 days. Daily open/high/low are built from 4-hour candles and cover the
-  last 30 days.
+  cap for the full lifetime of each coin in any quote currency, from
+  CoinGecko's website chart data (in USD from its daily CSV export, one
+  request per coin). Daily open/high/low are built from 4-hour candles and
+  cover the last 30 days; CoinGecko offers longer windows only as 4-day
+  candles.
 * `cg_info()` -- coin metadata.
 * `cg_id_mapping()` -- archive of CoinGecko ids including dead coins,
   cached per session with a small bundled fallback.

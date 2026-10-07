@@ -87,9 +87,9 @@ test_that("documented API: /coins/{slug} returns expected top-level fields", {
 })
 
 # These endpoints feed cg_history(). A retired endpoint (404) is a failure,
-# not a skip: when CoinGecko retired /price_charts/<slug>/<vs>/max.json and
-# later /ohlc/<id>/series/<vs>/<window>.json, skip-on-NULL tests would have
-# hidden the outage. Only a Cloudflare refusal of this
+# not a skip: when CoinGecko moved /price_charts/<coin>/<vs>/max.json and
+# /ohlc/<id>/series/<vs>/<window>.json under /etl2/, skip-on-NULL tests would
+# have hidden the outage. Only a Cloudflare refusal of this
 # environment (CI runners) or a 429 skips.
 
 test_that("website: /price_charts/export/{slug}/usd.csv returns the daily history", {
@@ -111,13 +111,24 @@ test_that("website: CSV export also resolves numeric ids", {
                info = "numeric-id CSV export returned nothing")
 })
 
-test_that("documented API: /coins/{slug}/ohlc?days=30 returns 4-hour candles", {
+test_that("website: /etl2/price_charts and /etl2/market_cap return the daily history", {
   skip_if_no_cg()
-  m <- cg_parse_json(cg_endpoint_text_or_skip(
-    paste0(cg_url("coins/bitcoin/ohlc", host = "api"), "?vs_currency=usd&days=30")))
-  expect_true(is.matrix(m), info = "OHLC response is no longer a bare array")
-  expect_equal(ncol(m), 5, info = "OHLC array no longer 5-col [ts, o, h, l, c]")
-  expect_equal(stats::median(diff(m[, 1])), 4 * 3600 * 1000,
+  for (p in c("etl2/price_charts/bitcoin/usd/max.json",
+              "etl2/market_cap/bitcoin/usd/max.json",
+              "etl2/price_charts/ethereum/btc/max.json")) {
+    out <- cg_parse_json(cg_endpoint_text_or_skip(cg_url(p)))
+    expect_true(all(c("stats", "total_volumes") %in% names(out)), info = p)
+    expect_gt(nrow(out$stats), 3000)
+    expect_equal(stats::median(diff(out$stats[, 1])), 86400 * 1000, info = p)
+  }
+})
+
+test_that("website: /etl2/ohlc/{coin}/series/{vs}/30_days.json returns 4-hour candles", {
+  skip_if_no_cg()
+  out <- cg_parse_json(cg_endpoint_text_or_skip(cg_url("etl2/ohlc/bitcoin/series/usd/30_days.json")))
+  expect_true("ohlc" %in% names(out), info = "missing `ohlc` array - schema change?")
+  expect_equal(ncol(out$ohlc), 5, info = "OHLC array no longer 5-col [ts, o, h, l, c]")
+  expect_equal(stats::median(diff(out$ohlc[, 1])), 4 * 3600 * 1000,
                info = "30-day OHLC is no longer 4-hourly")
 })
 

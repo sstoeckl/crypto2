@@ -33,11 +33,8 @@
 #' @param what Subset of streams to fetch. Any combination of
 #'   `"price"` (close + volume), `"market_cap"`, and `"ohlc"`. Default all
 #'   three. Coverage is the same as for [cg_history()]: full history for
-#'   close, volume and market cap in USD, OHLC for the last 30 days. OHLC
-#'   needs the coin's slug, so ids missing from `coin_list` return none.
-#' @param vs_currency Quote currency, default `"usd"`. Other currencies are
-#'   limited to the last 365 days and need the coin's slug, so ids missing
-#'   from `coin_list` return no price series.
+#'   close, volume and market cap, OHLC for the last 30 days.
+#' @param vs_currency Quote currency, default `"usd"`.
 #' @param start_date,end_date Client-side date filter applied after fetch.
 #'   `NULL` returns full history.
 #' @param coin_list Optional `cg_list()` output used to join `slug` /
@@ -113,11 +110,9 @@ cg_history_by_id <- function(ids = NULL,
 
   web_client <- cg_make_client(sleep = sleep, wait = wait,
                                max_retries = max_retries)
-  api_client <- cg_make_client(sleep = max(sleep, getOption("crypto2.cg_sleep", 2.5)),
-                               wait = wait, max_retries = max_retries)
-  cg_warn_history_coverage(vs, what, start_date)
+  cg_warn_history_coverage(what, start_date)
 
-  # Slug lookup: joined onto the output, and needed for the non-USD path
+  # Slug lookup, joined onto the output
   lookup <- NULL
   if (!isFALSE(coin_list)) {
     if (is.null(coin_list)) coin_list <- cg_list()
@@ -130,8 +125,6 @@ cg_history_by_id <- function(ids = NULL,
               "skipping slug join.", call. = FALSE)
     }
   }
-  slugs <- if (is.null(lookup)) rep(NA_character_, length(ids)) else
-    lookup$slug[match(ids, lookup$id)]
 
   n <- length(ids)
   pb <- if (!quiet) {
@@ -151,9 +144,8 @@ cg_history_by_id <- function(ids = NULL,
   for (i in seq_along(ids)) {
     if (!quiet) pb$tick()
     r <- tryCatch(
-      cg_fetch_daily(key = ids[i], slug = slugs[i],
-                     vs = vs, what = what, web_client = web_client,
-                     api_client = api_client,
+      cg_fetch_daily(key = ids[i], vs = vs, what = what,
+                     web_client = web_client,
                      date_convention = date_convention),
       error = function(e) list(data = NULL, price_ok = FALSE, ohlc_ok = NA))
     price_ok[i] <- r$price_ok
@@ -173,7 +165,7 @@ cg_history_by_id <- function(ids = NULL,
   }
   cg_report_daily_failures(
     "cg_history_by_id", as.character(ids), price_ok, ohlc_ok,
-    source_alive = function() cg_source_alive(vs, web_client, api_client))
+    source_alive = function() cg_source_alive(vs, web_client))
   results <- Filter(Negate(is.null), results)
   if (!length(results)) {
     if (!any(price_ok %in% FALSE)) warning("cg_history_by_id(): no data returned.", call. = FALSE)
