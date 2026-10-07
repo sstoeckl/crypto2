@@ -82,16 +82,16 @@ skip_if_cg_rate_limited <- function(url = "https://api.coingecko.com/api/v3/ping
   }
 }
 
-# Fetch a website endpoint for an endpoint test. Skips when CoinGecko's
+# Fetch an endpoint for an endpoint test. Skips when CoinGecko's
 # Cloudflare refuses this environment (typical on CI / cloud runners) or
 # rate-limits; any other non-200 (e.g. 404 = endpoint retired) FAILS, so a
 # retired endpoint cannot hide behind a skip.
-cg_web_text_or_skip <- function(url, accept = "application/json, text/plain, */*") {
+cg_endpoint_text_or_skip <- function(url, accept = "application/json, text/plain, */*") {
   resp <- tryCatch(
     httr::GET(url, httr::user_agent(cg_user_agent()),
               httr::add_headers(Accept = accept), httr::timeout(30)),
     error = function(e) NULL)
-  if (is.null(resp)) testthat::skip("CoinGecko website unreachable.")
+  if (is.null(resp)) testthat::skip("CoinGecko unreachable.")
   sc <- httr::status_code(resp)
   if (sc == 403 && !is.null(httr::headers(resp)[["cf-mitigated"]])) {
     testthat::skip("CoinGecko refuses requests from this environment (Cloudflare).")

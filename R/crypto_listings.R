@@ -7,6 +7,12 @@
 #' at all: a day that still fails after the retries is dropped and named in
 #' a warning, never returned truncated.
 #'
+#' CMC itself has been observed to return an incomplete day without any
+#' error: for 2024-01-07, requests from GitHub Actions runners received 2,552
+#' coins while the same request from a desktop received all 9,002. When you
+#' run large downloads from a server, compare daily row counts with a run
+#' from another machine.
+#'
 #' @param which string Shall the code retrieve the latest listing, the new listings or a historic listing?
 #' @param convert string (default: USD) to one of available fiat prices (`fiat_list()`). If more
 #' than one are selected please separate by comma (e.g. "USD,BTC"), only necessary if 'quote=TRUE'

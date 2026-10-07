@@ -27,7 +27,7 @@ test_that("cg_parse_export_csv() re-times the close to the next midnight", {
 fake_web <- function(url, ...) if (grepl("export", url)) fake_csv else NULL
 
 test_that("cg_fetch_daily() aligns close, volume and market cap per trading day", {
-  r <- cg_fetch_daily("bitcoin", "bitcoin", NA_integer_, "usd",
+  r <- cg_fetch_daily("bitcoin", "bitcoin", "usd",
                       c("price", "market_cap"), fake_web, NULL, "end_of_day")
   d <- r$data
   expect_true(r$price_ok)
@@ -38,7 +38,7 @@ test_that("cg_fetch_daily() aligns close, volume and market cap per trading day"
   expect_equal(max(d$date), as.Date("2026-09-27"))
   expect_true(all(is.na(d$open)))
 
-  raw <- cg_fetch_daily("bitcoin", "bitcoin", NA_integer_, "usd",
+  raw <- cg_fetch_daily("bitcoin", "bitcoin", "usd",
                         c("price", "market_cap"), fake_web, NULL, "raw")$data
   row <- raw[raw$date == as.Date("2026-09-27"), ]
   expect_equal(c(row$close, row$market_cap, row$volume), c(110, 1200, 12))
@@ -56,7 +56,7 @@ test_that("cg_fetch_daily() uses the API for non-USD and drops the running point
     digits = NA)
   seen <- NULL
   api <- function(url, query = NULL, ...) { seen <<- query; as.character(js) }
-  d <- cg_fetch_daily("ethereum", "ethereum", NA_integer_, "btc",
+  d <- cg_fetch_daily("ethereum", "ethereum", "btc",
                       c("price", "market_cap"), function(...) NULL, api,
                       "end_of_day")$data
   expect_equal(seen$vs_currency, "btc")
@@ -70,23 +70,23 @@ test_that("cg_ohlc_daily() aggregates complete days of 4-hour candles only", {
   k <- seq_along(ts)
   candles <- cbind(as.numeric(ts) * 1000, open = k, high = k + 0.5,
                    low = k - 0.5, close = k + 0.25)
-  web <- function(url, ...) as.character(jsonlite::toJSON(list(ohlc = candles), digits = NA))
-  o <- cg_ohlc_daily(1L, "usd", web, "end_of_day")
+  api <- function(url, query = NULL, ...) as.character(jsonlite::toJSON(unname(candles), digits = NA))
+  o <- cg_ohlc_daily("bitcoin", "usd", api, "end_of_day")
   # candles closing in (D, D+1] belong to D; 2026-09-28 is incomplete
   expect_equal(o$date, as.Date(c("2026-09-26", "2026-09-27")))
   expect_equal(o$open, c(1, 7))
   expect_equal(o$high, c(6.5, 12.5))
   expect_equal(o$low, c(0.5, 6.5))
   expect_equal(o$close_o, c(6.25, 12.25))
-  expect_equal(cg_ohlc_daily(1L, "usd", web, "raw")$date,
+  expect_equal(cg_ohlc_daily("bitcoin", "usd", api, "raw")$date,
                as.Date(c("2026-09-27", "2026-09-28")))
 })
 
 test_that("cg_ohlc_daily() rejects 4-day candles", {
   ts <- seq(utc("2026-08-01"), utc("2026-09-26"), by = "4 days")
   candles <- cbind(as.numeric(ts) * 1000, 1, 2, 0.5, 1.5)
-  web <- function(url, ...) as.character(jsonlite::toJSON(list(ohlc = candles), digits = NA))
-  expect_null(cg_ohlc_daily(1L, "usd", web, "end_of_day"))
+  api <- function(url, query = NULL, ...) as.character(jsonlite::toJSON(unname(candles), digits = NA))
+  expect_null(cg_ohlc_daily("bitcoin", "usd", api, "end_of_day"))
 })
 
 test_that("failures are reported loudly", {

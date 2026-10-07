@@ -7,9 +7,9 @@
 # * Other quote currencies: the documented API
 #   `/coins/<slug>/market_chart?interval=daily`, limited to the last 365
 #   days without a paid plan.
-# * Daily OHLC: aggregated from the 4-hour candles of
-#   `ohlc/<numeric-id>/series/<vs>/30_days.json` -- longer windows only come
-#   as 4-day candles, which are not daily bars and are not used.
+# * Daily OHLC: aggregated from the 4-hour candles of the API's
+#   `/coins/<slug>/ohlc?days=30` -- longer windows only come as 4-day
+#   candles, which are not daily bars and are not used.
 
 # Collapse a (timestamp, value...) tibble to daily bars on the UTC calendar.
 # CoinGecko's daily ticks sit at 00:00 UTC of date X, i.e. the close of date
@@ -82,11 +82,12 @@ cg_ticks_api <- function(slug, vs, api_client) {
 # Daily OHLC from intraday candles. Candle timestamps are close times, so
 # a candle closing in (D 00:00, D+1 00:00] belongs to trading day D. Only
 # days fully covered by candles are returned.
-cg_ohlc_daily <- function(numeric_id, vs, web_client, date_convention) {
-  oj <- cg_parse_json(web_client(cg_url(
-    sprintf("ohlc/%d/series/%s/30_days.json", as.integer(numeric_id), vs))))
-  if (is.null(oj) || is.null(oj$ohlc) || !length(oj$ohlc)) return(NULL)
-  m <- oj$ohlc[order(oj$ohlc[, 1]), , drop = FALSE]
+cg_ohlc_daily <- function(slug, vs, api_client, date_convention) {
+  m <- cg_parse_json(api_client(
+    cg_url(sprintf("coins/%s/ohlc", slug), host = "api"),
+    query = list(vs_currency = vs, days = 30)))
+  if (!is.matrix(m) || ncol(m) != 5L || !nrow(m)) return(NULL)
+  m <- m[order(m[, 1]), , drop = FALSE]
   ts <- cg_ms_to_posix(m[, 1])
   step <- stats::median(diff(as.numeric(ts)))
   if (!is.finite(step) || step <= 0 || 86400 %% step != 0) return(NULL)
@@ -109,9 +110,9 @@ cg_ohlc_daily <- function(numeric_id, vs, web_client, date_convention) {
 }
 
 # One coin's daily bars. `key` addresses the CSV export (slug or numeric
-# id); `slug` is needed for the non-USD API path, `numeric_id` for OHLC.
+# id); `slug` is needed for the API paths (non-USD series and OHLC).
 # Returns list(data = tibble or NULL, price_ok, ohlc_ok).
-cg_fetch_daily <- function(key, slug, numeric_id, vs, what,
+cg_fetch_daily <- function(key, slug, vs, what,
                            web_client, api_client, date_convention) {
   out <- NULL
   price_ok <- NA
@@ -137,8 +138,8 @@ cg_fetch_daily <- function(key, slug, numeric_id, vs, what,
   }
 
   ohlc_ok <- NA
-  if ("ohlc" %in% what && !is.na(numeric_id)) {
-    ohlc <- cg_ohlc_daily(numeric_id, vs, web_client, date_convention)
+  if ("ohlc" %in% what && !is.na(slug)) {
+    ohlc <- cg_ohlc_daily(slug, vs, api_client, date_convention)
     ohlc_ok <- !is.null(ohlc)
     if (ohlc_ok) {
       if (is.null(out)) {
@@ -215,7 +216,7 @@ cg_report_daily_failures <- function(fn, keys, price_ok, ohlc_ok,
   }
   tried_o <- !is.na(ohlc_ok)
   if (any(tried_o) && !any(ohlc_ok[tried_o])) {
-    warning(sprintf("%s(): no daily OHLC for any of the %d coin(s) with a numeric id; open/high/low are NA.",
+    warning(sprintf("%s(): no daily OHLC for any of the %d coin(s); open/high/low are NA.",
                     fn, sum(tried_o)), call. = FALSE)
   }
 }

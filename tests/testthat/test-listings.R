@@ -16,6 +16,9 @@ test_that("Fetching different types of listings works correctly", {
 # must return all of them rather than stop at rank 5,000.
 test_that("historical listings are not truncated at 5,000 by default", {
   skip_on_cran()
+  # CMC has served this day incomplete (2,552 of 9,002 coins) to GitHub
+  # Actions runners without an error; see ?crypto_listings.
+  skip_on_ci()
   expect_no_warning(
     hist <- crypto_listings(which="historical", start_date="20240107", end_date="20240107")
   )

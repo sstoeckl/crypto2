@@ -86,8 +86,7 @@ the crypto2 CMC output.
 }
 \details{
 No API key is required. When the requested coin's numeric id is missing
-in \code{coin_list}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted to recover it (the id is
-only needed for OHLC).
+in \code{coin_list}, \code{\link[=cg_id_mapping]{cg_id_mapping()}} is consulted to fill the \code{id} column.
 
 Free-tier coverage:
 \itemize{
@@ -96,9 +95,11 @@ coin}, from CoinGecko's daily CSV export (one request per coin).
 \item \strong{Other quote currencies:} the export is USD-only, so close, volume
 and market cap come from the API's \code{market_chart} endpoint and cover
 the \strong{most recent 365 days} only.
-\item \strong{OHLC} (\code{open} / \code{high} / \code{low}) is built from 4-hour candles and
-covers the \strong{most recent 30 days}; older rows have \code{NA} there. Longer
-windows are only offered as 4-day candles, which are not daily bars.
+\item \strong{OHLC} (\code{open} / \code{high} / \code{low}) is built from the API's 4-hour
+candles (one extra API call per coin) and covers the \strong{most recent 30
+days}; older rows have \code{NA} there. Longer windows are only offered as
+4-day candles, which are not daily bars. Leave \code{"ohlc"} out of
+\code{options(crypto2.cg_what)} for large universes.
 For a one-shot complete OHLC backfill see
 \code{vignette("coingecko-pro-backfill")}.
 }

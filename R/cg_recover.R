@@ -33,7 +33,8 @@
 #' @param what Subset of streams to fetch. Any combination of
 #'   `"price"` (close + volume), `"market_cap"`, and `"ohlc"`. Default all
 #'   three. Coverage is the same as for [cg_history()]: full history for
-#'   close, volume and market cap in USD, OHLC for the last 30 days.
+#'   close, volume and market cap in USD, OHLC for the last 30 days. OHLC
+#'   needs the coin's slug, so ids missing from `coin_list` return none.
 #' @param vs_currency Quote currency, default `"usd"`. Other currencies are
 #'   limited to the last 365 days and need the coin's slug, so ids missing
 #'   from `coin_list` return no price series.
@@ -150,7 +151,7 @@ cg_history_by_id <- function(ids = NULL,
   for (i in seq_along(ids)) {
     if (!quiet) pb$tick()
     r <- tryCatch(
-      cg_fetch_daily(key = ids[i], slug = slugs[i], numeric_id = ids[i],
+      cg_fetch_daily(key = ids[i], slug = slugs[i],
                      vs = vs, what = what, web_client = web_client,
                      api_client = api_client,
                      date_convention = date_convention),

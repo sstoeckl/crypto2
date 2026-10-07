@@ -5,8 +5,7 @@
 #' the crypto2 CMC output.
 #'
 #' No API key is required. When the requested coin's numeric id is missing
-#' in `coin_list`, [cg_id_mapping()] is consulted to recover it (the id is
-#' only needed for OHLC).
+#' in `coin_list`, [cg_id_mapping()] is consulted to fill the `id` column.
 #'
 #' Free-tier coverage:
 #' * **USD: close, volume and market cap for the full lifetime of each
@@ -14,9 +13,11 @@
 #' * **Other quote currencies:** the export is USD-only, so close, volume
 #'   and market cap come from the API's `market_chart` endpoint and cover
 #'   the **most recent 365 days** only.
-#' * **OHLC** (`open` / `high` / `low`) is built from 4-hour candles and
-#'   covers the **most recent 30 days**; older rows have `NA` there. Longer
-#'   windows are only offered as 4-day candles, which are not daily bars.
+#' * **OHLC** (`open` / `high` / `low`) is built from the API's 4-hour
+#'   candles (one extra API call per coin) and covers the **most recent 30
+#'   days**; older rows have `NA` there. Longer windows are only offered as
+#'   4-day candles, which are not daily bars. Leave `"ohlc"` out of
+#'   `options(crypto2.cg_what)` for large universes.
 #'   For a one-shot complete OHLC backfill see
 #'   `vignette("coingecko-pro-backfill")`.
 #'
@@ -157,7 +158,7 @@ cg_history <- function(coin_list = NULL, convert = "USD", limit = NULL,
     pb$tick()
     slug <- coin_list$slug[i]
     r <- tryCatch(
-      cg_fetch_daily(key = slug, slug = slug, numeric_id = ids[i], vs = vs,
+      cg_fetch_daily(key = slug, slug = slug, vs = vs,
                      what = what, web_client = web_client,
                      api_client = api_client,
                      date_convention = date_convention),

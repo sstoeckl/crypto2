@@ -29,7 +29,8 @@ your accumulated snapshots.}
 \item{what}{Subset of streams to fetch. Any combination of
 \code{"price"} (close + volume), \code{"market_cap"}, and \code{"ohlc"}. Default all
 three. Coverage is the same as for \code{\link[=cg_history]{cg_history()}}: full history for
-close, volume and market cap in USD, OHLC for the last 30 days.}
+close, volume and market cap in USD, OHLC for the last 30 days. OHLC
+needs the coin's slug, so ids missing from \code{coin_list} return none.}
 
 \item{vs_currency}{Quote currency, default \code{"usd"}. Other currencies are
 limited to the last 365 days and need the coin's slug, so ids missing
