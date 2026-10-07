@@ -180,6 +180,10 @@ Covered in the recipe at the top of this vignette. Key knobs:
 - `date_convention = c("end_of_day", "raw")` – default `"end_of_day"`
   aligns dates with CMC; see
   [`vignette("cg-vs-cmc")`](https://www.sebastianstoeckl.com/crypto2/dev/articles/cg-vs-cmc.md).
+- `options(crypto2.cg_api_fallback = TRUE)` – if the CoinGecko website
+  cannot serve a coin, fetch it from the public API instead (no key, but
+  only the last 365 days). Off by default; a fallback warns and lists
+  the affected coins in `attr(result, "cg_api_fallback")`.
 
 ### `cg_info()` – per-coin metadata
 

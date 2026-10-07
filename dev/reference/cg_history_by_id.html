@@ -83,7 +83,9 @@ close, volume and market cap, OHLC for the last 30 days.</p></dd>
 
 
 <dt id="arg-vs-currency">vs_currency<a class="anchor" aria-label="anchor" href="#arg-vs-currency"></a></dt>
-<dd><p>Quote currency, default <code>"usd"</code>.</p></dd>
+<dd><p>Quote currency, default <code>"usd"</code>. The opt-in API
+fallback of <code><a href="cg_history.html">cg_history()</a></code> (<code>options(crypto2.cg_api_fallback = TRUE)</code>)
+applies here too, for ids whose slug is known from <code>coin_list</code>.</p></dd>
 
 
 <dt id="arg-start-date-end-date">start_date, end_date<a class="anchor" aria-label="anchor" href="#arg-start-date-end-date"></a></dt>

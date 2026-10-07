@@ -298,6 +298,12 @@ call per coin.</li>
 <code>date_convention = c("end_of_day", "raw")</code> – default
 <code>"end_of_day"</code> aligns dates with CMC; see
 <code><a href="../articles/cg-vs-cmc.html">vignette("cg-vs-cmc")</a></code>.</li>
+<li>
+<code>options(crypto2.cg_api_fallback = TRUE)</code> – if the
+CoinGecko website cannot serve a coin, fetch it from the public API
+instead (no key, but only the last 365 days). Off by default; a fallback
+warns and lists the affected coins in
+<code>attr(result, "cg_api_fallback")</code>.</li>
 </ul>
 </div>
 <div class="section level3">
