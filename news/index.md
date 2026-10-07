@@ -44,9 +44,10 @@ needed.
   and
   [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
   – daily close, volume and market cap for the full lifetime of each
-  coin in USD (from CoinGecko’s daily CSV export, one request per coin);
-  other quote currencies cover the last 365 days. Daily open/high/low
-  are built from 4-hour candles and cover the last 30 days.
+  coin in any quote currency, from CoinGecko’s website chart data (in
+  USD from its daily CSV export, one request per coin). Daily
+  open/high/low are built from 4-hour candles and cover the last 30
+  days; CoinGecko offers longer windows only as 4-day candles.
 - [`cg_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_info.md)
   – coin metadata.
 - [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)
@@ -57,13 +58,11 @@ needed.
   labelled with the day that just ended, so `close[X] / close[X-1] - 1`
   is the return earned on date X. `date_convention = "raw"` keeps
   CoinGecko’s labels.
-- A free CoinGecko Demo-API key in the environment variable
-  `CG_DEMO_KEY` is sent automatically and raises the rate limit to 30
-  calls per minute. HTTP 429 and transient 408/502/503/504 responses are
-  retried with backoff. Package options `crypto2.cg_sleep`,
-  `crypto2.cg_wait`, `crypto2.cg_max_retries`, `crypto2.cg_top_n`,
-  `crypto2.cg_what` and `crypto2.cg_vs_currency` tune rate limits,
-  retries and streams.
+- No API key is used anywhere. HTTP 429 and transient 408/502/503/504
+  responses are retried with backoff. Package options
+  `crypto2.cg_sleep`, `crypto2.cg_wait`, `crypto2.cg_max_retries`,
+  `crypto2.cg_top_n`, `crypto2.cg_what` and `crypto2.cg_vs_currency`
+  tune rate limits, retries and streams.
 
 ### CMC-CoinGecko crosswalk
 
@@ -86,6 +85,9 @@ needed.
   that case used to error. A day that still fails after the retries is
   left out and named in a warning, never returned truncated, and a day
   that reaches an explicit `limit` is flagged as possibly truncated.
+- [`crypto_global_quotes()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_global_quotes.md)
+  with the default `which = "latest"` returned `NULL`; it now returns
+  the current global market metrics.
 - [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
   and
   [`exchange_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_info.md)

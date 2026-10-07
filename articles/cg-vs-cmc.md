@@ -24,10 +24,10 @@ covers both, after a short comparison of what each source delivers.
 |----|----|----|
 | Coin universe incl. dead coins | `crypto_list(only_active = FALSE)` | `cg_list(only_active = FALSE)` (via [`cg_id_mapping()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_id_mapping.md)) |
 | Historical cross-section | `crypto_listings(which = "historical")`, daily since 2013-04-28 | not on the free tier; snapshot [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md) yourself |
-| Daily close, volume, market cap | full history | full history in USD; other quote currencies: last 365 days |
+| Daily close, volume, market cap | full history | full history |
 | Daily open / high / low | full history | last 30 days |
 | Wrapped, staked, bridged tokens | in the listings, ranked at the bottom | missing from [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md); history via [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md) |
-| API key | none | none; optional free Demo key via `CG_DEMO_KEY` raises the rate limit |
+| API key | none | none |
 | Coin identifier | numeric `id` | `slug` (e.g. `"bitcoin"`) and numeric `id` |
 
 In short: CoinMarketCap is the stronger source for historical

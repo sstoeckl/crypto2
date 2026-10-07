@@ -45,7 +45,7 @@ cg_info(
 
   integer (default `0`) Seconds to sleep between API requests. The
   internal client enforces a polite floor (default `2.5s`) to stay under
-  the Demo-tier 30 req/min cap.
+  the public API's rate limit.
 
 - finalWait:
 

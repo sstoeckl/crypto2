@@ -168,15 +168,15 @@ sample”</em> message.</li>
 <tbody>
 <tr class="odd">
 <td><code>close</code></td>
-<td>full lifetime of each coin (daily, USD)</td>
+<td>full lifetime of each coin (daily)</td>
 </tr>
 <tr class="even">
 <td><code>volume</code></td>
-<td>full lifetime of each coin (daily, USD)</td>
+<td>full lifetime of each coin (daily)</td>
 </tr>
 <tr class="odd">
 <td><code>market_cap</code></td>
-<td>full lifetime of each coin (daily, USD)</td>
+<td>full lifetime of each coin (daily)</td>
 </tr>
 <tr class="even">
 <td>
@@ -188,9 +188,9 @@ sample”</em> message.</li>
 </tr>
 </tbody>
 </table>
-<p>Full history is served in USD only. With <code>convert = "BTC"</code>
-(or any other quote currency) close, volume and market cap come from the
-API and cover the most recent 365 days.</p>
+<p>Full history is available in any quote currency
+(<code>convert = "BTC"</code>, <code>"EUR"</code>, …). All of it comes
+from CoinGecko’s website, without an API key.</p>
 <p>For complete OHLC over the full history (microstructure work,
 candlestick-based signals, intraday volatility models), see the Pro
 recipes in <code><a href="../articles/coingecko-pro-backfill.html">vignette("coingecko-pro-backfill")</a></code>.</p>
@@ -263,12 +263,10 @@ caveats:</p>
 <code>/coins/markets</code> no longer lists wrapped, staked or
 bridged tokens (stETH, wstETH, WBTC, JitoSOL, bridged USDT, …). Their
 history is only available through <code><a href="../reference/cg_history.html">cg_history()</a></code>.</li>
-<li>Without a key the public endpoint allows only a few calls per
-minute, and a full snapshot needs about 70 pages. Setting
-<code>Sys.setenv(CG_DEMO_KEY = "...")</code> to a free Demo-API key
-raises the limit to 30 calls per minute. Failed pages are retried with
-backoff; if a page still fails, <code><a href="../reference/cg_listings.html">cg_listings()</a></code> warns with
-the page number instead of returning a silently truncated snapshot.</li>
+<li>The public endpoint allows only a few calls per minute, and a full
+snapshot needs about 70 pages. Failed pages are retried with backoff; if
+a page still fails, <code><a href="../reference/cg_listings.html">cg_listings()</a></code> warns with the page
+number instead of returning a silently truncated snapshot.</li>
 </ul>
 <p><code>which = "historical"</code> and <code>which = "new"</code> warn
 and coerce to <code>"latest"</code> – CG’s free tier does not expose the

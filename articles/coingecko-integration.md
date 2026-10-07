@@ -83,14 +83,14 @@ for the date-convention story).
 
 | Column | Coverage on free tier |
 |----|----|
-| `close` | full lifetime of each coin (daily, USD) |
-| `volume` | full lifetime of each coin (daily, USD) |
-| `market_cap` | full lifetime of each coin (daily, USD) |
+| `close` | full lifetime of each coin (daily) |
+| `volume` | full lifetime of each coin (daily) |
+| `market_cap` | full lifetime of each coin (daily) |
 | `open`, `high`, `low` | **only the most recent 30 days**; older rows have `NA` here |
 
-Full history is served in USD only. With `convert = "BTC"` (or any other
-quote currency) close, volume and market cap come from the API and cover
-the most recent 365 days.
+Full history is available in any quote currency (`convert = "BTC"`,
+`"EUR"`, …). All of it comes from CoinGecko’s website, without an API
+key.
 
 For complete OHLC over the full history (microstructure work,
 candlestick-based signals, intraday volatility models), see the Pro
@@ -146,10 +146,8 @@ for the column mapping). Two caveats:
   (stETH, wstETH, WBTC, JitoSOL, bridged USDT, …). Their history is only
   available through
   [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md).
-- Without a key the public endpoint allows only a few calls per minute,
-  and a full snapshot needs about 70 pages. Setting
-  `Sys.setenv(CG_DEMO_KEY = "...")` to a free Demo-API key raises the
-  limit to 30 calls per minute. Failed pages are retried with backoff;
+- The public endpoint allows only a few calls per minute, and a full
+  snapshot needs about 70 pages. Failed pages are retried with backoff;
   if a page still fails,
   [`cg_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_listings.md)
   warns with the page number instead of returning a silently truncated
