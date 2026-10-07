@@ -42,7 +42,8 @@ test_that("an empty page after exactly 10,000 coins keeps the loaded pages", {
   for (lim in list(NULL, 100000)) {
     expect_no_warning(
       out <- crypto_listings(which = "historical", start_date = "20240710",
-                             end_date = "20240710", limit = lim, wait = 0.01)
+                             end_date = "20240710", limit = lim, quote = FALSE,
+                             wait = 0.01)
     )
     expect_equal(nrow(out), 10000L)
     expect_equal(anyDuplicated(out$id), 0L)
@@ -57,7 +58,7 @@ test_that("a day that keeps failing is dropped whole and named in a warning", {
   })
   expect_warning(
     out <- crypto_listings(which = "historical", start_date = "20240710",
-                           end_date = "20240711", wait = 0.01),
+                           end_date = "20240711", quote = FALSE, wait = 0.01),
     "1 of 2 day\\(s\\) failed.*MISSING.*2024-07-11")
   expect_equal(unique(out$date), as.Date("2024-07-10"))
   expect_equal(nrow(out), 5000L)

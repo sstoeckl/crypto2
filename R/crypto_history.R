@@ -96,7 +96,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   # /listing with cmc_rank = NA but have no historical price data) can be
   # filtered out before applying limit.
   if (is.null(coin_list)) {
-    coin_listings <- crypto_listings(limit = NULL)
+    coin_listings <- crypto_listings(limit = NULL, quote = FALSE)
     coin_list <- crypto_list() %>%
       dplyr::inner_join(coin_listings %>% dplyr::select(id, cmc_rank), by = "id") %>%
       dplyr::filter(!is.na(cmc_rank)) %>%
@@ -105,7 +105,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     if (!is.null(limit)) coin_list <- coin_list[seq_len(min(limit, nrow(coin_list))), ]
   } else if (!is.null(limit)) {
     if (!"cmc_rank" %in% names(coin_list)) {
-      coin_listings <- crypto_listings(limit = NULL)
+      coin_listings <- crypto_listings(limit = NULL, quote = FALSE)
       coin_list <- coin_list %>%
         dplyr::inner_join(coin_listings %>% dplyr::select(id, cmc_rank), by = "id") %>%
         dplyr::filter(!is.na(cmc_rank)) %>%

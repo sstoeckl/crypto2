@@ -37,8 +37,7 @@ endpoint on the free tier).}
 \item{quote}{logical (default \code{TRUE}). The \verb{/coins/markets} endpoint
 always returns prices at no extra cost, so they are included by
 default. Set to \code{FALSE} to keep only the identifier, rank, market-cap
-and supply columns. Note that this default differs from
-\code{\link[=crypto_listings]{crypto_listings()}}.}
+and supply columns (same default as \code{\link[=crypto_listings]{crypto_listings()}}).}
 
 \item{sort, sort_dir}{Kept for parity. CoinGecko sorts by \code{market_cap_desc}
 on the underlying endpoint; the arguments are ignored.}

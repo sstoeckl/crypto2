@@ -1,5 +1,27 @@
 # crypto2 2.1.0.9000 (development version)
 
+## CMC-CoinGecko crosswalk
+
+* New `crypto_crosswalk()` links CoinMarketCap ids (`crypto_*`) to CoinGecko
+  slugs and numeric ids (`cg_*`), including dead coins, from the weekly
+  Open Crypto Pricing crosswalk (Stoeckl & Pukrop 2026,
+  <https://opencryptopricing.com>, CC BY 4.0). Pairs are matched on
+  contracts, project links, name/symbol and slug and confirmed on both
+  providers' prices; `min_confidence` (high / medium / low) filters by
+  match quality and `include_unmatched = TRUE` adds coins listed by one
+  provider only. The
+  file is cached per session; Parquet is used when `arrow` is installed,
+  CSV otherwise.
+
+## Listings return prices by default
+
+* `crypto_listings()` now defaults to `quote = TRUE`, like `cg_listings()`.
+  Under the old `quote = FALSE` default a call returned no `price`,
+  volume or market-cap columns and no error, which is easy to miss in an
+  automated pipeline. The quotes come with the same API response, so the
+  default costs no extra requests. Pass `quote = FALSE` for identifiers,
+  ranks and supply only.
+
 ## Complete listings, no silent truncation
 
 Two defaults silently returned incomplete data; both are fixed.

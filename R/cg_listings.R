@@ -42,8 +42,7 @@
 #' @param quote logical (default `TRUE`). The `/coins/markets` endpoint
 #'   always returns prices at no extra cost, so they are included by
 #'   default. Set to `FALSE` to keep only the identifier, rank, market-cap
-#'   and supply columns. Note that this default differs from
-#'   [crypto_listings()].
+#'   and supply columns (same default as [crypto_listings()]).
 #' @param sort,sort_dir Kept for parity. CoinGecko sorts by `market_cap_desc`
 #'   on the underlying endpoint; the arguments are ignored.
 #' @param sleep integer (default `0`) Seconds to sleep between API requests.

@@ -16,7 +16,10 @@
 #' @param start_date string Start date to retrieve data from, format 'yyyymmdd'
 #' @param end_date string End date to retrieve data from, format 'yyyymmdd', if not provided, today will be assumed
 #' @param interval string Interval with which to sample data according to what `seq()` needs
-#' @param quote logical set to TRUE if you want to include price data (FALSE=default)
+#' @param quote logical (default `TRUE`): include price, volume, market-cap and
+#' percent-change columns. They come with the same API response at no extra
+#' cost. With `FALSE` only identifiers, ranks, dates and supply are returned, and
+#' there is no `price` column.
 #' @param sort (May 2024: currently not available) string use to sort results, possible values: "name", "symbol", "market_cap", "price",
 #' "circulating_supply", "total_supply", "max_supply", "num_market_pairs", "volume_24h",
 #' "volume_7d", "volume_30d", "percent_change_1h", "percent_change_24h",
@@ -94,7 +97,7 @@
 #' @export
 #'
 crypto_listings <- function(which="latest", convert="USD", limit = NULL, start_date = NULL, end_date = NULL,
-                            interval = "day", quote=FALSE, sort="cmc_rank", sort_dir="asc", sleep = 0, wait = 60, finalWait = FALSE) {
+                            interval = "day", quote=TRUE, sort="cmc_rank", sort_dir="asc", sleep = 0, wait = 60, finalWait = FALSE) {
   # now create convertId from convert
   convertId <- ifelse(convert=="USD",2781,1)
   # NULL limit = everything; the page loops stop at the first short page

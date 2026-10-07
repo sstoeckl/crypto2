@@ -11,7 +11,7 @@ crypto_listings(
   start_date = NULL,
   end_date = NULL,
   interval = "day",
-  quote = FALSE,
+  quote = TRUE,
   sort = "cmc_rank",
   sort_dir = "asc",
   sleep = 0,
@@ -35,7 +35,10 @@ reaches \code{limit} exactly, a warning flags it as possibly truncated.}
 
 \item{interval}{string Interval with which to sample data according to what \code{seq()} needs}
 
-\item{quote}{logical set to TRUE if you want to include price data (FALSE=default)}
+\item{quote}{logical (default \code{TRUE}): include price, volume, market-cap and
+percent-change columns. They come with the same API response at no extra
+cost. With \code{FALSE} only identifiers, ranks, dates and supply are returned, and
+there is no \code{price} column.}
 
 \item{sort}{(May 2024: currently not available) string use to sort results, possible values: "name", "symbol", "market_cap", "price",
 "circulating_supply", "total_supply", "max_supply", "num_market_pairs", "volume_24h",
