@@ -1,3 +1,5 @@
+# crypto2 (development version)
+
 # crypto2 3.0.0
 
 A major release. crypto2 now draws on two sources: CoinMarketCap (the
