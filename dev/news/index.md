@@ -4,6 +4,8 @@
 
 ## crypto2 3.0.0
 
+CRAN release: 2026-10-08
+
 A major release. crypto2 now draws on two sources: CoinMarketCap (the
 `crypto_*` functions, as before) and CoinGecko (the new `cg_*`
 functions), with a crosswalk that links the two id systems. Several
@@ -15,10 +17,8 @@ see “Breaking changes”.
 ### Breaking changes
 
 - [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
-  defaults to `limit = NULL` (all coins) instead of `limit = 5000`.
-  Since 2021-05-07 CoinMarketCap lists more than 5,000 coins per day
-  (9,002 on 2024-01-07), and the old default cut every historical day at
-  rank 5,000 without a warning.
+  defaults to `limit = NULL` (all coins) instead of `limit = 5000`
+  ([\#26](https://github.com/sstoeckl/crypto2/issues/26)).
 - [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
   defaults to `quote = TRUE`: price, volume, market-cap and
   percent-change columns are returned unless `quote = FALSE`. They come
@@ -92,35 +92,34 @@ needed.
   coins listed by one provider only. The file is cached per session;
   Parquet is used when `arrow` is installed, CSV otherwise.
 
-### No silent data loss
+### Bug fixes
 
-- `crypto_listings(which = "historical")` pages in blocks of 5,000 and
-  no longer loses a whole day when CoinMarketCap lists an exact multiple
-  of 5,000 coins (e.g. 10,000 on 2024-07-10); for `"latest"` / `"new"`
-  that case used to error. A day that still fails after the retries is
-  left out and named in a warning, never returned truncated, and a day
-  that reaches an explicit `limit` is flagged as possibly truncated.
+- `crypto_listings(which = "historical")` returns all coins per day by
+  default ([\#26](https://github.com/sstoeckl/crypto2/issues/26)).
+- [`crypto_listings()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
+  handles days with an exact multiple of 5,000 coins
+  ([\#27](https://github.com/sstoeckl/crypto2/issues/27)).
 - [`crypto_global_quotes()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_global_quotes.md)
-  with the default `which = "latest"` returned `NULL`; it now returns
-  the current global market metrics.
+  returns the current metrics with the default `which = "latest"`
+  ([\#28](https://github.com/sstoeckl/crypto2/issues/28)).
 - [`crypto_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_info.md)
   and
   [`exchange_info()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/exchange_info.md)
-  keep an allowlist of known columns, so new or list-type fields in the
-  CoinMarketCap response no longer break them.
+  keep an allowlist of known columns, so new fields in the CoinMarketCap
+  response no longer break them.
+
+### Robustness
+
+- `crypto_listings(which = "historical")` fetches each day in pages of
+  5,000; a day that fails after the retries is named in a warning, and a
+  day that reaches an explicit `limit` is flagged.
 - The `cg_*` functions warn with the page number when paging stops on a
   failed page, and
   [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
   /
   [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
   stop with an error when CoinGecko returns no series for any requested
-  coin (the source has most likely changed); partial failures name the
-  affected coins.
-- [`?crypto_listings`](https://www.sebastianstoeckl.com/crypto2/dev/reference/crypto_listings.md)
-  documents that CoinMarketCap itself has served a historical day
-  incomplete without an error (2,552 instead of 9,002 coins for
-  2024-01-07 to GitHub Actions runners); compare daily row counts when
-  running large downloads from a server.
+  coin; partial failures name the affected coins.
 
 ### Vignettes
 

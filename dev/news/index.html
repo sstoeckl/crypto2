@@ -42,12 +42,12 @@
 <h2 class="pkg-version" data-toc-text="development version" id="crypto2-development-version">crypto2 (development version)<a class="anchor" aria-label="anchor" href="#crypto2-development-version"></a></h2>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="3.0.0" id="crypto2-300">crypto2 3.0.0<a class="anchor" aria-label="anchor" href="#crypto2-300"></a></h2>
+<h2 class="pkg-version" data-toc-text="3.0.0" id="crypto2-300">crypto2 3.0.0<a class="anchor" aria-label="anchor" href="#crypto2-300"></a></h2><p class="text-muted">CRAN release: 2026-10-08</p>
 <p>A major release. crypto2 now draws on two sources: CoinMarketCap (the <code>crypto_*</code> functions, as before) and CoinGecko (the new <code>cg_*</code> functions), with a crosswalk that links the two id systems. Several defaults of <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> change, so code that relied on them returns different (complete) data; see “Breaking changes”.</p>
 <div class="section level3">
 <h3 id="breaking-changes-3-0-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-3-0-0"></a></h3>
 <ul><li>
-<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>limit = NULL</code> (all coins) instead of <code>limit = 5000</code>. Since 2021-05-07 CoinMarketCap lists more than 5,000 coins per day (9,002 on 2024-01-07), and the old default cut every historical day at rank 5,000 without a warning.</li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>limit = NULL</code> (all coins) instead of <code>limit = 5000</code> (<a href="https://github.com/sstoeckl/crypto2/issues/26" class="external-link">#26</a>).</li>
 <li>
 <code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> defaults to <code>quote = TRUE</code>: price, volume, market-cap and percent-change columns are returned unless <code>quote = FALSE</code>. They come with the same API response, so the default costs no extra requests.</li>
 <li>
@@ -75,16 +75,21 @@
 <ul><li>New <code><a href="../reference/crypto_crosswalk.html">crypto_crosswalk()</a></code> links CoinMarketCap ids to CoinGecko slugs and numeric ids, including dead coins, from the weekly Open Crypto Pricing crosswalk (Stoeckl &amp; Pukrop 2026, <a href="https://opencryptopricing.com" class="external-link uri">https://opencryptopricing.com</a>, CC BY 4.0). Pairs are matched on contracts, project links, name/symbol and slug and confirmed on both providers’ prices; <code>min_confidence</code> (high / medium / low) filters by match quality and <code>include_unmatched = TRUE</code> adds coins listed by one provider only. The file is cached per session; Parquet is used when <code>arrow</code> is installed, CSV otherwise.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="no-silent-data-loss-3-0-0">No silent data loss<a class="anchor" aria-label="anchor" href="#no-silent-data-loss-3-0-0"></a></h3>
+<h3 id="bug-fixes-3-0-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-3-0-0"></a></h3>
 <ul><li>
-<code>crypto_listings(which = "historical")</code> pages in blocks of 5,000 and no longer loses a whole day when CoinMarketCap lists an exact multiple of 5,000 coins (e.g. 10,000 on 2024-07-10); for <code>"latest"</code> / <code>"new"</code> that case used to error. A day that still fails after the retries is left out and named in a warning, never returned truncated, and a day that reaches an explicit <code>limit</code> is flagged as possibly truncated.</li>
+<code>crypto_listings(which = "historical")</code> returns all coins per day by default (<a href="https://github.com/sstoeckl/crypto2/issues/26" class="external-link">#26</a>).</li>
 <li>
-<code><a href="../reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> with the default <code>which = "latest"</code> returned <code>NULL</code>; it now returns the current global market metrics.</li>
+<code><a href="../reference/crypto_listings.html">crypto_listings()</a></code> handles days with an exact multiple of 5,000 coins (<a href="https://github.com/sstoeckl/crypto2/issues/27" class="external-link">#27</a>).</li>
 <li>
-<code><a href="../reference/crypto_info.html">crypto_info()</a></code> and <code><a href="../reference/exchange_info.html">exchange_info()</a></code> keep an allowlist of known columns, so new or list-type fields in the CoinMarketCap response no longer break them.</li>
-<li>The <code>cg_*</code> functions warn with the page number when paging stops on a failed page, and <code><a href="../reference/cg_history.html">cg_history()</a></code> / <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> stop with an error when CoinGecko returns no series for any requested coin (the source has most likely changed); partial failures name the affected coins.</li>
+<code><a href="../reference/crypto_global_quotes.html">crypto_global_quotes()</a></code> returns the current metrics with the default <code>which = "latest"</code> (<a href="https://github.com/sstoeckl/crypto2/issues/28" class="external-link">#28</a>).</li>
 <li>
-<code><a href="../reference/crypto_listings.html">?crypto_listings</a></code> documents that CoinMarketCap itself has served a historical day incomplete without an error (2,552 instead of 9,002 coins for 2024-01-07 to GitHub Actions runners); compare daily row counts when running large downloads from a server.</li>
+<code><a href="../reference/crypto_info.html">crypto_info()</a></code> and <code><a href="../reference/exchange_info.html">exchange_info()</a></code> keep an allowlist of known columns, so new fields in the CoinMarketCap response no longer break them.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="robustness-3-0-0">Robustness<a class="anchor" aria-label="anchor" href="#robustness-3-0-0"></a></h3>
+<ul><li>
+<code>crypto_listings(which = "historical")</code> fetches each day in pages of 5,000; a day that fails after the retries is named in a warning, and a day that reaches an explicit <code>limit</code> is flagged.</li>
+<li>The <code>cg_*</code> functions warn with the page number when paging stops on a failed page, and <code><a href="../reference/cg_history.html">cg_history()</a></code> / <code><a href="../reference/cg_history_by_id.html">cg_history_by_id()</a></code> stop with an error when CoinGecko returns no series for any requested coin; partial failures name the affected coins.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="vignettes-3-0-0">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes-3-0-0"></a></h3>
