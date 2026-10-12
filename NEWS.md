@@ -11,9 +11,7 @@ with a crosswalk that links the two id systems. Several defaults of
 ## Breaking changes
 
 * `crypto_listings()` defaults to `limit = NULL` (all coins) instead of
-  `limit = 5000`. Since 2021-05-07 CoinMarketCap lists more than 5,000
-  coins per day (9,002 on 2024-01-07), and the old default cut every
-  historical day at rank 5,000 without a warning.
+  `limit = 5000` (#26).
 * `crypto_listings()` defaults to `quote = TRUE`: price, volume, market-cap
   and percent-change columns are returned unless `quote = FALSE`. They come
   with the same API response, so the default costs no extra requests.
@@ -71,27 +69,26 @@ needed.
   file is cached per session; Parquet is used when `arrow` is installed,
   CSV otherwise.
 
-## No silent data loss
+## Bug fixes
 
-* `crypto_listings(which = "historical")` pages in blocks of 5,000 and no
-  longer loses a whole day when CoinMarketCap lists an exact multiple of
-  5,000 coins (e.g. 10,000 on 2024-07-10); for `"latest"` / `"new"` that
-  case used to error. A day that still fails after the retries is left
-  out and named in a warning, never returned truncated, and a day that
-  reaches an explicit `limit` is flagged as possibly truncated.
-* `crypto_global_quotes()` with the default `which = "latest"` returned
-  `NULL`; it now returns the current global market metrics.
+* `crypto_listings(which = "historical")` returns all coins per day by
+  default (#26).
+* `crypto_listings()` handles days with an exact multiple of 5,000 coins
+  (#27).
+* `crypto_global_quotes()` returns the current metrics with the default
+  `which = "latest"` (#28).
 * `crypto_info()` and `exchange_info()` keep an allowlist of known columns,
-  so new or list-type fields in the CoinMarketCap response no longer break
-  them.
+  so new fields in the CoinMarketCap response no longer break them.
+
+## Robustness
+
+* `crypto_listings(which = "historical")` fetches each day in pages of
+  5,000; a day that fails after the retries is named in a warning, and a
+  day that reaches an explicit `limit` is flagged.
 * The `cg_*` functions warn with the page number when paging stops on a
   failed page, and `cg_history()` / `cg_history_by_id()` stop with an error
-  when CoinGecko returns no series for any requested coin (the source has
-  most likely changed); partial failures name the affected coins.
-* `?crypto_listings` documents that CoinMarketCap itself has served a
-  historical day incomplete without an error (2,552 instead of 9,002 coins
-  for 2024-01-07 to GitHub Actions runners); compare daily row counts when
-  running large downloads from a server.
+  when CoinGecko returns no series for any requested coin; partial
+  failures name the affected coins.
 
 ## Vignettes
 
