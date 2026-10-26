@@ -11,7 +11,7 @@ the crypto2 CMC output."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">crypto2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -178,9 +178,8 @@ not expose intra-day OHLC timestamps in these endpoints.</p></dd>
 in <code>coin_list</code>, <code><a href="cg_id_mapping.html">cg_id_mapping()</a></code> is consulted to fill the <code>id</code> column.</p>
 <p>All data come from CoinGecko's website chart endpoints; no API and no
 key are used. Coverage:</p><ul><li><p><strong>Close, volume and market cap for the full lifetime of each coin</strong>,
-in any quote currency. In USD they come from CoinGecko's daily CSV
-export (one request per coin), otherwise from the website's chart data
-(two requests per coin).</p></li>
+in any quote currency, from the website's chart data (two requests per
+coin).</p></li>
 <li><p><strong>OHLC</strong> (<code>open</code> / <code>high</code> / <code>low</code>) is built from 4-hour candles (one
 extra request per coin) and covers the <strong>most recent 30 days</strong>; older
 rows have <code>NA</code> there. Longer windows are only offered as 4-day

@@ -154,9 +154,8 @@ All data come from CoinGecko's website chart endpoints; no API and no
 key are used. Coverage:
 
 - **Close, volume and market cap for the full lifetime of each coin**,
-  in any quote currency. In USD they come from CoinGecko's daily CSV
-  export (one request per coin), otherwise from the website's chart data
-  (two requests per coin).
+  in any quote currency, from the website's chart data (two requests per
+  coin).
 
 - **OHLC** (`open` / `high` / `low`) is built from 4-hour candles (one
   extra request per coin) and covers the **most recent 30 days**; older

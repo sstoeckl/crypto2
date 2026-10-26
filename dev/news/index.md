@@ -1,6 +1,15 @@
 # Changelog
 
-## crypto2 (development version)
+## crypto2 3.0.1
+
+- [`cg_history()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history.md)
+  and
+  [`cg_history_by_id()`](https://www.sebastianstoeckl.com/crypto2/dev/reference/cg_history_by_id.md)
+  take close, volume and market cap from CoinGecko’s website chart data
+  for every quote currency. CoinGecko’s CSV export, previously used for
+  USD, now redirects to a file covering one year only, so it is no
+  longer used. A USD history now takes two requests per coin instead of
+  one; coverage and values are unchanged.
 
 ## crypto2 3.0.0
 

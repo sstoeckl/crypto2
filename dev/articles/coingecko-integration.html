@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">crypto2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,9 +111,9 @@ each coin’s listing date.</p>
 <span><span class="va">universe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_list.html">cg_list</a></span><span class="op">(</span>only_active <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 2. Daily close / volume / market cap in USD, full lifetime per coin</span></span>
-<span><span class="co">#    (one CSV download per coin). Skip OHLC here -- it adds a 2nd HTTP</span></span>
-<span><span class="co">#    call per coin and only covers the last 30 days (see "What is NOT in</span></span>
-<span><span class="co">#    the free tier" below).</span></span>
+<span><span class="co">#    (two requests per coin). Skip OHLC here -- it adds a third request</span></span>
+<span><span class="co">#    per coin and only covers the last 30 days (see "What is NOT in the</span></span>
+<span><span class="co">#    free tier" below).</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>crypto2.cg_what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"price"</span>, <span class="st">"market_cap"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cg_history.html">cg_history</a></span><span class="op">(</span><span class="va">universe</span><span class="op">)</span></span>
 <span></span>
