@@ -105,9 +105,6 @@ check_call(cmc, "fiat_list()", fiat_list(), min_rows(1))
 
 # ---- CoinGecko website (history) -----------------------------------------
 cgw <- "CG website"
-check_http(cgw, "price_charts/export/bitcoin/usd.csv",
-           cg_url("price_charts/export/bitcoin/usd.csv"),
-           function(txt) if (is.null(crypto2:::cg_parse_export_csv(txt))) "CSV header changed")
 check_http(cgw, "etl2/price_charts/bitcoin/usd/max.json",
            cg_url("etl2/price_charts/bitcoin/usd/max.json"), json_daily("stats"))
 check_http(cgw, "etl2/market_cap/bitcoin/usd/max.json",

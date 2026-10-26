@@ -88,28 +88,9 @@ test_that("documented API: /coins/{slug} returns expected top-level fields", {
 
 # These endpoints feed cg_history(). A retired endpoint (404) is a failure,
 # not a skip: when CoinGecko moved /price_charts/<coin>/<vs>/max.json and
-# /ohlc/<id>/series/<vs>/<window>.json under /etl2/, skip-on-NULL tests would
-# have hidden the outage. Only a Cloudflare refusal of this
+# /ohlc/<id>/series/<vs>/<window>.json under /etl2/, and later cut the CSV
+# export to one year, skip-on-NULL tests would have hidden the change. Only a Cloudflare refusal of this
 # environment (CI runners) or a 429 skips.
-
-test_that("website: /price_charts/export/{slug}/usd.csv returns the daily history", {
-  skip_if_no_cg()
-  txt <- cg_endpoint_text_or_skip(cg_url("price_charts/export/bitcoin/usd.csv"),
-                             accept = "text/csv, */*")
-  ticks <- cg_parse_export_csv(txt)
-  expect_false(is.null(ticks), info = "CSV export header changed")
-  expect_gt(nrow(ticks$close), 4000)
-  expect_true(all(as.numeric(ticks$close$timestamp) %% 86400 == 0))
-  expect_equal(min(as.Date(ticks$market_cap$timestamp)), as.Date("2013-04-28"))
-})
-
-test_that("website: CSV export also resolves numeric ids", {
-  skip_if_no_cg()
-  txt <- cg_endpoint_text_or_skip(cg_url("price_charts/export/279/usd.csv"),
-                             accept = "text/csv, */*")
-  expect_false(is.null(cg_parse_export_csv(txt)),
-               info = "numeric-id CSV export returned nothing")
-})
 
 test_that("website: /etl2/price_charts and /etl2/market_cap return the daily history", {
   skip_if_no_cg()

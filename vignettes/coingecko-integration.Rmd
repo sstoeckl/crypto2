@@ -54,9 +54,9 @@ library(arrow)
 universe <- cg_list(only_active = FALSE)
 
 # 2. Daily close / volume / market cap in USD, full lifetime per coin
-#    (one CSV download per coin). Skip OHLC here -- it adds a 2nd HTTP
-#    call per coin and only covers the last 30 days (see "What is NOT in
-#    the free tier" below).
+#    (two requests per coin). Skip OHLC here -- it adds a third request
+#    per coin and only covers the last 30 days (see "What is NOT in the
+#    free tier" below).
 options(crypto2.cg_what = c("price", "market_cap"))
 hist <- cg_history(universe)
 

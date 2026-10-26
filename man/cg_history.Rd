@@ -91,9 +91,8 @@ All data come from CoinGecko's website chart endpoints; no API and no
 key are used. Coverage:
 \itemize{
 \item \strong{Close, volume and market cap for the full lifetime of each coin},
-in any quote currency. In USD they come from CoinGecko's daily CSV
-export (one request per coin), otherwise from the website's chart data
-(two requests per coin).
+in any quote currency, from the website's chart data (two requests per
+coin).
 \item \strong{OHLC} (\code{open} / \code{high} / \code{low}) is built from 4-hour candles (one
 extra request per coin) and covers the \strong{most recent 30 days}; older
 rows have \code{NA} there. Longer windows are only offered as 4-day

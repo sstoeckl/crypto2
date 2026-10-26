@@ -2,12 +2,11 @@
 #
 # All sources are CoinGecko website endpoints; no API, no key. `<coin>` is
 # the slug or the numeric id.
-# * Close / volume / market cap, full history:
-#   - USD: the CSV export `price_charts/export/<coin>/usd.csv` (one request);
-#   - any quote currency, and fallback for USD:
-#     `etl2/price_charts/<coin>/<vs>/max.json` (close, volume) and
-#     `etl2/market_cap/<coin>/<vs>/max.json` (market cap).
-#   Both give identical values on the same midnight-UTC tick grid.
+# * Close / volume / market cap, full history, any quote currency:
+#   `etl2/price_charts/<coin>/<vs>/max.json` (close, volume) and
+#   `etl2/market_cap/<coin>/<vs>/max.json` (market cap), on a midnight-UTC
+#   tick grid. (The CSV export `price_charts/export/<coin>/usd.csv` is not
+#   used: since October 2026 it redirects to a one-year file.)
 # * Daily OHLC: aggregated from the 4-hour candles of
 #   `etl2/ohlc/<coin>/series/<vs>/30_days.json` -- longer windows only come
 #   as 4-day candles, which are not daily bars and are not used.
@@ -38,35 +37,6 @@ floor_daily_ <- function(df, value_cols,
   df[, c("date", value_cols), drop = FALSE]
 }
 
-# Parse the CSV export into midnight ticks. Its columns are not aligned: a
-# row dated X carries the market cap and 24h volume observed at 00:00 X,
-# but the close observed at 00:00 X+1 (the latest row, the running day, has
-# no close yet). Re-timing the close by +1 day puts all three streams on the
-# same tick grid as the etl2 JSON charts.
-cg_parse_export_csv <- function(txt) {
-  if (is.null(txt) || !nzchar(txt)) return(NULL)
-  d <- tryCatch(utils::read.csv(text = txt, stringsAsFactors = FALSE),
-                error = function(e) NULL)
-  need <- c("event_date", "close_price_usd", "market_cap_usd", "volume_usd")
-  if (is.null(d) || !nrow(d) || !all(need %in% names(d))) return(NULL)
-  t <- as.POSIXct(d$event_date, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
-  close <- tibble::tibble(timestamp = t + 86400,
-                          close = suppressWarnings(as.numeric(d$close_price_usd)))
-  list(
-    close      = close[!is.na(close$timestamp) & !is.na(close$close), ],
-    volume     = tibble::tibble(timestamp = t,
-                                volume = suppressWarnings(as.numeric(d$volume_usd))),
-    market_cap = tibble::tibble(timestamp = t,
-                                market_cap = suppressWarnings(as.numeric(d$market_cap_usd)))
-  )
-}
-
-cg_ticks_export <- function(key, web_client) {
-  cg_parse_export_csv(web_client(
-    cg_url(sprintf("price_charts/export/%s/usd.csv", key)),
-    accept = "text/csv, */*"))
-}
-
 # Midnight ticks from the etl2 JSON charts. A trailing non-midnight "now"
 # point, if present, is dropped so that only completed days are returned.
 cg_ticks_web <- function(key, vs, web_client) {
@@ -86,11 +56,7 @@ cg_ticks_web <- function(key, vs, web_client) {
        market_cap = mk(mj$stats, "market_cap"))
 }
 
-cg_ticks <- function(key, vs, web_client) {
-  ticks <- if (vs == "usd") cg_ticks_export(key, web_client)
-  if (is.null(ticks) || !NROW(ticks$close)) ticks <- cg_ticks_web(key, vs, web_client)
-  ticks
-}
+cg_ticks <- function(key, vs, web_client) cg_ticks_web(key, vs, web_client)
 
 cg_ticks_api <- function(slug, vs, api_client) {
   pj <- cg_parse_json(api_client(
