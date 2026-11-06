@@ -98,11 +98,12 @@ or provide list of crypto currencies in the <code><a href="crypto_list.html">cry
 
 
 <dt id="arg-interval">interval<a class="anchor" aria-label="anchor" href="#arg-interval"></a></dt>
-<dd><p>string Interval with which to sample data according to what <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq()</a></code> needs</p></dd>
+<dd><p>string Interval with which to sample data, default 'daily'. Must be one of <code>"hourly" "daily" "1h" "3h" "1d" "7d" "30d"</code></p></dd>
 
 
 <dt id="arg-requestlimit">requestLimit<a class="anchor" aria-label="anchor" href="#arg-requestlimit"></a></dt>
-<dd><p>limiting the length of request URLs when bundling the api calls</p></dd>
+<dd><p>number of data points per request (default 400). CMC
+returns at most 400 points per request, so larger values are reduced to 400.</p></dd>
 
 
 <dt id="arg-sleep">sleep<a class="anchor" aria-label="anchor" href="#arg-sleep"></a></dt>
@@ -118,12 +119,13 @@ or provide list of crypto currencies in the <code><a href="crypto_list.html">cry
 
 
 <dt id="arg-single-id">single_id<a class="anchor" aria-label="anchor" href="#arg-single-id"></a></dt>
-<dd><p>Download data coin by coin (as of May 2024 this is necessary)</p></dd>
+<dd><p>Kept for compatibility; data are always downloaded coin by
+coin (as of May 2024 this is necessary)</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":</p>
+    <p>Crypto currency historic OHLC market data in a dataframe:</p>
 <dl><dt>timestamp</dt>
 <dd><p>Timestamp of entry in database</p></dd>
 
@@ -175,6 +177,13 @@ or provide list of crypto currencies in the <code><a href="crypto_list.html">cry
 
 </dl><p>This is the main function of the crypto package. If you want to retrieve
 ALL active coins then do not pass an argument to <code>crypto_history()</code>, alternatively pass the coin name.</p>
+<p>CMC returns at most 400 data points per request, and nothing at all if
+one of them is missing. CMC's data do have such holes, e.g. the hourly
+data of all coins lack 2020-02-12 00:00 UTC. <code>crypto_history()</code> therefore
+narrows an empty request down to the hole and retrieves the data around
+it. Periods that CMC does not have are reported in a warning and in
+<code>attr(result, "gaps")</code>, a tibble with columns <code>id</code>, <code>slug</code>, <code>from</code> and
+<code>to</code> (first and last missing data point, UTC).</p>
     </div>
 
     <div class="section level2">
