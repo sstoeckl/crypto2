@@ -162,7 +162,10 @@ data of all coins lack 2020-02-12 00:00 UTC. `crypto_history()`
 therefore narrows an empty request down to the hole and retrieves the
 data around it. Periods that CMC does not have are reported in a warning
 and in `attr(result, "gaps")`, a tibble with columns `id`, `slug`,
-`from` and `to` (first and last missing data point, UTC).
+`from` and `to` (first and last missing data point, UTC). A data point
+that CMC labels with the time of the one before it (e.g. the hourly
+2022-10-01 01:00 UTC point of all coins) is moved to its own time; its
+`time_high` and `time_low` are `NA`.
 
 ## Examples
 

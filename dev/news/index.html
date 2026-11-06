@@ -46,6 +46,8 @@
 <code><a href="../reference/crypto_history.html">crypto_history()</a></code> no longer loses data around holes in CMC’s data. CMC answers each request with the 400 data points before its end and returns nothing if one of them is missing; a single missing hour (e.g. 2020-02-12 00:00 UTC, for all coins) thus dropped about 16 days of hourly data. Requests are now laid out exactly 400 points apart, a request that comes back empty is narrowed down to the hole, and the missing periods are reported in a warning and in <code>attr(result, "gaps")</code>.</li>
 <li>
 <code><a href="../reference/crypto_history.html">crypto_history()</a></code> no longer returns duplicate rows. They appeared at the last request of a download, and at every request for <code>requestLimit</code> below 400 or for intervals other than <code>"1h"</code> and <code>"1d"</code>. <code>requestLimit</code> above 400 is now reduced to 400 instead of silently leaving gaps.</li>
+<li>
+<code><a href="../reference/crypto_history.html">crypto_history()</a></code> puts data points that CMC labels with the time of the point before them back at their own time. The hourly 2022-10-01 01:00 UTC point of all coins came labelled 00:00, so 00:00 appeared twice and 01:00 was missing.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="3.0.0" id="crypto2-300">crypto2 3.0.0<a class="anchor" aria-label="anchor" href="#crypto2-300"></a></h2><p class="text-muted">CRAN release: 2026-10-08</p>
