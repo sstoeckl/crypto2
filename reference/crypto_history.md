@@ -57,12 +57,13 @@ crypto_history(
 
 - interval:
 
-  string Interval with which to sample data according to what
-  [`seq()`](https://rdrr.io/r/base/seq.html) needs
+  string Interval with which to sample data, default 'daily'. Must be
+  one of `"hourly" "daily" "1h" "3h" "1d" "7d" "30d"`
 
 - requestLimit:
 
-  limiting the length of request URLs when bundling the api calls
+  number of data points per request (default 400). CMC returns at most
+  400 points per request, so larger values are reduced to 400.
 
 - sleep:
 
@@ -80,12 +81,12 @@ crypto_history(
 
 - single_id:
 
-  Download data coin by coin (as of May 2024 this is necessary)
+  Kept for compatibility; data are always downloaded coin by coin (as of
+  May 2024 this is necessary)
 
 ## Value
 
-Crypto currency historic OHLC market data in a dataframe and additional
-information via attribute "info":
+Crypto currency historic OHLC market data in a dataframe:
 
 - timestamp:
 
@@ -154,6 +155,14 @@ information via attribute "info":
 This is the main function of the crypto package. If you want to retrieve
 ALL active coins then do not pass an argument to `crypto_history()`,
 alternatively pass the coin name.
+
+CMC returns at most 400 data points per request, and nothing at all if
+one of them is missing. CMC's data do have such holes, e.g. the hourly
+data of all coins lack 2020-02-12 00:00 UTC. `crypto_history()`
+therefore narrows an empty request down to the hole and retrieves the
+data around it. Periods that CMC does not have are reported in a warning
+and in `attr(result, "gaps")`, a tibble with columns `id`, `slug`,
+`from` and `to` (first and last missing data point, UTC).
 
 ## Examples
 
