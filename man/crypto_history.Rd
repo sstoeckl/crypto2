@@ -72,7 +72,10 @@ data of all coins lack 2020-02-12 00:00 UTC. \code{crypto_history()} therefore
 narrows an empty request down to the hole and retrieves the data around
 it. Periods that CMC does not have are reported in a warning and in
 \code{attr(result, "gaps")}, a tibble with columns \code{id}, \code{slug}, \code{from} and
-\code{to} (first and last missing data point, UTC).
+\code{to} (first and last missing data point, UTC). A data point that CMC
+labels with the time of the one before it (e.g. the hourly 2022-10-01
+01:00 UTC point of all coins) is moved to its own time; its \code{time_high}
+and \code{time_low} are \code{NA}.
 }
 \description{
 Scrape the crypto currency historic market tables from

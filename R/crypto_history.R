@@ -49,7 +49,10 @@
 #' narrows an empty request down to the hole and retrieves the data around
 #' it. Periods that CMC does not have are reported in a warning and in
 #' `attr(result, "gaps")`, a tibble with columns `id`, `slug`, `from` and
-#' `to` (first and last missing data point, UTC).
+#' `to` (first and last missing data point, UTC). A data point that CMC
+#' labels with the time of the one before it (e.g. the hourly 2022-10-01
+#' 01:00 UTC point of all coins) is moved to its own time; its `time_high`
+#' and `time_low` are `NA`.
 #'
 #' @importFrom tidyr replace_na expand_grid
 #' @importFrom tibble tibble as_tibble rowid_to_column
@@ -204,6 +207,8 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     while (abs(empty_t - ok_t) > step) {
       mid <- ok_t + round((empty_t - ok_t) / step / 2) * step
       page <- insistent_scrape(history_url(id, mid), tick = FALSE)
+      # an empty answer moves the search for good, so make sure it is not a hiccup
+      if (!NROW(page$quotes)) page <- insistent_scrape(history_url(id, mid), tick = FALSE)
       if (NROW(page$quotes)) { ok_t <- mid; best <- page } else empty_t <- mid
     }
     best
@@ -231,6 +236,43 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     }
   }
   data2 <- c(data$out, Filter(Negate(is.null), recovered))
+  # CMC occasionally labels a data point with the time of the one before it
+  # (the hourly 2022-10-01 01:00 UTC point of all coins carries 00:00). The
+  # point that belongs to a time is the last one of a request ending there;
+  # the other copy is moved to the following time if that one is missing.
+  iso <- function(x, frac) {
+    format(as.POSIXct(x, origin = "1970-01-01", tz = "UTC"), paste0("%Y-%m-%dT%H:%M:%S", frac, "Z"))
+  }
+  for (cid in ids) {
+    pages <- which(purrr::map_lgl(data2, ~ NROW(.x$quotes) > 0 && identical(as.integer(.x$id), as.integer(cid))))
+    opens <- unlist(purrr::map(data2[pages], open_times))
+    dup <- unique(unlist(purrr::map(data2[pages], function(page) {
+      o <- open_times(page)
+      o[duplicated(o)]
+    })))
+    for (t in dup) {
+      ref <- insistent_scrape(history_url(cid, t + step - 1), tick = FALSE)
+      ro <- open_times(ref)
+      if (sum(ro == t) != 1) next
+      genuine <- ref$quotes$quote$close[ro == t]
+      free <- !(t + step) %in% opens
+      for (i in pages) {
+        q <- data2[[i]]$quotes
+        bad <- which(open_times(data2[[i]]) == t & q$quote$close != genuine)
+        if (!length(bad)) next
+        if (free) {
+          q$timeOpen[bad] <- iso(t + step, ".000")
+          q$timeClose[bad] <- iso(t + 2 * step - 1, ".999")
+          q$quote$timestamp[bad] <- q$timeClose[bad]
+          q$timeHigh[bad] <- NA_character_
+          q$timeLow[bad] <- NA_character_
+        } else {
+          q <- q[-bad, ]
+        }
+        data2[[i]]$quotes <- q
+      }
+    }
+  }
   # 2. Here comes the second part: Clean and create dataset
   map_scrape <- function(lout){
     pb2$tick()

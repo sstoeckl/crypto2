@@ -16,6 +16,10 @@
   last request of a download, and at every request for `requestLimit` below
   400 or for intervals other than `"1h"` and `"1d"`. `requestLimit` above
   400 is now reduced to 400 instead of silently leaving gaps.
+* `crypto_history()` puts data points that CMC labels with the time of the
+  point before them back at their own time. The hourly 2022-10-01 01:00 UTC
+  point of all coins came labelled 00:00, so 00:00 appeared twice and
+  01:00 was missing.
 
 # crypto2 3.0.0
 
