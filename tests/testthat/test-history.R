@@ -46,3 +46,76 @@ test_that("Downloaded data matches previously downloaded reference data", {
   expect_equal(new_data |>  select(!contains("time")), expected_data |>  select(!contains("time")), tolerance = 1e-8,
                info = "The newly downloaded data should match the reference dataset.")
 })
+
+# ---- request windows and holes (offline) -----------------------------------
+
+# Mimics CMC's historical endpoint: the 400 hourly points up to `timeEnd`
+# (`timeStart` is ignored), and nothing at all if one of them is missing.
+fake_cmc <- function(first, missing = numeric()) {
+  seen <- new.env()
+  seen$n <- 0
+  fn <- function(url, ...) {
+    seen$n <- seen$n + 1
+    end <- as.numeric(sub(".*[?&]timeEnd=([0-9]+).*", "\\1", url))
+    opens <- floor(end / 3600) * 3600 - (399:0) * 3600
+    opens <- opens[opens >= first]
+    if (!length(opens) || any(opens %in% missing)) return(list(data = list(quotes = list())))
+    iso <- function(x) format(as.POSIXct(x, origin = "1970-01-01", tz = "UTC"), "%Y-%m-%dT%H:%M:%S.000Z")
+    quotes <- data.frame(timeOpen = iso(opens), timeClose = iso(opens + 3599),
+                         timeHigh = iso(opens + 60), timeLow = iso(opens + 120))
+    quotes$quote <- data.frame(name = "2781", open = opens, high = opens, low = opens,
+                               close = opens, volume = 1, marketCap = 1,
+                               timestamp = iso(opens + 3599))
+    list(data = list(id = 1831L, name = "Bitcoin Cash", symbol = "BCH", quotes = quotes))
+  }
+  list(fn = fn, seen = seen)
+}
+bch <- tibble::tibble(id = 1831L, slug = "bitcoin-cash", name = "Bitcoin Cash", symbol = "BCH")
+utc <- function(x) as.numeric(as.POSIXct(x, tz = "UTC"))
+
+test_that("hourly requests neither overlap nor leave gaps", {
+  withr::local_timezone("UTC")
+  cmc <- fake_cmc(first = utc("2019-01-01"))
+  local_mocked_bindings(safeFromJSON = cmc$fn)
+  for (rl in c(400, 150)) {
+    h <- crypto_history(bch, start_date = "2020-01-01", end_date = "2020-03-31",
+                        interval = "1h", requestLimit = rl)
+    expect_equal(nrow(h), 91 * 24)
+    expect_equal(anyDuplicated(h$timestamp), 0L)
+    expect_null(attr(h, "gaps"))
+  }
+})
+
+test_that("the data around a hole in CMC's data are recovered and the hole reported", {
+  withr::local_timezone("UTC")
+  cmc <- fake_cmc(first = utc("2019-01-01"), missing = utc("2020-02-12 00:00"))
+  local_mocked_bindings(safeFromJSON = cmc$fn)
+  expect_warning(
+    h <- crypto_history(bch, start_date = "2020-01-01", end_date = "2020-03-31", interval = "1h"),
+    "bitcoin-cash 2020-02-12 00:00 UTC")
+  expect_equal(nrow(h), 91 * 24 - 1)
+  expect_equal(anyDuplicated(h$timestamp), 0L)
+  expect_equal(attr(h, "gaps")$from, as.POSIXct("2020-02-12", tz = "UTC"))
+  expect_equal(attr(h, "gaps")$to, as.POSIXct("2020-02-12", tz = "UTC"))
+})
+
+test_that("a coin listed after start_date costs no extra requests", {
+  withr::local_timezone("UTC")
+  cmc <- fake_cmc(first = utc("2020-02-10 05:00"))
+  local_mocked_bindings(safeFromJSON = cmc$fn)
+  h <- crypto_history(bch, start_date = "2020-01-01", end_date = "2020-03-31", interval = "1h")
+  expect_equal(min(as.POSIXct(h$time_open, tz = "UTC")), as.POSIXct("2020-02-10 05:00", tz = "UTC"))
+  expect_equal(cmc$seen$n, 6)
+  expect_null(attr(h, "gaps"))
+})
+
+test_that("hourly history bridges CMC's missing hour of 2020-02-12 (live)", {
+  skip_on_cran()
+  skip_if_offline()
+  withr::local_timezone("UTC")
+  expect_warning(
+    h <- crypto_history(bch, start_date = "2020-02-01", end_date = "2020-02-29", interval = "1h"),
+    "2020-02-12 00:00 UTC")
+  expect_equal(nrow(h), 29 * 24 - 1)
+  expect_equal(anyDuplicated(h$timestamp), 0L)
+})

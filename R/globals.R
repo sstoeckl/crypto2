@@ -8,4 +8,6 @@ utils::globalVariables(c("id","name","symbol","slug","rank","is_active","first_h
                          "id_num","image","market_cap_rank","market_cap","open","high","low","close","close_o",
                          "time_open","time_high","time_low","time_close","date","numeric_id","harvested_at",
                          # PR #25 (Mar 2026, JesseVent) added cmc_rank usage in crypto_history
-                         "cmc_rank"))
+                         "cmc_rank",
+                         # crypto_history() request windows and gap report (3.0.1)
+                         "endTime","nxt"))

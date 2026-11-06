@@ -30,9 +30,10 @@ or provide list of crypto currencies in the \code{crypto_list()} or \code{crypto
 
 \item{end_date}{date End date to retrieve data from, if not provided, today will be assumed}
 
-\item{interval}{string Interval with which to sample data according to what \code{seq()} needs}
+\item{interval}{string Interval with which to sample data, default 'daily'. Must be one of \verb{"hourly" "daily" "1h" "3h" "1d" "7d" "30d"}}
 
-\item{requestLimit}{limiting the length of request URLs when bundling the api calls}
+\item{requestLimit}{number of data points per request (default 400). CMC
+returns at most 400 points per request, so larger values are reduced to 400.}
 
 \item{sleep}{integer (default 60) Seconds to sleep between API requests}
 
@@ -40,10 +41,11 @@ or provide list of crypto currencies in the \code{crypto_list()} or \code{crypto
 
 \item{finalWait}{to avoid calling the web-api again with another command before 60s are over (TRUE=default)}
 
-\item{single_id}{Download data coin by coin (as of May 2024 this is necessary)}
+\item{single_id}{Kept for compatibility; data are always downloaded coin by
+coin (as of May 2024 this is necessary)}
 }
 \value{
-Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
+Crypto currency historic OHLC market data in a dataframe:
 \item{timestamp}{Timestamp of entry in database}
 \item{id}{Coin market cap unique id}
 \item{name}{Coin name}
@@ -63,6 +65,14 @@ Crypto currency historic OHLC market data in a dataframe and additional informat
 
 This is the main function of the crypto package. If you want to retrieve
 ALL active coins then do not pass an argument to \code{crypto_history()}, alternatively pass the coin name.
+
+CMC returns at most 400 data points per request, and nothing at all if
+one of them is missing. CMC's data do have such holes, e.g. the hourly
+data of all coins lack 2020-02-12 00:00 UTC. \code{crypto_history()} therefore
+narrows an empty request down to the hole and retrieves the data around
+it. Periods that CMC does not have are reported in a warning and in
+\code{attr(result, "gaps")}, a tibble with columns \code{id}, \code{slug}, \code{from} and
+\code{to} (first and last missing data point, UTC).
 }
 \description{
 Scrape the crypto currency historic market tables from

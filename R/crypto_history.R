@@ -14,14 +14,15 @@
 #' @param end_date date End date to retrieve data from, if not provided, today will be assumed
 #' @param interval string Interval with which to sample data, default 'daily'. Must be one of `"hourly" "daily"
 #'  "1h" "3h" "1d" "7d" "30d"`
-#' @param interval string Interval with which to sample data according to what `seq()` needs
-#' @param requestLimit limiting the length of request URLs when bundling the api calls
+#' @param requestLimit number of data points per request (default 400). CMC
+#'   returns at most 400 points per request, so larger values are reduced to 400.
 #' @param sleep integer (default 60) Seconds to sleep between API requests
 #' @param wait waiting time before retry in case of fail (needs to be larger than 60s in case the server blocks too many attempts, default=60)
 #' @param finalWait to avoid calling the web-api again with another command before 60s are over (TRUE=default)
-#' @param single_id Download data coin by coin (as of May 2024 this is necessary)
+#' @param single_id Kept for compatibility; data are always downloaded coin by
+#'   coin (as of May 2024 this is necessary)
 #
-#' @return Crypto currency historic OHLC market data in a dataframe and additional information via attribute "info":
+#' @return Crypto currency historic OHLC market data in a dataframe:
 #'   \item{timestamp}{Timestamp of entry in database}
 #'   \item{id}{Coin market cap unique id}
 #'   \item{name}{Coin name}
@@ -42,12 +43,19 @@
 #' This is the main function of the crypto package. If you want to retrieve
 #' ALL active coins then do not pass an argument to `crypto_history()`, alternatively pass the coin name.
 #'
+#' CMC returns at most 400 data points per request, and nothing at all if
+#' one of them is missing. CMC's data do have such holes, e.g. the hourly
+#' data of all coins lack 2020-02-12 00:00 UTC. `crypto_history()` therefore
+#' narrows an empty request down to the hole and retrieves the data around
+#' it. Periods that CMC does not have are reported in a warning and in
+#' `attr(result, "gaps")`, a tibble with columns `id`, `slug`, `from` and
+#' `to` (first and last missing data point, UTC).
+#'
 #' @importFrom tidyr replace_na expand_grid
 #' @importFrom tibble tibble as_tibble rowid_to_column
 #' @importFrom cli cat_bullet
 #' @importFrom lubridate mdy today
 #' @importFrom stats na.omit
-#' @importFrom plyr laply
 #' @importFrom janitor clean_names
 #'
 #' @import progress
@@ -138,82 +146,38 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     warning('interval was not valid, using "daily". see documentation for allowed values.')
     interval <- 'daily'
   }
-  # time_period
-  if (interval %in% c("hourly","1h", "2h", "3h", "4h", "6h", "12h")){time_period="hours"} else {time_period="days"}
+  # length of one data point in seconds
+  step <- c(hourly = 3600, "1h" = 3600, "3h" = 3 * 3600, daily = 86400, "1d" = 86400,
+            "7d" = 7 * 86400, "30d" = 30 * 86400)[[interval]]
   # extract slugs & ids
   slugs <- coin_list %>% dplyr::distinct(slug)
   ids <- coin_list %>% dplyr::distinct(id) |>  dplyr::pull(id)
-  # Create slug_vec with number of elements determined by max length of retrieved datapoints (10000)
-  if (time_period=="hours"){
-    dl <- seq(as.POSIXct(paste0(start_date," 00:00:00")),as.POSIXct(paste0(end_date," 23:00:00")),"hour")
-    # split time vector in chunks of requestLimit
-    if (length(dl)>=requestLimit) {
-      start_dates <- seq(from = as.POSIXct(paste0(start_date," 00:00:00")), by = paste(requestLimit,time_period),
-                         length.out = length(dl) %/% requestLimit +1)
-      end_dates_start <- seq(from = start_dates[2], by = paste(-1,time_period), length.out = 2)
-      end_dates <- seq(from = end_dates_start[2], by = paste(requestLimit,time_period),
-                       length.out = length(dl) %/% requestLimit +1)
-      if (end_dates[length(end_dates)] > end_date) {
-        end_dates[length(end_dates)] <- as.POSIXct(paste0(end_date," 23:00:00"))
-        start_dates <- start_dates[1:length(end_dates)]
-      }
-      # UNIX format
-      # Create UNIX timestamps for download
-      UNIXstart <- format(as.numeric(start_dates),scientific = FALSE)
-      UNIXend <- format(as.numeric(end_dates),scientific = FALSE)
-      dates <- tibble::tibble(start_dates,end_dates,startDate=UNIXstart, endDate=UNIXend)
-    } else {
-      UNIXstart <- format(as.numeric(as.POSIXct(as.Date(start_date))-1),scientific = FALSE)
-      UNIXend <- format(as.numeric(as.POSIXct(as.Date(end_date), tz = "UTC")),scientific = FALSE)
-      dates <- tibble::tibble(start_dates=start_date,end_dates=end_date,startDate=UNIXstart, endDate=UNIXend)
-    }
-  } else {
-    dl <- seq(as.Date(start_date),as.Date(end_date),"day")
-    # split time vector in chunks of requestLimit
-    if (length(dl)>=requestLimit) {
-      start_dates <- seq(from = as.Date(start_date), by = paste(requestLimit,time_period), length.out = length(dl) %/% requestLimit +1)
-      end_dates_start <- seq(from = start_dates[2], by = paste(-1,time_period), length.out = 2)
-      end_dates <- seq(from = end_dates_start[2], by = paste(requestLimit,time_period), length.out = length(dl) %/% requestLimit +1)
-      if (end_dates[length(end_dates)] > end_date) {
-        end_dates[length(end_dates)] <- end_date
-        start_dates <- start_dates[1:length(end_dates)]
-      }
-      # UNIX format
-      # Create UNIX timestamps for download
-      UNIXstart <- format(as.numeric(as.POSIXct(as.Date(start_dates)-1, format="%Y%m%d")),scientific = FALSE)
-      UNIXend <- format(as.numeric(as.POSIXct(as.Date(end_dates), format="%Y%m%d", tz = "UTC")),scientific = FALSE)
-      dates <- tibble::tibble(start_dates,end_dates,startDate=UNIXstart, endDate=UNIXend)
-    } else {
-      UNIXstart <- format(as.numeric(as.POSIXct(as.Date(start_date)-1, format="%Y%m%d")),scientific = FALSE)
-      UNIXend <- format(as.numeric(as.POSIXct(as.Date(end_date), format="%Y%m%d", tz = "UTC")),scientific = FALSE)
-      dates <- tibble::tibble(start_dates=start_date,end_dates=end_date,startDate=UNIXstart, endDate=UNIXend)
-    }
-  }
-  # determine number of splits based on either max 10000 datapoints or max-length of url
-  if (!single_id) {n <- max(ceiling(nrow(ids)/floor(10000/dl)),ceiling(nrow(ids)/(2000-142)*6))} else {n<-length(ids)}
-  id_vec <- plyr::laply(split(ids, sort(seq_len(length(ids))%%n)),function(x) paste0(x,collapse=","))
-  # create tibble to use
-  id_vec <- tidyr::expand_grid(id=ids,dates)
+  # CMC answers each request with the (at most) 400 data points that end at
+  # `timeEnd` and ignores `timeStart`. Requests are therefore laid out
+  # backwards from the end date, exactly `cap` points apart, so that they
+  # neither overlap nor leave gaps.
+  cap <- min(requestLimit, 400)
+  t_start <- as.numeric(as.POSIXct(as.Date(start_date), tz = "UTC"))
+  t_end <- as.numeric(as.POSIXct(as.Date(end_date), tz = "UTC")) + 86399
+  n_req <- ceiling((t_end - t_start + 1) / (cap * step))
+  dates <- tibble::tibble(endTime = t_end - (seq_len(n_req) - 1) * cap * step)
+  id_vec <- tidyr::expand_grid(id = ids, dates)
 
   # define scraper_function
-  scrape_web <- function(historyurl){
+  scrape_web <- function(historyurl, tick = TRUE){
     page <- safeFromJSON(construct_url(historyurl,v="3.1"))
-    pb$tick()
+    if (tick) pb$tick()
     return(page$data)
   }
+  history_url <- function(id, endTime) {
+    paste0("cryptocurrency/historical?id=", id,
+           "&convertId=", convertId,
+           "&timeStart=", format(endTime - cap * step + 1, scientific = FALSE),
+           "&timeEnd=", format(endTime, scientific = FALSE),
+           "&interval=", interval)
+  }
   # add history URLs
-  id_vec <- id_vec %>% dplyr::mutate(historyurl=paste0(
-    "cryptocurrency/historical?id=",
-    id,
-    "&convertId=",
-    convertId,
-    "&timeStart=",
-    startDate,
-    "&timeEnd=",
-    endDate,
-    "&interval=",
-    interval
-    ))
+  id_vec <- id_vec %>% dplyr::mutate(historyurl = history_url(id, endTime))
   # define backoff rate
   rate <- purrr::rate_delay(pause = wait, max_times = 2)
   rate2 <- purrr::rate_delay(sleep)
@@ -225,17 +189,52 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
                          total = nrow(id_vec), clear = FALSE)
   message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",bullet_col = "green"))
   data <- id_vec %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x)))
-  if (!single_id) {if (nrow(coin_list)==1) {data2 <- data$out} else {data2 <- data$out %>% unlist(.,recursive=FALSE)}
-  } else {
-    data2 <- data$out
+  # A request whose window covers a hole in CMC's data comes back empty, also
+  # for the points around the hole that do exist. Recover them by bisecting
+  # for the latest window before and the earliest window after the hole.
+  open_times <- function(page) {
+    as.numeric(as.POSIXct(page$quotes$timeOpen, format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC"))
   }
+  open_range <- function(page) {
+    if (!NROW(page$quotes)) return(NULL)
+    range(open_times(page))
+  }
+  bisect <- function(id, ok_t, empty_t) {
+    best <- NULL
+    while (abs(empty_t - ok_t) > step) {
+      mid <- ok_t + round((empty_t - ok_t) / step / 2) * step
+      page <- insistent_scrape(history_url(id, mid), tick = FALSE)
+      if (NROW(page$quotes)) { ok_t <- mid; best <- page } else empty_t <- mid
+    }
+    best
+  }
+  recovered <- list()
+  for (cid in ids) {
+    k <- which(data$id == cid)
+    ends <- data$endTime[k]
+    rng <- purrr::map(data$out[k], open_range)
+    for (j in which(purrr::map_lgl(rng, is.null))) {
+      # data after the hole: the newer request reached back to its window start
+      newer_ok <- j > 1 && !is.null(rng[[j - 1]]) && rng[[j - 1]][1] <= ends[j] + step
+      if (newer_ok) recovered <- c(recovered, list(bisect(cid, ends[j - 1], ends[j])))
+      # data before the hole: the older request reached up to its window end;
+      # the oldest request has no older neighbour, so probe one window further
+      older <- if (j < length(k)) rng[[j + 1]]
+      if (j == length(k) && newer_ok) {
+        page <- insistent_scrape(history_url(cid, ends[j] - cap * step), tick = FALSE)
+        older <- open_range(page)
+        recovered <- c(recovered, list(page))
+      }
+      if (!is.null(older) && older[2] > ends[j] - cap * step - step) {
+        recovered <- c(recovered, list(bisect(cid, ends[j] - cap * step, ends[j])))
+      }
+    }
+  }
+  data2 <- c(data$out, Filter(Negate(is.null), recovered))
   # 2. Here comes the second part: Clean and create dataset
   map_scrape <- function(lout){
     pb2$tick()
-    if (length(lout$quotes)==0){
-      cat("\nCoin",lout$name,"does not have data available! Cont to next coin.\n")
-      return(NULL)
-    }
+    if (length(lout$quotes)==0) return(NULL)
     suppressWarnings(
       # only one currency possible at this time
       outall <- lout$quotes |>  tibble::as_tibble() |>  tidyr::unnest(quote) |>
@@ -274,7 +273,46 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
   results <- raw_results %>% tibble::as_tibble() %>%
     dplyr::left_join(coin_list %>% dplyr::select(id, slug), by ="id") %>%
     dplyr::relocate(slug, .after = id) %>%
-    dplyr::filter(as.Date(timestamp)>=start_date)
+    dplyr::filter(as.Date(timestamp)>=start_date, as.Date(timestamp)<=end_date) %>%
+    dplyr::distinct(id, timestamp, .keep_all = TRUE) %>%
+    dplyr::arrange(match(id, ids), timestamp)
+  no_data <- setdiff(ids, results$id)
+  if (length(no_data)) {
+    message("No historical data at CMC for id(s) ", paste(no_data, collapse = ", "), ".")
+  }
+  # Report what CMC itself does not have: gaps between a coin's data points
+  # within the requested window.
+  opens <- purrr::map(data2, function(page) {
+    if (NROW(page$quotes)) tibble::tibble(id = page$id, open = open_times(page))
+  })
+  gaps <- dplyr::bind_rows(opens)
+  if (nrow(gaps)) {
+    gaps <- gaps %>%
+      dplyr::filter(open >= t_start, open <= t_end) %>%
+      dplyr::distinct() %>%
+      dplyr::arrange(id, open) %>%
+      dplyr::group_by(id) %>%
+      dplyr::mutate(nxt = dplyr::lead(open)) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(!is.na(nxt), nxt - open > 1.5 * step) %>%
+      dplyr::transmute(id,
+                       from = as.POSIXct(open + step, origin = "1970-01-01", tz = "UTC"),
+                       to = as.POSIXct(nxt - step, origin = "1970-01-01", tz = "UTC")) %>%
+      dplyr::left_join(dplyr::distinct(coin_list, id, slug), by = "id") %>%
+      dplyr::relocate(slug, .after = id)
+  }
+  if (nrow(gaps)) {
+    fmt <- if (step < 86400) "%Y-%m-%d %H:%M UTC" else "%Y-%m-%d"
+    shown <- gaps[seq_len(min(5, nrow(gaps))), ]
+    warning(sprintf("crypto_history(): CMC has no data for %d period(s) in the requested window, see attr(result, \"gaps\"): %s%s",
+                    nrow(gaps),
+                    paste(shown$slug, ifelse(shown$from == shown$to, format(shown$from, fmt),
+                                             paste(format(shown$from, fmt), "to", format(shown$to, fmt))),
+                          collapse = "; "),
+                    if (nrow(gaps) > 5) "; ..." else ""),
+            call. = FALSE)
+    attr(results, "gaps") <- gaps
+  }
   # wait 60s before finishing (or you might end up with the web-api 60s bug)
   if (finalWait){
     pb <- progress_bar$new(
