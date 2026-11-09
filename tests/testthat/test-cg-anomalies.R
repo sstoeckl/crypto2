@@ -95,6 +95,7 @@ test_that("cg_listings: Bitcoin row is in plausible ranges + percent_change pars
 
 test_that("cg_history: BTC + ETH price/mcap sanity (single batched call)", {
   skip_if_no_cg()
+  skip_if_cg_website_blocked()
   cg_pace(2)
   u <- tibble::tibble(slug = c("bitcoin", "ethereum"), id = c(1L, 279L))
   withr::local_options(crypto2.cg_what = c("price", "market_cap"))

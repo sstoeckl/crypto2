@@ -82,6 +82,7 @@ test_that("cg_history() schema is stable and rows are daily", {
   # the full series and we filter client-side. We still pull 3 streams
   # because that's the maximally-different schema shape to verify.
   skip_if_no_cg()
+  skip_if_cg_website_blocked()
   cg_pace(2)  # /price_charts is on the website host, lighter rate concerns
   u <- tibble::tibble(slug = "bitcoin", id = 1L,
                       name = "Bitcoin", symbol = "btc")
@@ -112,6 +113,7 @@ test_that("cg_history() schema is stable and rows are daily", {
 test_that("cg_history() handles a coin with missing numeric_id (no OHLC)", {
   # Lightweight: only 2 HTTP calls (price + market_cap), 3-day window.
   skip_if_no_cg()
+  skip_if_cg_website_blocked()
   cg_pace(2)
   # No `id` column at all -> OHLC path is skipped, price+mcap still work
   u <- tibble::tibble(slug = "bitcoin")

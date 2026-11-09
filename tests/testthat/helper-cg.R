@@ -102,6 +102,13 @@ cg_endpoint_text_or_skip <- function(url, accept = "application/json, text/plain
   httr::content(resp, as = "text", encoding = "UTF-8")
 }
 
+# For tests that run the website-based history functions end to end: skip
+# where CoinGecko's Cloudflare refuses this environment, fail if the
+# endpoint itself is gone.
+skip_if_cg_website_blocked <- function() {
+  invisible(cg_endpoint_text_or_skip(cg_url("etl2/price_charts/bitcoin/usd/max.json")))
+}
+
 # Pre-test pause to amortize across the per-minute budget. Use at the top
 # of each test that hits the documented API host so multi-test files don't
 # blow the 30 req/min limit.

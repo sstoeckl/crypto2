@@ -18,6 +18,7 @@ test_that("cg_history_by_id() returns CMC-compatible columns + joins slug for ac
   # total. Verifies: numeric-id addressing works, schema is right, the
   # coin_list slug join populates slug/name/symbol for active ids.
   skip_if_no_cg()
+  skip_if_cg_website_blocked()
   cg_pace(2)
   cl <- tibble::tibble(
     id     = c(1L, 279L),
@@ -53,6 +54,7 @@ test_that("cg_history_by_id() survives a numeric ID outside the allocated range"
   # 1 HTTP call (returns 404). Verifies the function does not crash when
   # an id has no data and yields a valid empty tibble.
   skip_if_no_cg()
+  skip_if_cg_website_blocked()
   cg_pace(2)
   # 9 999 999 is well above the highest allocated id (404 confirmed).
   cl <- tibble::tibble(id = integer(0), slug = character(0),

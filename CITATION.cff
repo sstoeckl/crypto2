@@ -36,7 +36,7 @@ preferred-citation:
 repository: https://CRAN.R-project.org/package=crypto2
 repository-code: https://github.com/sstoeckl/crypto2
 url: https://www.sebastianstoeckl.com/crypto2/
-date-released: '2026-11-06'
+date-released: '2026-11-09'
 contact:
 - family-names: Stoeckl
   given-names: Sebastian
