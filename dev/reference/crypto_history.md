@@ -156,16 +156,16 @@ This is the main function of the crypto package. If you want to retrieve
 ALL active coins then do not pass an argument to `crypto_history()`,
 alternatively pass the coin name.
 
-CMC returns at most 400 data points per request, and nothing at all if
-one of them is missing. CMC's data do have such holes, e.g. the hourly
-data of all coins lack 2020-02-12 00:00 UTC. `crypto_history()`
-therefore narrows an empty request down to the hole and retrieves the
-data around it. Periods that CMC does not have are reported in a warning
-and in `attr(result, "gaps")`, a tibble with columns `id`, `slug`,
-`from` and `to` (first and last missing data point, UTC). A data point
-that CMC labels with the time of the one before it (e.g. the hourly
-2022-10-01 01:00 UTC point of all coins) is moved to its own time; its
-`time_high` and `time_low` are `NA`.
+CMC returns at most 400 data points per request, and at best the part
+before the gap if one of them is missing. CMC's data do have such holes,
+e.g. the hourly data of all coins lack 2020-02-12 00:00 UTC.
+`crypto_history()` therefore narrows an empty request down to the hole
+and retrieves the data around it. Periods that CMC does not have are
+reported in a warning and in `attr(result, "gaps")`, a tibble with
+columns `id`, `slug`, `from` and `to` (first and last missing data
+point, UTC). A data point that CMC labels with the time of the one
+before it (e.g. the hourly 2022-10-01 01:00 UTC point of all coins) is
+moved to its own time; its `time_high` and `time_low` are `NA`.
 
 ## Examples
 
