@@ -43,8 +43,8 @@
 #' This is the main function of the crypto package. If you want to retrieve
 #' ALL active coins then do not pass an argument to `crypto_history()`, alternatively pass the coin name.
 #'
-#' CMC returns at most 400 data points per request, and nothing at all if
-#' one of them is missing. CMC's data do have such holes, e.g. the hourly
+#' CMC returns at most 400 data points per request, and at best the part
+#' before the gap if one of them is missing. CMC's data do have such holes, e.g. the hourly
 #' data of all coins lack 2020-02-12 00:00 UTC. `crypto_history()` therefore
 #' narrows an empty request down to the hole and retrieves the data around
 #' it. Periods that CMC does not have are reported in a warning and in
@@ -192,9 +192,10 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
                          total = nrow(id_vec), clear = FALSE)
   message(cli::cat_bullet("Scraping historical crypto data", bullet = "pointer",bullet_col = "green"))
   data <- id_vec %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x)))
-  # A request whose window covers a hole in CMC's data comes back empty, also
-  # for the points around the hole that do exist. Recover them by bisecting
-  # for the latest window before and the earliest window after the hole.
+  # A request whose window covers a hole in CMC's data comes back empty or
+  # stops at the hole (CMC does either, at random), losing the points after
+  # it. Recover them by bisecting for the latest window before and the
+  # earliest window after the hole.
   open_times <- function(page) {
     as.numeric(as.POSIXct(page$quotes$timeOpen, format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC"))
   }
@@ -202,14 +203,16 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     if (!NROW(page$quotes)) return(NULL)
     range(open_times(page))
   }
-  bisect <- function(id, ok_t, empty_t) {
+  # does a window ending at endTime reach up to its end? (`last`: the coin's newest point)
+  reaches_end <- function(rng, endTime, last) !is.null(rng) && rng[2] > min(endTime, last) - step
+  bisect <- function(id, ok_t, bad_t, last) {
     best <- NULL
-    while (abs(empty_t - ok_t) > step) {
-      mid <- ok_t + round((empty_t - ok_t) / step / 2) * step
+    while (abs(bad_t - ok_t) > step) {
+      mid <- ok_t + round((bad_t - ok_t) / step / 2) * step
       page <- insistent_scrape(history_url(id, mid), tick = FALSE)
-      # an empty answer moves the search for good, so make sure it is not a hiccup
-      if (!NROW(page$quotes)) page <- insistent_scrape(history_url(id, mid), tick = FALSE)
-      if (NROW(page$quotes)) { ok_t <- mid; best <- page } else empty_t <- mid
+      # a bad answer moves the search for good, so make sure it is not a hiccup
+      if (!reaches_end(open_range(page), mid, last)) page <- insistent_scrape(history_url(id, mid), tick = FALSE)
+      if (reaches_end(open_range(page), mid, last)) { ok_t <- mid; best <- page } else bad_t <- mid
     }
     best
   }
@@ -218,10 +221,15 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
     k <- which(data$id == cid)
     ends <- data$endTime[k]
     rng <- purrr::map(data$out[k], open_range)
-    for (j in which(purrr::map_lgl(rng, is.null))) {
-      # data after the hole: the newer request reached back to its window start
-      newer_ok <- j > 1 && !is.null(rng[[j - 1]]) && rng[[j - 1]][1] <= ends[j] + step
-      if (newer_ok) recovered <- c(recovered, list(bisect(cid, ends[j - 1], ends[j])))
+    if (all(purrr::map_lgl(rng, is.null))) next
+    last <- max(unlist(rng))
+    ok <- purrr::map2_lgl(rng, ends, reaches_end, last = last)
+    for (j in which(!ok)) {
+      # data after the hole: the newer request is complete back to its window start
+      newer_ok <- j > 1 && ok[j - 1] && rng[[j - 1]][1] <= ends[j] + step
+      if (newer_ok) recovered <- c(recovered, list(bisect(cid, ends[j - 1], ends[j], last)))
+      # a request that stopped at the hole has delivered the data before it
+      if (!is.null(rng[[j]])) next
       # data before the hole: the older request reached up to its window end;
       # the oldest request has no older neighbour, so probe one window further
       older <- if (j < length(k)) rng[[j + 1]]
@@ -231,7 +239,7 @@ crypto_history <- function(coin_list = NULL, convert="USD", limit = NULL, start_
         recovered <- c(recovered, list(page))
       }
       if (!is.null(older) && older[2] > ends[j] - cap * step - step) {
-        recovered <- c(recovered, list(bisect(cid, ends[j] - cap * step, ends[j])))
+        recovered <- c(recovered, list(bisect(cid, ends[j] - cap * step, ends[j], last)))
       }
     }
   }

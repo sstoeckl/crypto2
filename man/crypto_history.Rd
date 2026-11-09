@@ -66,8 +66,8 @@ Crypto currency historic OHLC market data in a dataframe:
 This is the main function of the crypto package. If you want to retrieve
 ALL active coins then do not pass an argument to \code{crypto_history()}, alternatively pass the coin name.
 
-CMC returns at most 400 data points per request, and nothing at all if
-one of them is missing. CMC's data do have such holes, e.g. the hourly
+CMC returns at most 400 data points per request, and at best the part
+before the gap if one of them is missing. CMC's data do have such holes, e.g. the hourly
 data of all coins lack 2020-02-12 00:00 UTC. \code{crypto_history()} therefore
 narrows an empty request down to the hole and retrieves the data around
 it. Periods that CMC does not have are reported in a warning and in

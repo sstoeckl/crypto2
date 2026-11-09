@@ -50,10 +50,11 @@ test_that("Downloaded data matches previously downloaded reference data", {
 # ---- request windows and holes (offline) -----------------------------------
 
 # Mimics CMC's historical endpoint: the 400 hourly points up to `timeEnd`
-# (`timeStart` is ignored), and nothing at all if one of them is missing.
+# (`timeStart` is ignored). If one of them is missing it returns nothing, or
+# with `partial = TRUE` only the points before the missing one.
 # The point at `mislabel` carries the time of the point before it and is
 # listed first.
-fake_cmc <- function(first, missing = numeric(), mislabel = numeric()) {
+fake_cmc <- function(first, missing = numeric(), mislabel = numeric(), partial = FALSE) {
   seen <- new.env()
   seen$n <- 0
   fn <- function(url, ...) {
@@ -61,7 +62,8 @@ fake_cmc <- function(first, missing = numeric(), mislabel = numeric()) {
     end <- as.numeric(sub(".*[?&]timeEnd=([0-9]+).*", "\\1", url))
     opens <- floor(end / 3600) * 3600 - (399:0) * 3600
     opens <- opens[opens >= first]
-    if (!length(opens) || any(opens %in% missing)) return(list(data = list(quotes = list())))
+    if (any(opens %in% missing)) opens <- if (partial) opens[opens < min(opens[opens %in% missing])] else numeric()
+    if (!length(opens)) return(list(data = list(quotes = list())))
     iso <- function(x) format(as.POSIXct(x, origin = "1970-01-01", tz = "UTC"), "%Y-%m-%dT%H:%M:%S.000Z")
     quotes <- data.frame(timeOpen = iso(opens), timeClose = iso(opens + 3599),
                          timeHigh = iso(opens + 60), timeLow = iso(opens + 120))
@@ -97,15 +99,17 @@ test_that("hourly requests neither overlap nor leave gaps", {
 
 test_that("the data around a hole in CMC's data are recovered and the hole reported", {
   withr::local_timezone("UTC")
-  cmc <- fake_cmc(first = utc("2019-01-01"), missing = utc("2020-02-12 00:00"))
-  local_mocked_bindings(safeFromJSON = cmc$fn)
-  expect_warning(
-    h <- crypto_history(bch, start_date = "2020-01-01", end_date = "2020-03-31", interval = "1h"),
-    "bitcoin-cash 2020-02-12 00:00 UTC")
-  expect_equal(nrow(h), 91 * 24 - 1)
-  expect_equal(anyDuplicated(as.POSIXct(h$timestamp)), 0L)
-  expect_equal(attr(h, "gaps")$from, as.POSIXct("2020-02-12", tz = "UTC"))
-  expect_equal(attr(h, "gaps")$to, as.POSIXct("2020-02-12", tz = "UTC"))
+  for (partial in c(FALSE, TRUE)) {
+    cmc <- fake_cmc(first = utc("2019-01-01"), missing = utc("2020-02-12 00:00"), partial = partial)
+    local_mocked_bindings(safeFromJSON = cmc$fn)
+    expect_warning(
+      h <- crypto_history(bch, start_date = "2020-01-01", end_date = "2020-03-31", interval = "1h"),
+      "bitcoin-cash 2020-02-12 00:00 UTC")
+    expect_equal(nrow(h), 91 * 24 - 1)
+    expect_equal(anyDuplicated(as.POSIXct(h$timestamp)), 0L)
+    expect_equal(attr(h, "gaps")$from, as.POSIXct("2020-02-12", tz = "UTC"))
+    expect_equal(attr(h, "gaps")$to, as.POSIXct("2020-02-12", tz = "UTC"))
+  }
 })
 
 test_that("a point labelled with the time before it is moved to its own time", {

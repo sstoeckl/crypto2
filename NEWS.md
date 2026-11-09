@@ -6,12 +6,12 @@
   year only, so it is no longer used. A USD history now takes two requests
   per coin instead of one; coverage and values are unchanged.
 * `crypto_history()` no longer loses data around holes in CMC's data. CMC
-  answers each request with the 400 data points before its end and returns
-  nothing if one of them is missing; a single missing hour (e.g. 2020-02-12
-  00:00 UTC, for all coins) thus dropped about 16 days of hourly data.
-  Requests are now laid out exactly 400 points apart, a request that comes
-  back empty is narrowed down to the hole, and the missing periods are
-  reported in a warning and in `attr(result, "gaps")`.
+  answers each request with the 400 data points before its end and, if one
+  of them is missing, with nothing or only the part before the hole; a single
+  missing hour (e.g. 2020-02-12 00:00 UTC, for all coins) thus dropped up to
+  about 16 days of hourly data. Requests are now laid out exactly 400 points
+  apart, such a request is narrowed down to the hole, and the missing periods
+  are reported in a warning and in `attr(result, "gaps")`.
 * `crypto_history()` no longer returns duplicate rows. They appeared at the
   last request of a download, and at every request for `requestLimit` below
   400 or for intervals other than `"1h"` and `"1d"`. `requestLimit` above
