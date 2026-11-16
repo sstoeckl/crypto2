@@ -117,7 +117,7 @@ cg_listings <- function(which = "latest", convert = "USD", limit = NULL,
   pages <- vector("list", max_pages)
   failed_page <- NA_integer_
   pb <- progress::progress_bar$new(
-    format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+    format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
     total = max_pages, clear = TRUE)
 
   for (i in seq_len(max_pages)) {

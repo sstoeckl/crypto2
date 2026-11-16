@@ -20,6 +20,9 @@
   point before them back at their own time. The hourly 2022-10-01 01:00 UTC
   point of all coins came labelled 00:00, so 00:00 appeared twice and
   01:00 was missing.
+* Progress bars show the elapsed time without `hms::as.hms()`, which hms
+  1.2.0 deprecated; the progress package called it and warned once per
+  session.
 
 # crypto2 3.0.0
 

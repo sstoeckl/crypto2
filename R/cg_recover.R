@@ -138,7 +138,7 @@ cg_history_by_id <- function(ids = NULL,
   n <- length(ids)
   pb <- if (!quiet) {
     progress::progress_bar$new(
-      format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+      format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
       total = n, clear = FALSE)
   } else NULL
   if (!quiet) {

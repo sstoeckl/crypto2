@@ -157,7 +157,7 @@ crypto_global_quotes <- function(which="latest", convert="USD", start_date = NUL
     # Modify function to run insistently.
     insistent_scrape <- purrr::possibly(purrr::insistently(purrr::slowly(scrape_web, rate2), rate, quiet = FALSE),otherwise=NULL)
     # Progress Bar 1
-    pb <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+    pb <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
                            total = nrow(dates), clear = FALSE)
     message(cli::cat_bullet("Scraping historical global data", bullet = "pointer",bullet_col = "green"))
     data <- dates %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x)))
@@ -186,7 +186,7 @@ crypto_global_quotes <- function(which="latest", convert="USD", start_date = NUL
     # Modify function to run insistently.
     insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
     # Progress Bar 2
-    pb2 <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+    pb2 <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
                             total = length(data2), clear = FALSE)
     message(cli::cat_bullet("Processing historical crypto data", bullet = "pointer",bullet_col = "green"))
     global_quotes <- purrr::map(data2,.f = ~ insistent_map(.x))

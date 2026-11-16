@@ -162,7 +162,7 @@ cg_info <- function(coin_list = NULL, limit = NULL, requestLimit = 1,
 
   n <- nrow(coin_list)
   pb <- progress::progress_bar$new(
-    format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+    format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
     total = n, clear = FALSE)
   message(cli::cat_bullet("Scraping CoinGecko coin info",
                           bullet = "pointer", bullet_col = "green"))

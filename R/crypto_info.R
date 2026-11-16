@@ -81,7 +81,7 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 1, sleep 
   # Modify function to run insistently.
   insistent_scrape <- purrr::possibly(purrr::insistently(purrr::slowly(scrape_web, rate2), rate, quiet = FALSE),otherwise=NULL)
   # Progress Bar 1
-  pb <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+  pb <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
                          total = nrow(id_vec), clear = FALSE)
   message(cli::cat_bullet("Scraping crypto info", bullet = "pointer",bullet_col = "green"))
   data <- id_vec %>% dplyr::mutate(out = purrr::map(id,.f=~insistent_scrape(.x)))
@@ -122,7 +122,7 @@ crypto_info <- function(coin_list = NULL, limit = NULL, requestLimit = 1, sleep 
   # Modify function to run insistently.
   insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
   # Progress Bar 2
-  pb2 <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+  pb2 <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
                                     total = length(data2), clear = FALSE)
   message(cli::cat_bullet("Processing crypto info", bullet = "pointer",bullet_col = "green"))
   out_all <- purrr::map(data2, .f = ~ insistent_map(.x))
@@ -224,7 +224,7 @@ exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 1, 
   # Modify function to run insistently.
   insistent_scrape <- purrr::possibly(purrr::insistently(purrr::slowly(scrape_web, rate2), rate, quiet = FALSE),otherwise=NULL)
   # Progress Bar 1
-  pb <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+  pb <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
                                    total = nrow(id_vec), clear = FALSE)
   message(cli::cat_bullet("Scraping crypto info", bullet = "pointer",bullet_col = "green"))
   data <- id_vec %>% dplyr::mutate(out = purrr::map(slug,.f=~insistent_scrape(.x)))
@@ -260,7 +260,7 @@ exchange_info <- function(exchange_list = NULL, limit = NULL, requestLimit = 1, 
   # Modify function to run insistently.
   insistent_map <- purrr::possibly(map_scrape,otherwise=NULL)
   # Progress Bar 2
-  pb2 <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+  pb2 <- progress::progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
                                     total = nrow(ids), clear = FALSE)
   message(cli::cat_bullet("Processing exchange info", bullet = "pointer",bullet_col = "green"))
   out_all <- purrr::map(data2, .f = ~ insistent_map(.x))

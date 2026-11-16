@@ -214,7 +214,7 @@ crypto_listings <- function(which="latest", convert="USD", limit = NULL, start_d
     # Modify function to run insistently.
     insistent_scrape <- purrr::possibly(purrr::insistently(purrr::slowly(scrape_web, rate2), rate, quiet = FALSE),otherwise=NULL)
     # Progress Bar 1
-    pb <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsedfull ETA: :eta",
+    pb <- progress_bar$new(format = ":spin [:current / :total] [:bar] :percent in :elapsed ETA: :eta",
                            total = length(dates), clear = TRUE)
     message(cli::cat_bullet("Scraping historical listings", bullet = "pointer",bullet_col = "green"))
     data <- tbdate %>% dplyr::mutate(out = purrr::map(historyurl,.f=~insistent_scrape(.x, quote)))
